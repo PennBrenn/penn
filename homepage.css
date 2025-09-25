@@ -317,7 +317,7 @@ video {
 }
 
 #il77j {
-  background-image: url("rectangle.png");
+  background-image: url("bg.jpg");
   background-position: 0px 0px;
   background-size: 1400px 1000px;
   background-repeat: repeat;
@@ -1752,4 +1752,5 @@ video {
   }
 
 }
+
 

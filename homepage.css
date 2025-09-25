@@ -256,7 +256,7 @@ video {
   border-bottom-width: 1px;
   border-color: rgb(31 41 55 / 0.4);
   width: 100%;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(10px);
 }
 
 .header-container {
@@ -1752,3 +1752,4 @@ video {
   }
 
 }
+

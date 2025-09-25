@@ -317,7 +317,7 @@ video {
 }
 
 #il77j {
-  background-image: url("https://cdn.grapesjs.com/workspaces/cmflkkikb11adti1bpqoiszq8/assets/f57fe63e-786c-4d92-a455-1661cd8c0a3e__bg.jpg");
+  background-image: url("rectangle.png");
   background-position: 0px 0px;
   background-size: 1400px 1000px;
   background-repeat: repeat;
@@ -1750,4 +1750,5 @@ video {
   #glass-title-box-2-2-2-3 {
     padding: 1rem;
   }
+
 }

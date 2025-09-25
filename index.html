@@ -125,10 +125,10 @@
                   <a href="https://store.steampowered.com/app/573090/Stormworks_Build_and_Rescue/" id="i1pxyp-2" class="gjs-t-link">#1 Stormworks</a>
                 </div>
                 <div data-type-role="flex-column" id="iz7j82" class="gjs-plg-flex-column">
-                  <img src="https://cdn.grapesjs.com/workspaces/cmflkkikb11adti1bpqoiszq8/assets/2ec017b1-ef93-49f8-8011-a073f63c5bff__sw1.jpg" id="isp3rf" />
+                  <img src="storm1.jpg" id="isp3rf" />
                 </div>
                 <div data-type-role="flex-column" id="ii1rfn" class="gjs-plg-flex-column">
-                  <img src="https://cdn.grapesjs.com/workspaces/cmflkkikb11adti1bpqoiszq8/assets/5ceacc05-3305-4ea7-b76e-eba4dbcde988__sw.jpg" id="ifse1d" />
+                  <img src="storm2.jpg" id="ifse1d" />
                 </div>
               </div>
               <div data-type-role="flex-row" id="irgc5i" class="gjs-plg-flex-row">
@@ -136,10 +136,10 @@
                   <a href="https://robertsspaceindustries.com/en/" id="i1pxyp-2-2-2" class="gjs-t-link">#2 Star Citzen</a>
                 </div>
                 <div data-type-role="flex-column" id="i1ujzi" class="gjs-plg-flex-column">
-                  <img src="https://cdn.grapesjs.com/workspaces/cmflkkikb11adti1bpqoiszq8/assets/cfacf5ff-e7ac-4591-aad2-69a8714c23e3__stars.jpg" id="iyhiif" />
+                  <img src="star1.jpg" />
                 </div>
                 <div data-type-role="flex-column" id="ix0lnn" class="gjs-plg-flex-column">
-                  <img src="https://cdn.grapesjs.com/workspaces/cmflkkikb11adti1bpqoiszq8/assets/2e9d3770-3f72-4dff-a486-494996cd5af6__sc1.jpg" id="ivids7" />
+                  <img src="star2.jpg" />
                 </div>
               </div>
               <div data-type-role="flex-row" id="idlqie" class="gjs-plg-flex-row">
@@ -147,10 +147,10 @@
                   <a href="https://www.liero.be/" id="i1pxyp-2-3" class="gjs-t-link">#3 Liero</a>
                 </div>
                 <div data-type-role="flex-column" id="ie3f04" class="gjs-plg-flex-column">
-                  <img src="https://cdn.grapesjs.com/workspaces/cmflkkikb11adti1bpqoiszq8/assets/0aa92b96-ab61-4eb1-bc6a-c355d6d88ec8__ro.jpg" id="ijn8nm" />
+                  <img src="liero1.jpg" id="ijn8nm" />
                 </div>
                 <div data-type-role="flex-column" id="it0wq5" class="gjs-plg-flex-column">
-                  <img src="https://cdn.grapesjs.com/workspaces/cmflkkikb11adti1bpqoiszq8/assets/166dd6cf-e34b-409c-be7e-67f8aeb2f303__lie.jpg" id="i3x7za" />
+                  <img src="liero2.jpg" />
                 </div>
               </div>
               <h1 id="inn9i2-2-2-2" class="gjs-t-h1 about-me-heading">my pets</h1>
@@ -269,13 +269,13 @@
               </div>
               <div data-type-role="flex-row" id="idjzb1" class="gjs-plg-flex-row">
                 <div data-type-role="flex-column" id="i8ammy" class="gjs-plg-flex-column">
-                  <img src="https://cdn.grapesjs.com/workspaces/cmflkkikb11adti1bpqoiszq8/assets/1a04066e-bec2-4422-8c4a-0a0b1f082333__open.jpg" id="ihm3ua" />
+                  <img src="opensause.jpg" id="ihm3ua" />
                 </div>
                 <div data-type-role="flex-column" id="i0vd45" class="gjs-plg-flex-column">
-                  <img src="https://cdn.grapesjs.com/workspaces/cmflkkikb11adti1bpqoiszq8/assets/0f311475-fb39-4ccc-9105-a25674765ba1__dc.jpg" id="if0bx2" />
+                  <img src="dc.jpg" id="if0bx2" />
                 </div>
                 <div data-type-role="flex-column" id="i9pgnl" class="gjs-plg-flex-column">
-                  <img src="https://cdn.grapesjs.com/workspaces/cmflkkikb11adti1bpqoiszq8/assets/c452a068-33dd-4882-80b3-6c37a5c8658a__con.jpg" id="ibs4k4" />
+                  <img src="airsoftcon.jpg" id="ibs4k4" />
                 </div>
               </div>
             </section>
@@ -295,11 +295,7 @@
         const laTime = new Date().toLocaleTimeString('en-US', options);
         document.getElementById('laTime').textContent = laTime;
       }
-
-      // Call the function once to display the time immediately
       showLATime();
-
-      // Then, update the time every second
       setInterval(showLATime, 1000);
     </script>
     <header id="ighig-2-2" class="site-header">
@@ -312,36 +308,11 @@
       </div>
     </header>
     <p id="inaskuw"></p>
-    <script id="iifwk4">
-      function calculateDays() {
-        const today = new Date();
-        const currentYear = today.getFullYear();
-        const november17 = new Date(currentYear, 10, 17); // Note: Months are 0-indexed in JavaScript, so November is 10.
-
-        // If November 17 has already passed, calculate for next year
-        if (today > november17) {
-          november17.setFullYear(currentYear + 1);
-        }
-
-        // Calculate the difference in milliseconds
-        const differenceInTime = november17.getTime() - today.getTime();
-
-        // Convert the difference from milliseconds to days
-        const differenceInDays = Math.ceil(differenceInTime / (1000 * 60 * 60 * 24));
-
-        document.getElementById('daysRemaining').textContent = differenceInDays;
-      }
-
-      // Call the function once to display the count immediately
-      calculateDays();
-
-      // Update the count every hour (since the day won't change more frequently)
-      setInterval(calculateDays, 1000 * 60 * 60);
-    </script>
   </body>
 
 
 </html>
+
 
 
 

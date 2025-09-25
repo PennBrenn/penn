@@ -8,44 +8,29 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="robots" content="index,follow" />
-    <meta name="generator" content="GrapesJS Studio" />
     <link rel="stylesheet" href="./style.css" />
   </head>
 
-  <body id="il77j" class="gjs-t-body cls-ozxvwi">// idk what ts do
+  <body id="il77j" class="gjs-t-body cls-ozxvwi">
     <meta name="viewport" content="width=device-width, initial-scale=1" id="idee6" />
     <meta name="robots" content="index,follow" id="io7x4hd" />
     <meta name="generator" content="GrapesJS Studio" id="ivbeu" />
     <meta name="description" content="me" id="ir7bw" />
-    <link rel="icon" href="https://cdn.grapesjs.com/workspaces/cmflkkikb11adti1bpqoiszq8/assets/93bf797f-7d4c-498f-9d9b-e867133293c8__favicon.png" type="image/png" id="ibojl" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" id="i425r" />
     <link rel="preconnect" href="https://fonts.googleapis.com" id="iusqewm" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" id="il1oybm" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Poppins:wght@600;700&amp;display=swap" rel="stylesheet" id="i9a3i" />
     <script id="iym7l">
       function calculateDays() {
-        // Get the current date.
         const today = new Date();
-
-        // Set the target date to November 17th of the current year.
-        let targetDate = new Date(today.getFullYear(), 10, 17); // Month is 0-indexed, so 10 is November.
-
-        // If November 17th has already passed this year, set the target for next year.
+        let targetDate = new Date(today.getFullYear(), 10, 17); // month is 0 indexed, 10 is November
         if (today > targetDate) {
           targetDate.setFullYear(today.getFullYear() + 1);
         }
-
-        // Calculate the difference in milliseconds.
         const differenceInTime = targetDate.getTime() - today.getTime();
-
-        // Calculate the number of days.
         const differenceInDays = Math.ceil(differenceInTime / (1000 * 3600 * 24));
-
-        // Display the number of days in the paragraph element.
         document.getElementById("days").textContent = differenceInDays;
       }
-
-      // Call the function when the page loads.
       window.onload = calculateDays;
     </script>
     <main id="iis3yl" class="main-content">
@@ -89,7 +74,7 @@
               <p id="iesgg"></p>
             </div>
             <div data-type-role="flex-column" id="ifrqws" class="gjs-plg-flex-column">
-              <img src="https://cdn.grapesjs.com/workspaces/cmflkkikb11adti1bpqoiszq8/assets/ca91632f-b250-4044-b6b9-f3ae6f07916e__me-fr.jpg" id="ip426n" />
+              <img src="me.jpg" />
               <div id="ibs8a2">Iykyk</div>
             </div>
           </div>
@@ -181,10 +166,10 @@
                   </div>
                 </div>
                 <div data-type-role="flex-column" id="imcfda" class="gjs-plg-flex-column">
-                  <img src="https://cdn.grapesjs.com/workspaces/cmflkkikb11adti1bpqoiszq8/assets/94f91522-9da3-4bce-86a3-254f23f32a6e__img202508272150357962.jpg" id="itjt3y" />
+                  <img src="pennclavesmall.jpg" id="itjt3y" />
                 </div>
                 <div data-type-role="flex-column" id="iop6lj" class="gjs-plg-flex-column">
-                  <img src="https://cdn.grapesjs.com/workspaces/cmflkkikb11adti1bpqoiszq8/assets/208123ef-73de-4aa4-b583-3e5102aa9021__img20250917223146043.jpg" id="i0lrki" />
+                  <img src="pennclavebig.jpg" id="i0lrki" />
                 </div>
               </div>
               <div data-type-role="flex-row" id="iqg6zm" class="gjs-plg-flex-row">
@@ -357,6 +342,7 @@
 
 
 </html>
+
 
 
 

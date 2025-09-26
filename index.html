@@ -39,7 +39,8 @@
           <div class="glass-title-inner" id="i49ij"></div>
           <div data-type-role="flex-row" id="io0aop" class="gjs-plg-flex-row">
             <div data-type-role="flex-column" id="i8rw77" class="gjs-plg-flex-column">
-              <h1 id="inn9i2-4" class="gjs-t-h1 about-me-heading">im penn/william</h1>
+              <h1 id="inn9i2-4" class="gjs-t-h1 about-me-heading">im </h1>
+              <h1 id="typewriter-word" class="gjs-t-h1 about-me-heading">penn/william</h1>
               <section aria-label="Page Title" id="glass-title-box-2-2-2-2" class="gjs-t-border">
                 <div class="glass-title-inner" id="ieh1q"></div>
                 <div id="iaq05j-2-3">he/him</div>
@@ -307,10 +308,58 @@
       </div>
     </header>
     <p id="inaskuw"></p>
+     <script id="if3zf">
+      (function() {
+        const words = [
+          "Penn",
+          "William",
+        ];
+        const el = document.getElementById("typewriter-word");
+        const caret = document.getElementById("typewriter-caret");
+        const typeSpeed = 100;
+        const eraseSpeed = 2000;
+        const holdDelay = 4000;
+
+        let wordIndex = 0;
+        let charIndex = 0;
+        let typing = true;
+
+        function tick() {
+          const currentWord = words[wordIndex];
+          if (typing) {
+            charIndex++;
+            el.textContent = currentWord.slice(0, charIndex);
+            if (charIndex === currentWord.length) {
+              typing = false;
+              setTimeout(tick, holdDelay);
+              return;
+            }
+            setTimeout(tick, typeSpeed);
+          } else {
+            charIndex--;
+            el.textContent = currentWord.slice(0, charIndex);
+            if (charIndex === 0) {
+              typing = true;
+              wordIndex = (wordIndex + 1) % words.length;
+              setTimeout(tick, typeSpeed);
+              return;
+            }
+            setTimeout(tick, eraseSpeed);
+          }
+        }
+        let caretVisible = true;
+        setInterval(() => {
+          caretVisible = !caretVisible;
+          caret.style.opacity = caretVisible ? "1" : "0.25";
+        }, 500);
+        tick();
+      })();
+    </script>
   </body>
 
 
 </html>
+
 
 
 

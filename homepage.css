@@ -995,11 +995,19 @@ video {
   width: 100%;
 }
 
+#Typewriter-word {
+  color: rgb(255 255 255 / 1);
+}
+
 #ipl6ke-2 {
   color: rgb(212 212 212 / 1);
 }
 
 #i5qy8i-2-3 {
+  color: rgb(212 212 212 / 1);
+}
+
+#I5qrri-2-3 {
   color: rgb(212 212 212 / 1);
 }
 
@@ -1752,5 +1760,6 @@ video {
   }
 
 }
+
 
 

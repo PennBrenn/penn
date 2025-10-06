@@ -1563,6 +1563,10 @@ video {
   color: rgb(212, 212, 212);
 }
 
+#i0objy {
+  color: rgba(255, 255, 255, 0);
+}
+
 @media (max-width: 992px) {
   .main-content {
     padding-top: 2.5rem;

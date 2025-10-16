@@ -366,7 +366,7 @@ video {
 
 #iarrzg .back-btn:hover {
   background: rgba(37, 129, 142, 0.2);
-  border-color: #25818e;
+  border-color: #465e73;
   box-shadow: 0 0 0 3px rgba(37, 129, 142, 0.25);
 }
 
@@ -443,7 +443,7 @@ video {
 }
 
 #iarrzg input:focus {
-  border-color: #25818e;
+  border-color: #465e73;
   box-shadow: 0 0 0 3px rgba(37, 129, 142, 0.25);
   background-color: #0b1114;
 }
@@ -452,7 +452,7 @@ video {
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  background-color: #25818e;
+  background-color: #465e73;
   color: #ffffff;
   border: none;
   padding: 0.65rem 1rem;
@@ -507,7 +507,7 @@ video {
 
 #signup-section .btn-ghost:hover {
   background: rgba(37, 129, 142, 0.2);
-  border-color: #25818e;
+  border-color: #465e73;
   box-shadow: 0 6px 18px rgba(37, 129, 142, 0.35);
 }
 
@@ -516,7 +516,7 @@ video {
 }
 
 #i6iy4c .gjs-t-button {
-  background-color: #25818e;
+  background-color: #465e73;
   color: #ffffff;
   border: none;
   transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.06s ease;
@@ -532,7 +532,7 @@ video {
 }
 
 #i6iy4c .gjs-t-link {
-  color: #25818e;
+  color: #465e73;
   text-decoration: none;
   transition: color 0.2s ease;
 }
@@ -543,7 +543,7 @@ video {
 }
 
 #i6iy4c #ink1wv {
-  background-color: #25818e;
+  background-color: #465e73;
   color: #ffffff;
 }
 
@@ -616,7 +616,7 @@ video {
 }
 
 #i6iy4c .plan-badge-paid {
-  background-color: #25818e;
+  background-color: #465e73;
   color: #ffffff;
 }
 
@@ -716,7 +716,7 @@ video {
 }
 
 #issn7x .prominent-link.gjs-t-link {
-  color: #25818e;
+  color: #465e73;
   text-decoration: none;
   font-size: 1.25rem;
   line-height: 1.75rem;
@@ -745,7 +745,7 @@ video {
 
 #i1pxyp-3 {
   padding: 10px;
-  color: #25818e;
+  color: #465e73;
   padding-top: 0px;
   padding-right: 0px;
   padding-bottom: 0px;
@@ -754,7 +754,7 @@ video {
 
 #i6w469-2 {
   padding: 10px;
-  color: #25818e;
+  color: #465e73;
   padding-top: 0px;
   padding-right: 0px;
   padding-bottom: 0px;
@@ -763,7 +763,7 @@ video {
 
 #ipx8jn-2 {
   padding: 10px;
-  color: #25818e;
+  color: #465e73;
   padding-top: 0px;
   padding-right: 0px;
   padding-bottom: 0px;
@@ -772,7 +772,7 @@ video {
 
 #ibogxj-2 {
   padding: 10px;
-  color: #25818e;
+  color: #465e73;
   padding-top: 0px;
   padding-right: 0px;
   padding-bottom: 0px;
@@ -781,7 +781,7 @@ video {
 
 #iq5r86-2 {
   padding: 10px;
-  color: #25818e;
+  color: #465e73;
   padding-top: 0px;
   padding-right: 0px;
   padding-bottom: 0px;
@@ -790,7 +790,7 @@ video {
 
 #i66gy6 {
   padding: 10px;
-  color: #25818e;
+  color: #465e73;
   padding-top: 0px;
   padding-right: 0px;
   padding-bottom: 0px;
@@ -838,7 +838,7 @@ video {
 }
 
 #iqhiqo+#i2xpcq .contact-info-link {
-  color: #25818e;
+  color: #465e73;
   text-decoration: none;
   transition: color 0.2s ease;
 }
@@ -894,7 +894,7 @@ video {
 
 #immu6k-2 {
   padding: 10px;
-  color: #25818e;
+  color: #465e73;
   padding-top: 0px;
   padding-right: 0px;
   padding-bottom: 0px;
@@ -1218,7 +1218,7 @@ video {
 
 #ibogxj-2-2 {
   padding: 10px;
-  color: #25818e;
+  color: #465e73;
   padding-top: 0px;
   padding-right: 0px;
   padding-bottom: 0px;
@@ -1227,7 +1227,7 @@ video {
 
 #iq7kyl-2 {
   padding: 10px;
-  color: #25818e;
+  color: #465e73;
   padding-top: 0px;
   padding-right: 0px;
   padding-bottom: 0px;
@@ -1236,7 +1236,7 @@ video {
 
 #iq7kyl-2-2 {
   padding: 10px;
-  color: #25818e;
+  color: #465e73;
   padding-top: 0px;
   padding-right: 0px;
   padding-bottom: 0px;
@@ -1694,3 +1694,4 @@ video {
     padding: 1rem;
   }
 }
+

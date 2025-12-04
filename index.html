@@ -298,29 +298,37 @@
         /* --- CONTACT INFO ROW --- */
         .contact-row {
             display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-wrap: wrap;
+            /* Puts items in a row */
+            width: 100%;
+            /* Ensures the container fills the parent */
             gap: 1rem;
+            /* Space between the two buttons */
             margin-top: 2rem;
             padding-top: 2rem;
             border-top: 1px solid var(--glass-border);
-            /* Adds a subtle divider line */
         }
 
         .contact-pill {
+            flex: 1;
+            /* THE MAGIC: Forces both buttons to grow equally */
             display: flex;
+            /* Keeps icon and text aligned */
+            justify-content: center;
+            /* Centers the text inside the stretched button */
             align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1.5rem;
+
+            padding: 0.75rem 1rem;
+            /* Reduced side padding slightly to fit better */
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--glass-border);
             border-radius: 50px;
-            /* Makes them pill-shaped */
             color: #ccc;
             font-size: 0.95rem;
             font-weight: 500;
             transition: all 0.3s ease;
+            text-align: center;
+            white-space: nowrap;
+            /* Prevents text from breaking into two lines */
         }
 
         .contact-pill:hover {
@@ -333,13 +341,15 @@
 
         .contact-pill .icon {
             font-size: 1.1rem;
+            margin-right: 8px;
         }
 
-        /* Mobile Adjustment */
-        @media (max-width: 600px) {
-            .contact-pill {
-                width: 100%;
-                justify-content: center;
+        /* Optional: Stack them only on VERY small mobile screens (like older iPhones) 
+   so the text doesn't get cut off. */
+        @media (max-width: 450px) {
+            .contact-row {
+                flex-direction: column;
+                /* Stack vertically on tiny screens */
             }
         }
     </style>

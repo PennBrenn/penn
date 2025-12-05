@@ -1,5 +1,4 @@
 User-agent: *
 Disallow: 
-Disallow: ./2g1m.html
 Sitemap: https://pennbrenn.com/robots.html
 

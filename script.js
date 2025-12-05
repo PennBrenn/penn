@@ -1,11 +1,21 @@
 // --- CONFIG ---
 const facts = [
-    "I have geckos that are louder than my alarm clock.",
-    "I own a Kriss Vector airsoft gun.",
-    "I code things and sometimes finish them.",
-    "I want to build an ultralight aircraft.",
-    "My cat Trick is always hungry.",
-    "I'm learning backend security right now!"
+    "My geckos shit very loud",
+    "My fav food is pesto chicken pasta",
+    "I never finish projects",
+    "Please give me money",
+    "I am good at explosives manufacturing",
+    "My fav color is #465e73",
+    "I use a Miniware TS21",
+    "Yes, i run android (for sideloading)",
+    "Yes, im short af",
+    "Yes, i need cuddles to sleep",
+    "I have horrible spending habits",
+    "I have a nothing phone 2",
+    "My server is a ryzen7 16gb int.",
+    "I built my pc",
+    "I use youtube music",
+    "My fav drink is lemon sparking ice"
 ];
 
 // --- TIME & BIRTHDAY ---

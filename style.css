@@ -24,6 +24,89 @@ body {
 a { text-decoration: none; color: inherit; transition: 0.3s; }
 img { max-width: 100%; display: block; border-radius: 8px; }
 
+/* ... existing css ... */
+
+/* --- HEADER --- */
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(11, 11, 11, 0.95);
+    border-bottom: 1px solid var(--glass-border);
+    padding: 1rem 0;
+}
+
+.header-content {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    /* Changed display to flex to better organize elements */
+    display: flex; 
+    justify-content: space-between;
+    align-items: center;
+    /* Allow wrapping on smaller screens */
+    flex-wrap: wrap; 
+    gap: 10px; /* Space between header items */
+}
+
+/* NEW: Style for the container holding all the section links */
+.nav-buttons {
+    display: flex;
+    gap: 15px;
+    overflow-x: auto; /* Allows horizontal scrolling on small screens */
+    padding-bottom: 5px; /* Adds space for potential scrollbar */
+    flex-grow: 1; /* Allows the nav to take up available space */
+    justify-content: center; /* Center links on wider screens */
+    -webkit-overflow-scrolling: touch; /* iOS smooth scrolling */
+}
+
+/* Hide scrollbar for aesthetics, but keep functionality */
+.nav-buttons::-webkit-scrollbar {
+    display: none;
+}
+.nav-buttons {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+}
+
+.brand { font-size: 1.25rem; font-weight: 700; }
+.brand span { color: var(--accent-color); }
+
+.music-player { display: flex; align-items: center; justify-content: center; }
+.icon-btn {
+    background: transparent; border: 1px solid var(--accent-color);
+    color: var(--accent-color); padding: 5px 15px; border-radius: 20px;
+    cursor: pointer; font-size: 0.9rem; transition: 0.3s;
+    white-space: nowrap; /* Prevent music button from breaking */
+}
+.icon-btn:hover { background: var(--accent-color); color: #fff; }
+
+/* Existing nav-link style applied to all new links */
+.nav-link { 
+    font-weight: bold; color: var(--accent-color); 
+    font-size: 0.9rem; /* Slightly smaller for more links */
+    white-space: nowrap; /* Keep link text on one line */
+}
+.nav-link:hover { color: #fff; }
+
+/* Media query to better align elements on larger screens */
+@media (min-width: 768px) {
+    .header-content {
+        flex-wrap: nowrap; /* Prevent wrapping on desktop */
+    }
+    .nav-buttons {
+        order: 2; /* Put nav links in the middle */
+        flex-basis: auto;
+        overflow-x: hidden; /* Hide scrollbar on desktop */
+        justify-content: center;
+        margin: 0 1rem;
+    }
+    .brand { order: 1; }
+    .music-player { order: 3; }
+}
+
+/* ... existing css ... */
+
 /* --- ANIMATED BACKGROUND --- */
 .bg-layer {
     position: fixed;

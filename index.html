@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pennbrenn.com | About</title>
+    <title>Pennbrenn.com</title>
     <meta name="description" content="The official website of Penn Brenn / William Villongco.">
     <link rel="icon" type="image/png" href="Images/favicon96.png">
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-JB57Z2S19V"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
@@ -21,42 +21,52 @@
         gtag('config', 'G-JB57Z2S19V');
     </script>
 </head>
-<body>
 
+<body>
     <div class="bg-layer stars-bg"></div>
     <div class="bg-layer aurora"></div>
     <div id="star-container"></div>
-
     <header class="site-header">
         <div class="header-content">
             <a href="#" class="brand"><span>P</span>enn<span>B</span>renn<small>.com</small></a>
-            
+            <nav class="nav-buttons">
+                <a href="#about-section" class="nav-link">About</a>
+                <a href="#socials-section" class="nav-link">Socials</a>
+                <a href="#voice-section" class="nav-link">Voice</a>
+                <a href="#business-section" class="nav-link">Business</a>
+                <a href="#sites-section" class="nav-link">Sites</a>
+                <a href="#games-section" class="nav-link">Games</a>
+                <a href="#pets-section" class="nav-link">Pets</a>
+                <a href="#hobbies-section" class="nav-link">Hobbies</a>
+            </nav>
             <div class="music-player">
                 <button id="musicToggle" class="icon-btn">► Play Music</button>
                 <audio id="bgMusic" loop>
                     <source src="Images/music.mp3" type="audio/mpeg">
                 </audio>
             </div>
-
-            <a href="#sites-section" class="nav-link">Sites</a>
         </div>
     </header>
-
     <main class="container">
-
         <section class="glass-panel">
             <div class="hero-grid">
                 <div>
                     <h1><span id="typewriter-word">Im Penn</span><span class="typewriter-cursor">|</span></h1>
                     <div class="status-bar">
-                        <div class="status-item">It is <span id="laTime">...</span> in LA</div>
+                        <div class="status-item">It is <span id="laTime">...</span> where I live</div>
                         <div class="status-item"><span id="days" class="birthday-count">0</span> days until b-day</div>
                     </div>
                     <article class="about-text">
-                        <h3>🇺🇸🏳️‍🌈♂️he/him</h3>
+                        <h3>🇺🇸🏳️‍🌈he/him</h3>
                         <p><b>PUBLIC PROFILE</b></p>
                         <p><small>Specific information is not revealed openly.</small></p>
-                        <p>Hiiii im Penn. I keep lizards and geckos, start new projects and never finish them! :D I play airsoft (HPA GBB Kriss Vector user). I wish to start an ultralight aircraft business. Please buy my camera, I need money.</p>
+                        <p>Hiiii im penn, the name has no relation to any historical figures. This is the first website
+                            that I actually coded, maybe a little ai :3. I keep lizards and geckos, and enjoy starting
+                            new projects and never finishing them! :D I play airsoft, I run a hpa gbb kriss vector. I
+                            enjoy playing online games with friends and cuddling. :) I start a business every once in a
+                            while. I wish to start an ultralight aircraft business. Please buy my camera, i really need
+                            money.
+                        </p>
                         <p><b>Taken</b></p>
                     </article>
                 </div>
@@ -66,49 +76,59 @@
                 </div>
             </div>
         </section>
-
+        <section class="glass-panel">
+            <h2>Socials & Contact</h2>
+            <div class="links-grid">
+                <a href="https://drive.google.com/drive/folders/1xdJv-bT4wKyydjSxMpCK-iUGIhIML98O?usp=sharing"
+                    class="social-btn">Drive</a>
+                <a href="https://discord.com/users/973736168011231233" class="social-btn">Discord</a>
+                <a href="https://www.instagram.com/penn_brenn/" class="social-btn">Instagram</a>
+                <a href="https://www.youtube.com/@PennBrenn" class="social-btn">Youtube</a>
+                <a href="https://www.twitch.tv/pennbrenn" class="social-btn">Twitch</a>
+                <a href="https://www.tiktok.com/@pennbrenn?lang=en" class="social-btn">TikTok</a>
+                <a href="https://github.com/PennBrenn" class="social-btn">Github</a>
+                <a href="https://steamcommunity.com/id/Pennnnnnnnnnnnn/" class="social-btn">Steam</a>
+            </div>
+            <div class="contact-row">
+                <a href="mailto:w@pennbrenn.com" class="contact-pill">📧 w@pennbrenn.com</a>
+                <a href="tel:+18054104273" class="contact-pill">📞 +1 (805) 410-4273</a>
+            </div>
+        </section>
         <section class="glass-panel">
             <h2>Hear My Voice</h2>
             <div class="voice-box">
-                <p>Type something below (max 100 chars) to hear it in my voice (William).</p>
+                <p>Type something below to hear it in my voice.<small>Elevenlabs</small></p>
                 <div class="voice-input-group">
                     <input type="text" id="ttsInput" maxlength="100" placeholder="Hello there...">
-                    <button id="ttsBtn" class="action-btn">Speak</button>
+                    <button id="ttsBtn" class="action-btn">Run</button>
                 </div>
                 <div id="ttsStatus" class="status-text"></div>
                 <audio id="ttsAudio" controls style="display:none; margin-top: 1rem; width: 100%;"></audio>
             </div>
         </section>
-
         <section class="glass-panel">
             <h2>For Business</h2>
             <div class="business-content">
                 <p><b>Professional Summary:</b></p>
                 <ul>
-                    <li>Graduated High School</li>
-                    <li>Experience in Frontend Web Development & API Integration</li>
-                    <li>Entrepreneurial spirit (Ultralight Aircraft & Tech)</li>
+                    <li>TBD</li>
                 </ul>
                 <p style="margin-top:1rem"><i>More detailed CV available upon request via email.</i></p>
             </div>
         </section>
-
         <section id="sites-section" class="glass-panel">
             <h2>My Sites</h2>
-            
             <h3 class="sub-head">Professional "Stuff"</h3>
             <div class="links-grid">
                 <a href="https://cam.pennbrenn.com" class="social-btn">penncamm</a>
                 <a href="https://www.pennbrenn.com" class="social-btn">about me</a>
             </div>
-
             <h3 class="sub-head">Game "Stuff"</h3>
             <div class="links-grid">
                 <a href="https://play.pennbrenn.com" class="social-btn">Different Question Game</a>
                 <a href="https://play.bbcjustice.top" class="social-btn">bbcjustice</a>
                 <a href="https://sam.pennbrenn.com" class="social-btn">Sams Aura Farm 2025</a>
             </div>
-
             <h3 class="sub-head">Old "Stuff"</h3>
             <div class="links-grid">
                 <a href="https://moveon.pennbrenn.com/" class="social-btn">move on lol</a>
@@ -116,14 +136,14 @@
                 <a href="#" class="social-btn disabled">old games (missing)</a>
             </div>
         </section>
-
         <section class="glass-panel">
             <h2>Fav Games</h2>
             <div class="card-grid">
                 <div class="card">
                     <img src="Images/storm1.jpg" alt="Stormworks" class="card-img">
                     <div class="card-content">
-                        <a href="https://store.steampowered.com/app/573090/Stormworks_Build_and_Rescue/" class="card-title">#1 Stormworks</a>
+                        <a href="https://store.steampowered.com/app/573090/Stormworks_Build_and_Rescue/"
+                            class="card-title">#1 Stormworks</a>
                         <p class="card-details">Build anything simulator</p>
                     </div>
                 </div>
@@ -137,7 +157,8 @@
                 <div class="card">
                     <img src="Images/people.jpg" alt="People Playground" class="card-img">
                     <div class="card-content">
-                        <a href="https://store.steampowered.com/app/1118200/People_Playground/" class="card-title">#3 People Playground</a>
+                        <a href="https://store.steampowered.com/app/1118200/People_Playground/" class="card-title">#3
+                            People Playground</a>
                         <p class="card-details">War crime simulator</p>
                     </div>
                 </div>
@@ -150,7 +171,6 @@
                 </div>
             </div>
         </section>
-
         <section class="glass-panel">
             <h2>My Pets</h2>
             <div class="card-grid">
@@ -191,7 +211,6 @@
                 </div>
             </div>
         </section>
-
         <section class="glass-panel">
             <h2>Hobbies</h2>
             <div class="hobbies-flex">
@@ -210,49 +229,33 @@
                 </div>
             </div>
         </section>
-
         <section class="glass-panel">
             <h2>Fav Out & About</h2>
             <div class="card-grid small-grid">
                 <div class="card">
                     <img src="Images/opensause.jpg" alt="Opensauce" class="card-img">
-                    <div class="card-content"><div class="card-title">Opensauce 2025</div></div>
+                    <div class="card-content">
+                        <div class="card-title">Opensauce 2025</div>
+                    </div>
                 </div>
                 <div class="card">
                     <img src="Images/dc.jpg" alt="DC" class="card-img">
-                    <div class="card-content"><div class="card-title">Washington DC</div></div>
+                    <div class="card-content">
+                        <div class="card-title">Washington DC</div>
+                    </div>
                 </div>
                 <div class="card">
                     <img src="Images/airsoftcon.jpg" alt="Airsoftcon" class="card-img">
-                    <div class="card-content"><div class="card-title">Airsoftcon 2024</div></div>
+                    <div class="card-content">
+                        <div class="card-title">Airsoftcon 2024</div>
+                    </div>
                 </div>
             </div>
         </section>
-
-        <section class="glass-panel">
-            <h2>Socials & Contact</h2>
-            <div class="links-grid">
-                <a href="https://drive.google.com/drive/folders/1xdJv-bT4wKyydjSxMpCK-iUGIhIML98O?usp=sharing" class="social-btn">Drive</a>
-                <a href="https://discord.com/users/973736168011231233" class="social-btn">Discord</a>
-                <a href="https://www.instagram.com/penn_brenn/" class="social-btn">Instagram</a>
-                <a href="https://www.youtube.com/@PennBrenn" class="social-btn">Youtube</a>
-                <a href="https://www.twitch.tv/pennbrenn" class="social-btn">Twitch</a>
-                <a href="https://www.tiktok.com/@pennbrenn?lang=en" class="social-btn">TikTok</a>
-                <a href="https://github.com/PennBrenn" class="social-btn">Github</a>
-                <a href="https://steamcommunity.com/id/Pennnnnnnnnnnnn/" class="social-btn">Steam</a>
-            </div>
-            <div class="contact-row">
-                <a href="mailto:william@pennbrenn.com" class="contact-pill">📧 w@pennbrenn.com</a>
-                <a href="tel:+18054104273" class="contact-pill">📞 +1 (805) 410-4273</a>
-            </div>
-        </section>
-
     </main>
-
     <footer>
         <p>&copy; 2025 Penn Brenn. All rights reserved.</p>
     </footer>
-
     <div id="star-modal" class="modal hidden">
         <div class="modal-content">
             <span id="close-modal">&times;</span>
@@ -260,7 +263,7 @@
             <p id="fact-text">...</p>
         </div>
     </div>
-
     <script src="script.js"></script>
 </body>
+
 </html>

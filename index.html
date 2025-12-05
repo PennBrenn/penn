@@ -98,8 +98,9 @@
             position: absolute;
             width: 100px; /* Visible tail length, set dynamically in JS */
             height: 2px;
-            /* 270deg gradient: bright light is on the RIGHT side of the element */
-            background: linear-gradient(270deg, rgba(255,255,255,1), transparent);
+            /* 0deg gradient: bright light is on the LEFT side of the element (head)
+               When rotated, this bright end will lead the movement. */
+            background: linear-gradient(90deg, rgba(255,255,255,1), transparent);
             border-radius: 50%;
             pointer-events: auto; /* Make the star itself clickable */
             cursor: pointer;
@@ -115,7 +116,7 @@
             background: transparent;
         }
 
-        /* --- SNOWFALL EFFECT (Increased Visibility) --- */
+        /* --- SNOWFALL EFFECT (FIXED) --- */
         .snow-container {
             position: fixed;
             top: 0;
@@ -129,23 +130,21 @@
 
         .snowflake {
             position: absolute;
-            /* Increased opacity for better visibility */
             background: rgba(255, 255, 255, 0.9); 
             border-radius: 50%;
             opacity: 0.9;
-            animation: fall linear infinite;
         }
 
         @keyframes fall {
             to {
-                transform: translateY(100vh);
+                /* TranslateY(100vh) moves it down 100% of the viewport height */
+                transform: translateY(100vh); 
             }
         }
         
-        /* Subtle horizontal drift for a natural look */
         @keyframes drift {
             0% { transform: translateX(0); }
-            50% { transform: translateX(20px); }
+            50% { transform: translateX(40px); }
             100% { transform: translateX(0); }
         }
 
@@ -615,7 +614,7 @@
                     </div>
                 </div>
                 
-                <!-- NEW PETS ADDED HERE -->
+                <!-- Gizmo (Crested Gecko) -->
                 <div class="card">
                     <!-- Placeholder image using accent color -->
                     <img src="https://placehold.co/400x200/25818e/ffffff?text=Gizmo" alt="Gizmo" class="card-img">
@@ -628,6 +627,7 @@
                     </div>
                 </div>
                 
+                <!-- Sparky (Leopard Gecko) -->
                 <div class="card">
                     <!-- Placeholder image using accent color -->
                     <img src="https://placehold.co/400x200/25818e/ffffff?text=Sparky" alt="Sparky" class="card-img">
@@ -730,7 +730,7 @@
             isPlaying = !isPlaying;
         }
 
-        // --- 3. SHOOTING STARS & FACTS ---
+        // --- 3. SHOOTING STARS & FACTS (Rotation Fixed) ---
         const facts = [
             "I own 4 geckos.",
             "I play HPA GBB Kriss Vector in Airsoft.",
@@ -755,7 +755,7 @@
             star.style.width = length + 'px';
             const duration = Math.random() * 4 + 4; // 4 to 8 seconds
 
-            // Determine Start/End points and Rotation
+            // Determine Start/End points
             if (startEdge === 0) { // Top -> Down/Diagonal
                 startX = Math.random() * viewportW;
                 startY = -50;
@@ -781,9 +781,10 @@
             const deltaX = endX - startX;
             const deltaY = endY - startY;
 
-            // Calculate rotation angle to align the 270deg gradient (bright side) with travel direction.
-            // Adding 180 degrees effectively reverses the direction of the gradient for visual effect.
-            rotationAngle = Math.atan2(deltaY, deltaX) * (180 / Math.PI) + 180;
+            // FIX: Removed the + 180 to ensure the bright end (gradient at 90deg,
+            // which is the left side of the element's local coordinate system)
+            // leads the direction of travel (deltaX, deltaY).
+            rotationAngle = Math.atan2(deltaY, deltaX) * (180 / Math.PI) - 180;
 
             star.style.top = startY + 'px';
             star.style.left = startX + 'px';
@@ -844,6 +845,7 @@
             
             if (hasProfanity) {
                 console.log("Profanity detected in user input.");
+                // Using a simple alert, as per previous implementation
                 alert("Let's keep it clean to protect Penn! Please use friendly language.");
                 return;
             }
@@ -897,7 +899,7 @@
             tick();
         })();
 
-        // --- 6. SNOWFALL EFFECT (Increased density and size) ---
+        // --- 6. SNOWFALL EFFECT (FIXED animation logic) ---
         function createSnowflake() {
             const container = document.getElementById('snow-container');
             if (!container) return;
@@ -916,19 +918,17 @@
             
             const duration = Math.random() * 20 + 10; // 10s to 30s
             const delay = Math.random() * -duration; // Start randomly throughout the animation cycle
+            const driftDuration = Math.random() * 10 + 5; // 5s to 15s for drift
 
-            flake.style.animationDuration = `${duration}s`;
-            flake.style.animationDelay = `${delay}s`;
-            
-            // Add subtle horizontal drift
-            flake.style.animationName = `fall, drift`;
-            flake.style.animationTimingFunction = 'linear, ease-in-out';
-            flake.style.animationIterationCount = 'infinite';
+            // FIX: Using the animation shorthand for combining the two keyframes
+            // fall {duration}s linear {delay}s infinite
+            // drift {driftDuration}s ease-in-out infinite alternate
+            flake.style.animation = `fall ${duration}s linear ${delay}s infinite, drift ${driftDuration}s ease-in-out infinite alternate`;
             
             container.appendChild(flake);
 
-            // Cleanup after a long time
-            setTimeout(() => { flake.remove(); }, duration * 1000 + 100);
+            // Cleanup after a long time (max fall time + some buffer)
+            setTimeout(() => { flake.remove(); }, 35000); 
         }
 
         // Generate a larger initial burst of snowflakes for density

@@ -4,582 +4,812 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Pennbrenn.com | About</title>
-  <meta name="description" content="The official website of Penn Brenn / William Villongco.">
-  <link rel="icon" type="image/png" href="Images/favicon96.png">
+  <meta name="description" content="The official website of Penn Brenn / William Villongco." />
+  <link rel="icon" type="image/png" href="Images/favicon96.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@600;700&display=swap"
-    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+
   <style>
     :root{
-      --bg-color:#071019;
-      --text-color:#e6eef2;
-      --accent:#25818e;
-      --glass-bg: rgba(10,14,18,0.55);
+      --bg-color:#0b1114;
+      --text-color:#e5e7eb;
+      --accent-color:#25818e;
+      --accent-hover:#1f6f7a;
+      --glass-bg: rgba(17,24,28,0.65);
       --glass-border: rgba(255,255,255,0.08);
       --font-main: 'Inter', sans-serif;
       --font-head: 'Poppins', sans-serif;
+      --gap: 24px; /* global spacing for even spacing */
     }
+
     /* reset */
     *{box-sizing:border-box;margin:0;padding:0}
-    html,body,#bgCanvasWrap{height:100%}
+    html,body{height:100%}
     body{
       font-family:var(--font-main);
       color:var(--text-color);
       background:var(--bg-color);
+      overflow-x:hidden;
       -webkit-font-smoothing:antialiased;
       -moz-osx-font-smoothing:grayscale;
-      overflow-x:hidden;
     }
 
-    /* background canvas container */
-    #bgCanvasWrap{
+    /* Night sky canvas (full-screen behind content) */
+    #sky {
       position:fixed;
       inset:0;
       z-index:0;
-      pointer-events:none; /* let clicks pass through except on stars (we will enable for them) */
+      pointer-events:none; /* canvas does not block clicks to UI elements */
     }
-    canvas{display:block;width:100%;height:100%}
 
-    /* page layout */
-    .page{
-      position:relative;
-      z-index:10;
-      max-width:1100px;
-      margin:0 auto;
-      padding:2rem 1rem 6rem;
+    /* shooting stars layer */
+    #stars-layer {
+      position:fixed;
+      inset:0;
+      z-index:5;
+      pointer-events:none;
     }
+
+    /* header */
     .site-header{
       position:sticky;
       top:0;
-      z-index:50;
+      z-index:40;
       backdrop-filter: blur(6px);
-      background: linear-gradient(180deg, rgba(6,10,12,0.6), rgba(6,10,12,0.35));
-      border-bottom:1px solid var(--glass-border);
+      background: rgba(11,11,11,0.55);
+      border-bottom: 1px solid var(--glass-border);
+      padding: 14px 0;
+    }
+    .header-content{
+      max-width:1100px;
+      margin:0 auto;
+      padding:0 20px;
       display:flex;
       align-items:center;
       justify-content:space-between;
-      padding:12px 18px;
+      gap:var(--gap);
     }
-    .brand{font-family:var(--font-head); font-weight:700; font-size:1.2rem}
-    .brand span{color:var(--accent)}
-    /* center music control */
+    .brand{
+      font-weight:700;
+      font-family:var(--font-head);
+      font-size:1.15rem;
+      color:var(--text-color);
+    }
+    .brand span{ color:var(--accent-color) }
+
+    /* centered play/pause in header */
     .header-controls{
+      position:relative;
       display:flex;
       align-items:center;
-      gap:10px;
       justify-content:center;
-      width:100%;
+      gap:12px;
     }
     .music-btn{
       display:flex;
       align-items:center;
       justify-content:center;
-      width:48px;
-      height:48px;
-      border-radius:12px;
+      width:44px;
+      height:44px;
+      border-radius:10px;
+      background:rgba(255,255,255,0.03);
       border:1px solid var(--glass-border);
-      background:rgba(255,255,255,0.02);
+      color:var(--text-color);
       cursor:pointer;
-      margin:0 12px;
     }
-    .music-btn:hover{transform:translateY(-3px);box-shadow:0 6px 18px rgba(0,0,0,0.6)}
+    .music-btn:hover{ background:var(--accent-hover); transform:translateY(-2px) }
 
-    /* main glass sections */
+    /* main container */
+    .container{
+      position:relative;
+      z-index:10;
+      max-width:1100px;
+      margin:36px auto;
+      padding:0 20px 80px 20px;
+      display:grid;
+      gap:var(--gap);
+    }
+
+    /* glass-panel consistent spacing */
     .glass-panel{
-      background:var(--glass-bg);
+      background: var(--glass-bg);
       border:1px solid var(--glass-border);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border-radius:12px;
-      padding:20px;
-      margin:20px 0;
+      border-radius:14px;
+      padding:22px;
+      backdrop-filter: blur(8px);
       box-shadow: 0 8px 30px rgba(0,0,0,0.45);
     }
 
-    h1,h2,h3{font-family:var(--font-head); color:#fff}
-    h1{font-size:2.2rem}
-    h2{font-size:1.4rem; color:var(--accent); border-bottom:2px solid rgba(37,129,142,0.12); padding-bottom:6px; display:inline-block}
+    h1,h2,h3{ font-family:var(--font-head); color:#fff; margin-bottom:12px }
+    h1{ font-size:2rem; line-height:1.15 }
+    h2{ font-size:1.4rem; border-bottom:2px solid var(--accent-color); display:inline-block; padding-bottom:6px }
 
+    /* hero layout */
     .hero-grid{
       display:grid;
-      grid-template-columns:1fr;
+      grid-template-columns: 1fr;
       gap:18px;
-    }
-    @media(min-width:800px){ .hero-grid{grid-template-columns: 2fr 1fr} }
-
-    .profile-pic{width:100%; max-width:300px; border:3px solid var(--accent); border-radius:10px; display:block; margin:0 auto}
-
-    .links-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px; margin-top:12px}
-    .site-card{
-      padding:12px;
-      border-radius:8px;
-      background:rgba(255,255,255,0.02);
-      border:1px solid rgba(255,255,255,0.03);
-      transition:transform .2s, box-shadow .2s;
-      font-weight:600;
-      text-decoration:none;
-      color:inherit;
-      display:flex;
-      gap:10px;
       align-items:center;
     }
-    .site-card:hover{transform:translateY(-6px); box-shadow:0 8px 22px rgba(37,129,142,0.12)}
-
-    .card-grid{display:grid; gap:16px}
-    @media(min-width:600px){ .card-grid{grid-template-columns:repeat(2,1fr)} }
-    .card{background:rgba(0,0,0,0.25); border-radius:10px; overflow:hidden}
-
-    /* modal for star facts */
-    .modal-backdrop{
-      position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:60;
-      background:rgba(0,0,0,0.6);
+    @media(min-width:880px){
+      .hero-grid{ grid-template-columns: 1fr 360px; gap:28px }
     }
+
+    .about-text p{ margin-bottom:10px; color:#dcdcdc; line-height:1.5 }
+
+    .profile-pic{
+      width:100%;
+      max-width:320px;
+      border-radius:12px;
+      border:3px solid var(--accent-color);
+      display:block;
+      margin:0 auto;
+    }
+
+    /* status bar */
+    .status-bar{
+      display:flex;
+      gap:14px;
+      flex-wrap:wrap;
+      margin:10px 0 14px 0;
+      font-size:0.95rem;
+      color:#d7d7d7;
+    }
+    .status-item{ display:flex; align-items:center; gap:8px }
+
+    /* links grid */
+    .links-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(140px,1fr));
+      gap:12px;
+      margin-top:12px;
+    }
+    .link-pill{
+      background: rgba(255,255,255,0.03);
+      padding:12px;
+      border-radius:10px;
+      border:1px solid transparent;
+      font-weight:600;
+      text-align:center;
+      transition:all .22s;
+      color:var(--text-color);
+    }
+    .link-pill:hover{
+      background:var(--accent-color);
+      transform:translateY(-4px);
+      border-color:rgba(255,255,255,0.06);
+    }
+
+    /* sites section (replacement of See Other Sites) */
+    .sites-list{ display:grid; gap:10px; margin-top:12px }
+    .site-item{
+      padding:12px;
+      border-radius:8px;
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      background: rgba(255,255,255,0.02);
+      border:1px solid rgba(255,255,255,0.02);
+    }
+    .site-item a{ color:var(--text-color); font-weight:700; text-decoration:none }
+    .site-item small{ color:#bfc9cc; font-size:0.9rem }
+
+    /* cards grid (games/pets) */
+    .card-grid{
+      display:grid;
+      gap:12px;
+      grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+    }
+    .card{
+      border-radius:10px;
+      overflow:hidden;
+      background:rgba(0,0,0,0.28);
+      border:1px solid rgba(255,255,255,0.03);
+    }
+    .card-img{ width:100%; height:160px; object-fit:cover; display:block }
+    .card-content{ padding:12px }
+    .card-title{ color:var(--accent-color); font-weight:700; margin-bottom:6px }
+    .card-details{ color:#cfcfcf; font-size:0.9rem }
+
+    /* hobbies layout */
+    .hobbies-flex{ display:flex; gap:22px; align-items:center; flex-wrap:wrap }
+    .hobby-list div{ margin-bottom:8px; padding-left:10px; border-left:3px solid var(--accent-color) }
+
+    /* footer */
+    footer{ text-align:center; color:#888; padding:36px 20px; font-size:0.85rem; }
+
+    /* modal popup (for star facts and voice play) */
     .modal{
-      background:linear-gradient(180deg, #071019, #09121a);
-      border:1px solid var(--glass-border);
-      padding:18px; border-radius:12px; max-width:420px; width:90%;
-      box-shadow:0 12px 40px rgba(0,0,0,0.6);
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:60;
+      background: rgba(0,0,0,0.6);
+      padding:20px;
     }
-    .modal h3{margin-bottom:8px}
-    .close-btn{display:inline-block;padding:6px 10px;border-radius:8px;background:rgba(255,255,255,0.03);cursor:pointer;margin-top:10px}
+    .modal.open{ display:flex }
+    .modal-card{
+      max-width:720px;
+      width:100%;
+      background:linear-gradient(180deg, rgba(20,24,28,0.96), rgba(14,16,18,0.98));
+      border-radius:12px;
+      padding:20px;
+      border:1px solid var(--glass-border);
+      box-shadow:0 14px 40px rgba(0,0,0,0.7);
+      color:var(--text-color);
+    }
+    .modal-close{
+      cursor:pointer;
+      font-weight:700;
+      color:#fff;
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.03);
+      padding:6px 10px;
+      border-radius:8px;
+      float:right;
+    }
 
-    /* hear my voice */
-    .voice-row{display:flex; gap:10px; align-items:center; margin-top:10px;}
-    .voice-row input[type="text"]{flex:1; padding:10px;border-radius:8px;border:1px solid var(--glass-border); background:rgba(255,255,255,0.01); color:var(--text-color)}
-    .voice-row button{padding:10px 14px;border-radius:8px;background:var(--accent); border:none;color:#fff; cursor:pointer}
+    /* shooting star elements (DOM) */
+    .shooting-star{
+      position:fixed;
+      z-index:30;
+      pointer-events:auto; /* allow click */
+      width:28px;
+      height:6px;
+      transform-origin:left center;
+      border-radius:3px;
+      background:linear-gradient(90deg, rgba(255,255,255,1), rgba(255,255,255,0.1));
+      box-shadow: 0 0 8px rgba(255,255,255,0.9), 0 0 20px rgba(37,129,142,0.08);
+      cursor:pointer;
+      opacity:0;
+      transition:opacity .2s;
+    }
 
-    /* small helpers */
-    .muted{opacity:0.75; font-size:0.95rem}
-    footer{margin-top:40px;text-align:center;color:#9aa6ac;font-size:0.9rem}
-    a.external{opacity:0.95}
-    .for-business{background:linear-gradient(90deg, rgba(37,129,142,0.06), rgba(37,129,142,0.02)); padding:14px; border-radius:8px}
+    /* small helper */
+    .muted { color:#bfc9cc; font-size:0.95rem }
+
+    /* form (Hear My Voice) */
+    .voice-form{ display:flex; gap:8px; align-items:center; margin-top:12px }
+    .voice-input{
+      flex:1;
+      padding:10px;
+      border-radius:8px;
+      background:rgba(255,255,255,0.03);
+      border:1px solid rgba(255,255,255,0.03);
+      color:var(--text-color);
+      outline:none;
+    }
+    .voice-submit{
+      padding:10px 12px;
+      border-radius:8px;
+      background:var(--accent-color);
+      color:#fff;
+      border:none;
+      cursor:pointer;
+    }
+    .voice-submit[disabled]{ opacity:0.6; cursor:not-allowed }
+
+    /* ensure links keep same color as accent for anchors inside content if intended */
+    a { color: inherit; text-decoration:none }
+    .accent-link { color:var(--accent-color); font-weight:700 }
+
   </style>
 </head>
 <body>
-  <!-- BACKGROUND CANVAS -->
-  <div id="bgCanvasWrap">
-    <canvas id="bgCanvas"></canvas>
-  </div>
 
-  <!-- PAGE -->
+  <!-- sky canvas (aurora) -->
+  <canvas id="sky"></canvas>
+
+  <!-- stars layer for DOM shooting stars (clickable) -->
+  <div id="stars-layer"></div>
+
+  <!-- header -->
   <header class="site-header">
-    <div style="display:flex;gap:12px;align-items:center">
-      <a class="brand" href="/"> <span>P</span>enn<span>B</span>renn<small style="font-size:0.7rem; margin-left:6px">.com</small></a>
-      <nav style="display:flex;gap:10px;align-items:center">
-        <a href="#sites" style="font-size:0.9rem; text-decoration:underline; color:inherit">Sites</a>
-      </nav>
-    </div>
+    <div class="header-content">
+      <a class="brand" href="./"> <span>P</span>enn<span>B</span>renn<small>.com</small></a>
 
-    <div class="header-controls" aria-hidden="false">
-      <button id="musicToggle" class="music-btn" title="Play / Pause background music" aria-label="Toggle background music">▶</button>
-    </div>
-
-    <div style="width:140px; text-align:right; font-size:0.9rem; opacity:0.95">
-      <a href="mailto:william@pennbrenn.com" style="color:inherit">Contact</a>
+      <div class="header-controls">
+        <button id="bg-music-toggle" class="music-btn" aria-label="Play background music">▶</button>
+        <!-- header small nav -->
+        <nav style="display:flex; gap:12px; align-items:center;">
+          <a href="#sites" class="link-pill" style="padding:8px 12px; font-size:0.92rem; background:transparent; border-radius:8px">Sites</a>
+          <a href="#hear" class="link-pill" style="padding:8px 12px; font-size:0.92rem; background:transparent; border-radius:8px">Hear My Voice</a>
+        </nav>
+      </div>
     </div>
   </header>
 
-  <main class="page">
+  <!-- background audio (hidden control) -->
+  <audio id="bg-music" loop preload="auto">
+    <!-- put your background music file in /Audio/bg-music.mp3 -->
+    <source src="/Audio/bg-music.mp3" type="audio/mpeg">
+  </audio>
+
+  <main class="container">
+
     <!-- HERO -->
-    <section class="glass-panel">
+    <section class="glass-panel" aria-labelledby="hero-title">
       <div class="hero-grid">
         <div>
-          <h1><span id="typewriter-word">Im Penn</span><span id="cursor" style="margin-left:6px">|</span></h1>
-          <div style="margin-top:10px" class="muted">🇺🇸🏳️‍🌈 he/him — public profile</div>
+          <h1 id="hero-title"><span id="typewriter-word">Im Penn</span><span class="typewriter-cursor">|</span></h1>
 
-          <div style="margin-top:12px" class="muted status-bar">
-            <div style="margin-right:12px">It is <span id="laTime">Loading...</span> (PST)</div>
-            <div>There are <span id="days" style="color:var(--accent); font-weight:700">0</span> days until my birthday</div>
+          <div class="status-bar">
+            <div class="status-item">It is <strong id="laTime">Loading...</strong> where I am</div>
+            <div class="status-item">There are <strong id="days" class="muted">0</strong> days until my birthday</div>
+            <div class="status-item muted">he/him • public profile</div>
           </div>
 
-          <p style="margin-top:12px">Hiiii im penn — the name has no relation to historical figures. I keep geckos and lizards,
-            enjoy starting projects and sometimes finishing them. I play airsoft, run a few businesses occasionally,
-            and tinker with cameras and planes. I like making things and being silly.</p>
+          <article class="about-text">
+            <p><b>PUBLIC PROFILE</b></p>
+            <p><small>Specific information is not revealed openly.</small></p>
+            <p>Hiiii i’m Penn — the name has no relation to any historical figures. First website I actually coded (minus a little AI :3). I keep lizards and geckos, start new projects, and enjoy making things. I build, I game, I run businesses sometimes. I want to start an ultralight aircraft business someday.</p>
+            <p><b>Taken</b></p>
+          </article>
         </div>
 
         <div style="text-align:center">
           <img src="Images/me.jpg" alt="Penn/William Profile" class="profile-pic">
-          <div class="muted" style="margin-top:8px">Profile — put a high-res face/portrait here</div>
+          <div class="muted" style="margin-top:10px">Profile</div>
         </div>
       </div>
     </section>
 
-    <!-- SITES -->
-    <section id="sites" class="glass-panel">
-      <h2>Sites</h2>
-      <p class="muted">A curated list of my domains — grouped by category.</p>
-
-      <div style="margin-top:12px">
-        <h3 style="font-size:1rem; margin-bottom:6px">Professional “Stuff”</h3>
-        <div class="links-grid">
-          <a class="site-card external" href="https://cam.pennbrenn.com" target="_blank" rel="noreferrer">
-            <div>📸</div>
-            <div>
-              <div>penncamm</div>
-              <div class="muted" style="font-size:0.85rem">Live camera</div>
-            </div>
-          </a>
-
-          <a class="site-card external" href="https://www.pennbrenn.com" target="_blank" rel="noreferrer">
-            <div>🧾</div>
-            <div>
-              <div>about me</div>
-              <div class="muted">Main site</div>
-            </div>
-          </a>
-        </div>
+    <!-- LINKS -->
+    <section class="glass-panel" id="links" aria-labelledby="links-title">
+      <h2 id="links-title">Linky Links</h2>
+      <div class="links-grid">
+        <a href="#sites" class="link-pill" style="background:var(--accent-color);">My Websites</a>
+        <a class="link-pill" href="https://drive.google.com/drive/folders/1xdJv-bT4wKyydjSxMpCK-iUGIhIML98O?usp=sharing">Drive</a>
+        <a class="link-pill" href="https://discord.com/users/973736168011231233">Discord</a>
+        <a class="link-pill" href="https://www.instagram.com/penn_brenn/">Instagram</a>
+        <a class="link-pill" href="https://www.youtube.com/@PennBrenn">YouTube</a>
+        <a class="link-pill" href="https://www.twitch.tv/pennbrenn">Twitch</a>
+        <a class="link-pill" href="https://www.tiktok.com/@pennbrenn?lang=en">TikTok</a>
+        <a class="link-pill" href="https://github.com/PennBrenn">Github</a>
+        <a class="link-pill" href="https://steamcommunity.com/id/Pennnnnnnnnnnnn/">Steam</a>
       </div>
 
-      <div style="margin-top:14px">
-        <h3 style="font-size:1rem; margin-bottom:6px">Game “Stuff”</h3>
-        <div class="links-grid">
-          <a class="site-card external" href="https://play.pennbrenn.com" target="_blank" rel="noreferrer">
-            <div>🎮</div>
-            <div><div>that game</div><div class="muted">one person has a different question</div></div>
-          </a>
-          <a class="site-card external" href="https://play.bbcjustice.top" target="_blank" rel="noreferrer">
-            <div>🕹️</div>
-            <div><div>bbcjustice</div><div class="muted">play</div></div>
-          </a>
-          <a class="site-card external" href="https://sam.pennbrenn.com" target="_blank" rel="noreferrer">
-            <div>🌾</div>
-            <div><div>sams aura farm simulator 2025</div><div class="muted">sam stuff</div></div>
-          </a>
-        </div>
+      <div class="contact-row" style="margin-top:16px; display:flex; gap:12px; align-items:center;">
+        <a href="mailto:william@pennbrenn.com" class="link-pill" style="flex:1;">Work Email • w@pennbrenn.com</a>
+        <a href="tel:+15550000000" class="link-pill" style="flex:1;">Work Phone • +1 (805) 410-4273</a>
       </div>
+    </section>
 
-      <div style="margin-top:14px">
-        <h3 style="font-size:1rem; margin-bottom:6px">Old “Stuff”</h3>
-        <div class="links-grid">
-          <a class="site-card external" href="https://moveon.pennbrenn.com/" target="_blank" rel="noreferrer">
-            <div>📦</div><div><div>move on lol</div><div class="muted">archive</div></div>
-          </a>
-          <a class="site-card external" href="https://2guys1mic.top" target="_blank" rel="noreferrer">
-            <div>🎙️</div><div><div>2g1m</div><div class="muted">old mic days</div></div>
-          </a>
-          <a class="site-card external" href="#" title="Missing / old games" aria-disabled="true">
-            <div>❓</div><div><div>old games</div><div class="muted">missing</div></div>
-          </a>
+    <!-- SITES (NEW section replacing See Other Sites) -->
+    <section class="glass-panel" id="sites" aria-labelledby="sites-title">
+      <h2 id="sites-title">Sites</h2>
+      <div class="sites-list">
+        <!-- Professional "Stuff" -->
+        <div class="site-item">
+          <div>
+            <div style="font-weight:800">Professional "Stuff"</div>
+            <small class="muted">penncamm</small>
+          </div>
+          <div><a href="https://cam.pennbrenn.com" target="_blank" rel="noopener">cam.pennbrenn.com</a></div>
+        </div>
+
+        <div class="site-item">
+          <div>
+            <div style="font-weight:800">about me</div>
+            <small class="muted">personal site</small>
+          </div>
+          <div><a href="https://www.pennbrenn.com" target="_blank" rel="noopener">pennbrenn.com</a></div>
+        </div>
+
+        <!-- Game "Stuff" -->
+        <div class="site-item">
+          <div>
+            <div style="font-weight:800">Game "Stuff"</div>
+            <small class="muted">that game where one person has a different question</small>
+          </div>
+          <div><a href="https://play.pennbrenn.com" target="_blank" rel="noopener">play.pennbrenn.com</a></div>
+        </div>
+
+        <div class="site-item">
+          <div>
+            <div style="font-weight:800">bbcjustice</div>
+            <small class="muted">multiplayer</small>
+          </div>
+          <div><a href="https://play.bbcjustice.top" target="_blank" rel="noopener">play.bbcjustice.top</a></div>
+        </div>
+
+        <div class="site-item">
+          <div>
+            <div style="font-weight:800">sam's aura farm simulator 2025</div>
+            <small class="muted">sam aura farm</small>
+          </div>
+          <div><a href="https://sam.pennbrenn.com" target="_blank" rel="noopener">sam.pennbrenn.com</a></div>
+        </div>
+
+        <!-- Old "Stuff" -->
+        <div class="site-item">
+          <div>
+            <div style="font-weight:800">Old "Stuff"</div>
+            <small class="muted">move on lol</small>
+          </div>
+          <div><a href="https://moveon.pennbrenn.com/" target="_blank" rel="noopener">moveon.pennbrenn.com</a></div>
+        </div>
+
+        <div class="site-item">
+          <div>
+            <div style="font-weight:800">2g1m</div>
+            <small class="muted">legacy</small>
+          </div>
+          <div><a href="https://2guys1mic.top" target="_blank" rel="noopener">2guys1mic.top</a></div>
+        </div>
+
+        <div class="site-item">
+          <div>
+            <div style="font-weight:800">old games</div>
+            <small class="muted">missing / archived</small>
+          </div>
+          <div><span class="muted">./missing</span></div>
         </div>
       </div>
     </section>
 
-    <!-- Hear my voice -->
-    <section class="glass-panel">
-      <h2>Hear My Voice</h2>
-      <p class="muted">Type up to 100 characters, click play — audio is generated by ElevenLabs using the <em>william</em> voice.</p>
-
-      <div class="voice-row">
-        <input type="text" id="ttsText" placeholder="Write something (<=100 chars)" maxlength="100" />
-        <button id="ttsSubmit">Speak</button>
-        <div id="ttsStatus" class="muted" style="margin-left:8px">idle</div>
-      </div>
-
-      <audio id="ttsPlayback" controls style="width:100%; margin-top:12px; display:none"></audio>
-      <div class="muted" style="margin-top:8px">Note: The serverless function calls ElevenLabs and returns MP3 for playback. API key is stored server-side only.</div>
-    </section>
-
-    <!-- Games, Pets, Hobbies (collapsed for brevity but kept) -->
-    <section class="glass-panel">
-      <h2>My Fav Games</h2>
+    <!-- Fav Games (kept but spacing improved) -->
+    <section class="glass-panel" aria-labelledby="games-title">
+      <h2 id="games-title">My Fav Games</h2>
       <div class="card-grid">
         <div class="card">
-          <div style="padding:12px">
-            <a class="card-title external" href="https://store.steampowered.com/app/573090/Stormworks_Build_and_Rescue/" target="_blank">#1 Stormworks</a>
-            <div class="muted">Build anything simulator</div>
+          <img src="Images/storm1.jpg" alt="Stormworks" class="card-img">
+          <div class="card-content">
+            <a class="card-title" href="https://store.steampowered.com/app/573090/Stormworks_Build_and_Rescue/">#1 Stormworks</a>
+            <p class="card-details">Build anything simulator</p>
           </div>
         </div>
         <div class="card">
-          <div style="padding:12px">
-            <a class="card-title external" href="https://robertsspaceindustries.com/en/" target="_blank">#2 Star Citizen</a>
-            <div class="muted">Do whatever simulator</div>
+          <img src="Images/star1.jpg" alt="Star Citizen" class="card-img">
+          <div class="card-content">
+            <a class="card-title" href="https://robertsspaceindustries.com/en/">#2 Star Citizen</a>
+            <p class="card-details">Do whatever simulator</p>
+          </div>
+        </div>
+        <div class="card">
+          <img src="Images/people.jpg" alt="People Playground" class="card-img">
+          <div class="card-content">
+            <a class="card-title" href="https://store.steampowered.com/app/1118200/People_Playground/">#3 People Playground</a>
+            <p class="card-details">War crime simulator</p>
+          </div>
+        </div>
+        <div class="card">
+          <img src="Images/liero1.jpg" alt="Liero" class="card-img">
+          <div class="card-content">
+            <a class="card-title" href="https://www.liero.be/">#4 Liero</a>
+            <p class="card-details">1v1 simulator</p>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="glass-panel for-business">
-      <h2>For Business</h2>
-      <p class="muted">Sample info (edit later): Graduated high school. Available for freelance work, consulting, and collaborations. Email: william@pennbrenn.com</p>
-      <p style="margin-top:8px">Services: web dev, game dev, systems tinkering, voice demo work.</p>
+    <!-- Hear My Voice: TTS frontend -->
+    <section class="glass-panel" id="hear" aria-labelledby="hear-title">
+      <h2 id="hear-title">Hear My Voice</h2>
+      <p class="muted">Type up to 100 characters, click submit — audio will be generated using the "william" voice.</p>
+
+      <div style="margin-top:10px;">
+        <form id="voice-form" class="voice-form" onsubmit="return false;">
+          <input id="voice-text" class="voice-input" maxlength="100" placeholder="Type something (≤100 chars)" />
+          <button id="voice-submit" class="voice-submit">Submit</button>
+        </form>
+
+        <div id="voice-status" style="margin-top:10px" class="muted"></div>
+
+        <audio id="voice-player" controls style="width:100%; margin-top:10px; display:none"></audio>
+      </div>
     </section>
 
-    <section class="glass-panel">
-      <h2>Misc / Hobbies</h2>
-      <div class="muted">Airsoft, 3D printing, sailing, pets (geckos, cat), making gadgets, being cute.</div>
+    <!-- For business section -->
+    <section class="glass-panel" id="business" aria-labelledby="biz-title">
+      <h2 id="biz-title">For Business</h2>
+      <p class="muted">Sample info — edit as needed.</p>
+      <ul style="margin-top:12px; color:#dcdcdc; line-height:1.6">
+        <li>Graduated HS — (edit this later)</li>
+        <li>Available for freelance & contract work (camera / web / creative)</li>
+        <li>Contact: william@pennbrenn.com</li>
+      </ul>
     </section>
 
-    <footer>
-      <p>&copy; 2025 Penn Brenn. All rights reserved.</p>
-    </footer>
+    <!-- Hobbies & Pets (kept) -->
+    <section class="glass-panel" aria-labelledby="hobbies-title">
+      <h2 id="hobbies-title">Hobbies</h2>
+      <div class="hobbies-flex">
+        <div class="hobby-list">
+          <div>‣ Airsoft</div>
+          <div>‣ Petting cat</div>
+          <div>‣ Gaming</div>
+          <div>‣ Sailing</div>
+          <div>‣ 3d printing</div>
+          <div>‣ Making things</div>
+          <div>‣ Development</div>
+          <div>‣ Being cute</div>
+        </div>
+        <div>
+          <img src="Images/printer.jpg" alt="3D Printer" style="max-width:300px; border-radius:8px">
+        </div>
+      </div>
+    </section>
+
   </main>
 
-  <!-- Modal container (for star facts) -->
-  <div id="modalRoot" style="display:none"></div>
+  <footer>
+    <p>&copy; 2025 Penn Brenn. All rights reserved.</p>
+  </footer>
 
-  <!-- Background audio element (music) -->
-  <audio id="bgMusic" loop preload="none" src="Audio/bg-music.mp3"></audio>
+  <!-- modal used for star facts -->
+  <div id="star-modal" class="modal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-card">
+      <button class="modal-close" id="modal-close">Close</button>
+      <div id="star-modal-content" style="margin-top:6px; color:#dcdcdc"></div>
+    </div>
+  </div>
 
-  <script>
-    // ---------- SMALL UI LOGIC ----------
-    // Time + birthday
-    function showLATime(){ const opts={timeZone:'America/Los_Angeles', hour:'numeric', minute:'numeric', second:'numeric', hour12:true}; document.getElementById('laTime').textContent = new Date().toLocaleTimeString('en-US',opts); }
-    setInterval(showLATime,1000); showLATime();
+<script>
+/* -------------------------
+  1) Time & birthday & typewriter
+--------------------------*/
+function showLATime() {
+  const options = { timeZone: 'America/Los_Angeles', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true };
+  document.getElementById('laTime').textContent = new Date().toLocaleTimeString('en-US', options);
+}
+setInterval(showLATime, 1000);
+showLATime();
 
-    (function typewriter(){
-      const words=["Im Penn","Im William"]; let i=0; let j=0; let dir=1;
-      const el=document.getElementById('typewriter-word'); const cursor=document.getElementById('cursor');
-      function step(){
-        el.textContent = words[i].slice(0,j);
-        j += dir;
-        if(j > words[i].length){ dir=-1; setTimeout(step,1800); return }
-        if(j < 0){ dir=1; i=(i+1)%words.length; j=0; }
-        setTimeout(step, dir>0?80:30);
-      } step();
-      setInterval(()=>cursor.style.opacity = cursor.style.opacity==='0' ? '1' : '0',500);
-    })();
+function calculateDays() {
+  const today = new Date();
+  // birthday on Nov 17 (month 10)
+  let target = new Date(today.getFullYear(), 10, 17);
+  if (today > target) target.setFullYear(today.getFullYear() + 1);
+  const diff = Math.ceil((target - today) / (1000*60*60*24));
+  document.getElementById('days').textContent = diff;
+}
+calculateDays();
 
-    // Days until birthday (Nov 17)
-    (function daysUntil(){
-      const el=document.getElementById('days');
-      function calc(){ const today=new Date(); let target=new Date(today.getFullYear(),10,17); if(today>target) target.setFullYear(target.getFullYear()+1); const diff=Math.ceil((target - today)/(1000*60*60*24)); el.textContent = diff; }
-      calc(); setInterval(calc, 1000*60*60);
-    })();
+/* typewriter */
+(function(){
+  const words = ["Im Penn","Im William"];
+  const el = document.getElementById('typewriter-word');
+  const typeSpeed = 100, eraseSpeed = 50, hold = 1600;
+  let i=0, j=0, dir=1;
+  function tick(){
+    el.textContent = words[i].slice(0,j);
+    if(dir===1){
+      if(j<words[i].length) { j++; setTimeout(tick,typeSpeed); }
+      else { dir=-1; setTimeout(tick,hold); }
+    } else {
+      if(j>0){ j--; setTimeout(tick,eraseSpeed); }
+      else { dir=1; i=(i+1)%words.length; setTimeout(tick,150); }
+    }
+  }
+  tick();
+})();
 
-    // ---------- BACKGROUND: NIGHT SKY + AURORA + SHOOTING STARS ----------
-    // Basic canvas animation creating subtle aurora bands and occasional shooting stars.
-    (function background(){
-      const canvas = document.getElementById('bgCanvas');
-      const ctx = canvas.getContext('2d');
-      let W = canvas.width = window.innerWidth;
-      let H = canvas.height = window.innerHeight;
+/* -------------------------
+  2) Background music (header) control
+--------------------------*/
+const bgMusic = document.getElementById('bg-music');
+const musicBtn = document.getElementById('bg-music-toggle');
 
-      window.addEventListener('resize', ()=>{ W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; });
+musicBtn.addEventListener('click', () => {
+  if(bgMusic.paused){
+    bgMusic.play().catch(()=>{ /* autoplay may be blocked */ });
+    musicBtn.textContent = '❚❚';
+  } else {
+    bgMusic.pause();
+    musicBtn.textContent = '▶';
+  }
+});
 
-      // aurora bands parameters
-      const bands = [];
-      for(let i=0;i<3;i++){
-        bands.push({
-          y: H * (0.2 + i*0.2),
-          amplitude: 80 + Math.random()*140,
-          speed: 0.0008 + Math.random()*0.0012,
-          hue: 160 + i*20, // green-teal
-          phase: Math.random()*Math.PI*2
-        });
-      }
+/* -------------------------
+  3) Shooting stars (DOM elements), clickable, with popup facts
+--------------------------*/
+const starsLayer = document.getElementById('stars-layer');
+const starModal = document.getElementById('star-modal');
+const modalContent = document.getElementById('star-modal-content');
+const modalClose = document.getElementById('modal-close');
 
-      // shooting stars store
-      const stars = [];
+const facts = [
+  "I keep mourning geckos and eyelash crested geckos.",
+  "I run an HPA GBB Kriss Vector for airsoft.",
+  "I want to start an ultralight aircraft business someday.",
+  "I love 3D printing and building small projects.",
+  "I started many businesses — sell me a camera pls."
+];
 
-      // create a shooting star periodically
-      function spawnStar(){
-        const startY = Math.random() * H * 0.5; // upper half
-        const startX = Math.random() < 0.5 ? -50 : W + 50;
-        const dir = startX < 0 ? 1 : -1;
-        const length = 140 + Math.random()*160;
-        const speed = 3 + Math.random()*3;
-        const size = 3 + Math.random()*3;
-        const id = Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+function random(min,max){ return Math.random()*(max-min)+min; }
 
-        // each star carries a hitbox for clicks (we'll expose it)
-        const star = { id, x: startX, y: startY, vx: speed*dir, vy: 0.2*(Math.random()-0.5)*speed, length, size, life: 0, dir };
-        star.clickable = true;
-        stars.push(star);
+function spawnShootingStar(){
+  const star = document.createElement('div');
+  star.className = 'shooting-star';
+  // random start near left or right edges, random top position
+  const side = Math.random() > 0.5 ? 'left' : 'right';
+  const top = random(8,85); // percent
+  const length = random(140,340); // px travel length
+  const angle = side === 'left' ? random(-5,12) : random(168,175); // degrees; mostly horizontal
+  // starting off-screen
+  const startX = side === 'left' ? -60 : window.innerWidth + 60;
+  star.style.top = top + 'vh';
+  star.style.left = startX + 'px';
+  star.style.width = '28px';
+  star.style.transform = `rotate(${angle}deg)`;
+  star.style.opacity = '1';
+  star.style.pointerEvents = 'auto';
+  // add click handler (open modal with random fact)
+  star.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    const fact = facts[Math.floor(Math.random()*facts.length)];
+    modalContent.textContent = fact;
+    starModal.classList.add('open');
+    starModal.setAttribute('aria-hidden','false');
+  });
 
-        // automatically remove after some time
-        setTimeout(()=>{ const idx = stars.findIndex(s=>s.id===id); if(idx>-1) stars.splice(idx,1); }, 8000 + Math.random()*4000);
-      }
+  starsLayer.appendChild(star);
 
-      // spawn a star every 3-7 seconds
-      setInterval(spawnStar, 3500 + Math.random()*3500);
+  // animate using CSS transitions/JS
+  const duration = random(5500,9500);
+  // compute final pos
+  const travelX = side === 'left' ? length + window.innerWidth : -length - window.innerWidth;
+  // use requestAnimationFrame to allow layout first
+  requestAnimationFrame(()=>{
+    star.style.transition = `transform ${duration}ms linear, left ${duration}ms linear, opacity 700ms`;
+    const finalLeft = side === 'left' ? window.innerWidth + 80 : -80;
+    star.style.left = finalLeft + 'px';
+    // fade out near end
+    setTimeout(()=> star.style.opacity = '0', duration - 900);
+  });
 
-      // array of personal facts for star popups
-      const starFacts = [
-        "I keep mourning geckos and crested geckos.",
-        "I run a HPA GBB Kriss Vector for airsoft.",
-        "I once tried building an ultralight aircraft.",
-        "I make things with a 3D printer.",
-        "I have a cat named Trick.",
-        "I enjoy sailing and building gadgets.",
-        "I like starting projects and sometimes finishing them :)"
-      ];
+  // remove after animation
+  setTimeout(()=> { if(star.parentElement) star.parentNode.removeChild(star); }, duration + 50);
+}
 
-      // handle clicks on canvas: detect stars with a forgiving hitbox
-      const canvasNode = canvas;
-      canvasNode.style.pointerEvents = 'auto';
-      canvasNode.addEventListener('click', function(e){
-        const rect = canvasNode.getBoundingClientRect();
-        const mx = e.clientX - rect.left;
-        const my = e.clientY - rect.top;
-        // find star within hit radius
-        for(let s of stars){
-          const sx = s.x + (s.dir === -1 ? -s.length/2 : s.length/2);
-          const sy = s.y;
-          const dx = mx - sx;
-          const dy = my - sy;
-          const dist = Math.sqrt(dx*dx + dy*dy);
-          if(dist < Math.max(24, s.size*8)){ // forgiving hitbox
-            // show popup with random fact
-            showStarFact(starFacts[Math.floor(Math.random()*starFacts.length)], e.clientX, e.clientY);
-            break;
-          }
-        }
-      });
+// spawn regularly, but slowly
+setInterval(()=>{
+  if(Math.random() < 0.45) spawnShootingStar();
+}, 1600);
 
-      // popup modal generator
-      function showStarFact(text, cx, cy){
-        const root = document.getElementById('modalRoot');
-        root.innerHTML = '';
-        const backdrop = document.createElement('div');
-        backdrop.className = 'modal-backdrop';
-        backdrop.style.pointerEvents = 'auto';
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        modal.innerHTML = `<h3>Random Fact</h3><div style="margin-top:6px">${text}</div>`;
-        const close = document.createElement('div');
-        close.className = 'close-btn';
-        close.textContent = 'Close';
-        close.onclick = ()=>{ root.style.display = 'none'; root.innerHTML = ''; };
-        modal.appendChild(close);
-        backdrop.appendChild(modal);
-        root.appendChild(backdrop);
-        root.style.display = 'block';
-      }
+// modal close
+modalClose.addEventListener('click', ()=> {
+  starModal.classList.remove('open');
+  starModal.setAttribute('aria-hidden','true');
+});
 
-      // draw loop
-      let t0 = performance.now();
-      function draw(now){
-        const dt = (now - t0)/1000;
-        t0 = now;
-        ctx.clearRect(0,0,W,H);
+/* close modal when backdrop clicked */
+starModal.addEventListener('click', (e) => {
+  if(e.target === starModal) { starModal.classList.remove('open'); starModal.setAttribute('aria-hidden','true'); }
+});
 
-        // draw night sky gradient
-        const g = ctx.createLinearGradient(0,0,0,H);
-        g.addColorStop(0, '#021018');
-        g.addColorStop(0.6, '#041622');
-        g.addColorStop(1, '#03111a');
-        ctx.fillStyle = g;
-        ctx.fillRect(0,0,W,H);
+/* -------------------------
+  4) Hear My Voice (ElevenLabs) — frontend
+--------------------------*/
+const voiceForm = document.getElementById('voice-form');
+const voiceInput = document.getElementById('voice-text');
+const voiceSubmit = document.getElementById('voice-submit');
+const voiceStatus = document.getElementById('voice-status');
+const voicePlayer = document.getElementById('voice-player');
 
-        // draw faint distant stars
-        ctx.save();
-        for(let i=0;i<120;i++){
-          const x = (i*47 + (now*0.00012*i))%W;
-          const y = ((i*73) % H);
-          const r = (Math.sin((i+now*0.0003)) + 1.2) * 0.6;
-          ctx.globalAlpha = 0.55 * Math.random();
-          ctx.fillStyle = '#fff';
-          ctx.beginPath();
-          ctx.arc(x, y, r*0.6, 0, Math.PI*2);
-          ctx.fill();
-        }
-        ctx.restore();
+voiceForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const val = voiceInput.value.trim();
+  if(!val){ voiceStatus.textContent = 'Type something to generate audio (≤100 chars).'; return; }
+  voiceSubmit.disabled = true;
+  voiceStatus.textContent = 'Generating...';
 
-        // draw aurora bands (soft blurred)
-        bands.forEach((b, idx)=>{
-          b.phase += b.speed * dt * 60;
-          const grd = ctx.createLinearGradient(0, b.y - b.amplitude, 0, b.y + b.amplitude*1.2);
-          const hue = b.hue;
-          grd.addColorStop(0, `hsla(${hue},70%,55%,0)`);
-          grd.addColorStop(0.2, `hsla(${hue},60%,50%,0.06)`);
-          grd.addColorStop(0.5, `hsla(${hue},60%,50%,0.12)`);
-          grd.addColorStop(0.8, `hsla(${hue+30},70%,55%,0.06)`);
-          grd.addColorStop(1, `hsla(${hue+50},80%,60%,0)`);
-          ctx.fillStyle = grd;
-          // draw a wavy ribbon
-          ctx.beginPath();
-          const step = Math.max(3, Math.floor(W/120));
-          ctx.moveTo(0, b.y);
-          for(let x=0;x<=W;x+=step){
-            const y = b.y + Math.sin((x*0.004) + b.phase) * (b.amplitude * Math.sin((now*0.0002)+idx));
-            ctx.lineTo(x, y);
-          }
-          ctx.lineTo(W, H);
-          ctx.lineTo(0, H);
-          ctx.closePath();
-          ctx.fill();
-        });
-
-        // update & draw shooting stars
-        for(let i=stars.length-1;i>=0;i--){
-          const s = stars[i];
-          s.x += s.vx;
-          s.y += s.vy;
-          s.life += dt;
-          // draw tail
-          ctx.save();
-          ctx.globalAlpha = Math.max(0, 1 - s.life*0.12);
-          const grad = ctx.createLinearGradient(s.x, s.y, s.x - s.vx*10, s.y - s.vy*10);
-          grad.addColorStop(0, 'rgba(255,255,255,1)');
-          grad.addColorStop(1, 'rgba(255,255,255,0)');
-          ctx.strokeStyle = grad;
-          ctx.lineWidth = s.size;
-          ctx.beginPath();
-          ctx.moveTo(s.x, s.y);
-          ctx.lineTo(s.x - s.vx* (s.length/10), s.y - s.vy*(s.length/10));
-          ctx.stroke();
-          // head
-          ctx.beginPath();
-          ctx.fillStyle = 'white';
-          ctx.arc(s.x, s.y, Math.max(1, s.size/1.2), 0, Math.PI*2);
-          ctx.fill();
-          ctx.restore();
-          // remove if out of bounds
-          if(s.x < -200 || s.x > W + 200 || s.life > 8) { stars.splice(i,1); }
-        }
-
-        requestAnimationFrame(draw);
-      }
-      requestAnimationFrame(draw);
-    })();
-
-    // ---------- BACKGROUND MUSIC TOGGLE ----------
-    const bgAudio = document.getElementById('bgMusic');
-    const musicBtn = document.getElementById('musicToggle');
-    musicBtn.addEventListener('click', async ()=>{
-      try{
-        if(bgAudio.paused){
-          await bgAudio.play();
-          musicBtn.textContent = '⏸';
-        } else {
-          bgAudio.pause();
-          musicBtn.textContent = '▶';
-        }
-      } catch(e){ console.warn('Autoplay prevented', e); musicBtn.textContent = '▶'; }
+  try {
+    // send to our serverless function
+    const res = await fetch('/api/elevenlabs-tts', {
+      method:'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ text: val })
     });
 
-    // ---------- TTS: front-end talk to /api/tts ----------
-    document.getElementById('ttsSubmit').addEventListener('click', async ()=>{
-      const text = document.getElementById('ttsText').value.trim();
-      const status = document.getElementById('ttsStatus');
-      const playback = document.getElementById('ttsPlayback');
-      if(!text){ status.textContent = 'Write something first'; return; }
-      status.textContent = 'Generating...';
-      playback.style.display = 'none';
-      try{
-        const resp = await fetch('/api/tts', {
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ text })
-        });
-        if(!resp.ok){
-          const err = await resp.text();
-          status.textContent = 'Error: ' + (err || resp.status);
-          return;
-        }
-        const blob = await resp.blob();
-        const url = URL.createObjectURL(blob);
-        playback.src = url;
-        playback.style.display = 'block';
-        playback.play();
-        status.textContent = 'Playing';
-      } catch(err){ console.error(err); status.textContent = 'Network error'; }
-    });
+    if(!res.ok) {
+      const err = await res.text();
+      voiceStatus.textContent = 'Error: ' + (err || res.statusText);
+      voiceSubmit.disabled = false;
+      return;
+    }
 
-    // small accessibility: press Enter in input to submit
-    document.getElementById('ttsText').addEventListener('keydown', function(e){ if(e.key === 'Enter'){ document.getElementById('ttsSubmit').click(); }});
-  </script>
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    voicePlayer.src = url;
+    voicePlayer.style.display = 'block';
+    voicePlayer.play().catch(()=>{});
+    voiceStatus.textContent = 'Generated — playing below.';
+  } catch(err){
+    voiceStatus.textContent = 'Network error generating audio.';
+  } finally {
+    voiceSubmit.disabled = false;
+  }
+});
+
+/* -------------------------
+  5) Aurora rendering (canvas)
+  - simple animated layered sin waves and blurred gradient to suggest northern lights.
+--------------------------*/
+const canvas = document.getElementById('sky');
+const ctx = canvas.getContext('2d');
+
+let W = canvas.width = window.innerWidth;
+let H = canvas.height = window.innerHeight;
+
+function onResize(){
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', onResize);
+
+function drawAurora(t){
+  ctx.clearRect(0,0,W,H);
+
+  // dark starfield (subtle) — tiny points
+  ctx.fillStyle = '#071014';
+  ctx.fillRect(0,0,W,H);
+
+  // stars
+  for(let i=0;i<120;i++){
+    const x = (i*37 + Math.sin(t/5000+i)*80) % W;
+    const y = (i*73 + Math.cos(t/3000+i)*40) % (H*0.7);
+    const r = ((i*7)%3)+0.3;
+    ctx.fillStyle = 'rgba(255,255,255,' + (0.05 + (i%7)/70) + ')';
+    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+  }
+
+  // aurora layers — 3 layers with sin wave vertical offsets + alpha gradient
+  for(let layer=0; layer<3; layer++){
+    const hue = 160 - layer*8; // green-teal
+    const alpha = 0.08 + layer*0.04;
+    const amplitude = 40 + layer*20;
+    const speed = 0.0009 + layer*0.0005;
+    const baseY = H*0.25 + layer*40;
+
+    const grd = ctx.createLinearGradient(0, baseY-120, 0, baseY+160);
+    grd.addColorStop(0, `rgba(${60+layer*10},${200-layer*40},${190+layer*10},${alpha*1.8})`);
+    grd.addColorStop(0.5, `rgba(${40+layer*10},${180-layer*20},${150+layer*5},${alpha})`);
+    grd.addColorStop(1, `rgba(12,20,18,0)`);
+
+    ctx.fillStyle = grd;
+    ctx.beginPath();
+    ctx.moveTo(0, H);
+    for(let x=0;x<=W;x+=6){
+      const y = baseY + Math.sin((x * 0.008) + (t * speed) + layer) * amplitude * Math.cos(t*speed*0.6 + x*0.002);
+      ctx.lineTo(x, y);
+    }
+    ctx.lineTo(W, H);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // subtle vignette
+  const vignette = ctx.createRadialGradient(W/2,H/2, Math.max(W,H)/4, W/2,H/2, Math.max(W,H));
+  vignette.addColorStop(0, 'rgba(0,0,0,0)');
+  vignette.addColorStop(1, 'rgba(0,0,0,0.35)');
+  ctx.fillStyle = vignette;
+  ctx.fillRect(0,0,W,H);
+}
+
+function anim(t){
+  drawAurora(t);
+  requestAnimationFrame(anim);
+}
+requestAnimationFrame(anim);
+
+/* -------------------------
+  6) small accessibility: allow keyboard close
+--------------------------*/
+window.addEventListener('keydown', (e)=> {
+  if(e.key === 'Escape') {
+    if(starModal.classList.contains('open')) {
+      starModal.classList.remove('open');
+      starModal.setAttribute('aria-hidden','true');
+    }
+  }
+});
+</script>
+
 </body>
 </html>

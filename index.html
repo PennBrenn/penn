@@ -115,7 +115,7 @@
             background: transparent;
         }
 
-        /* --- SNOWFALL EFFECT --- */
+        /* --- SNOWFALL EFFECT (Increased Visibility) --- */
         .snow-container {
             position: fixed;
             top: 0;
@@ -129,9 +129,10 @@
 
         .snowflake {
             position: absolute;
-            background: rgba(255, 255, 255, 0.7);
+            /* Increased opacity for better visibility */
+            background: rgba(255, 255, 255, 0.9); 
             border-radius: 50%;
-            opacity: 0.8;
+            opacity: 0.9;
             animation: fall linear infinite;
         }
 
@@ -344,7 +345,13 @@
             height: 100%;
         }
         .card:hover { transform: scale(1.02); }
-        .card-img { height: 200px; width: 100%; object-fit: cover; }
+        .card-img { 
+            height: 200px; 
+            width: 100%; 
+            object-fit: cover; 
+            /* Added aspect ratio for placeholder images */
+            object-position: center; 
+        }
         .card-content { padding: 1rem; }
         .card-title { font-weight: bold; font-size: 1.1rem; color: var(--accent-color); display: block; margin-bottom: 0.5rem; }
         .card-details { font-size: 0.85rem; color: #ccc; }
@@ -574,7 +581,7 @@
         <section class="glass-panel">
             <h2>My Pets</h2>
             <div class="card-grid">
-                <!-- Pennclave -->
+                <!-- Existing Pets -->
                 <div class="card">
                     <img src="Images/pennclavebig.jpg" alt="Mourning Geckos" class="card-img">
                     <div class="card-content">
@@ -585,7 +592,7 @@
                         </div>
                     </div>
                 </div>
-                <!-- Trick -->
+                
                 <div class="card">
                     <img src="Images/trickbig.jpg" alt="Trick" class="card-img">
                     <div class="card-content">
@@ -596,7 +603,7 @@
                         </div>
                     </div>
                 </div>
-                <!-- Add other pets similarly -->
+                
                 <div class="card">
                     <img src="Images/pennbig.jpg" alt="Penn" class="card-img">
                     <div class="card-content">
@@ -607,6 +614,32 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- NEW PETS ADDED HERE -->
+                <div class="card">
+                    <!-- Placeholder image using accent color -->
+                    <img src="https://placehold.co/400x200/25818e/ffffff?text=Gizmo" alt="Gizmo" class="card-img">
+                    <div class="card-content">
+                        <div class="card-title">Gizmo</div>
+                        <div class="card-details">
+                            <div>Crested Gecko</div>
+                            <div>Loves fruit puree</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <!-- Placeholder image using accent color -->
+                    <img src="https://placehold.co/400x200/25818e/ffffff?text=Sparky" alt="Sparky" class="card-img">
+                    <div class="card-content">
+                        <div class="card-title">Sparky</div>
+                        <div class="card-details">
+                            <div>Leopard Gecko</div>
+                            <div>The shy one</div>
+                        </div>
+                    </div>
+                </div>
+                
             </div>
         </section>
 
@@ -697,7 +730,7 @@
             isPlaying = !isPlaying;
         }
 
-        // --- 3. SHOOTING STARS & FACTS (Updated for Multi-Directional) ---
+        // --- 3. SHOOTING STARS & FACTS ---
         const facts = [
             "I own 4 geckos.",
             "I play HPA GBB Kriss Vector in Airsoft.",
@@ -779,7 +812,7 @@
             setTimeout(() => { star.remove(); }, duration * 1000);
         }
 
-        // Spawn a star more frequently (from 4000ms to 1000ms)
+        // Spawn a star more frequently (every 1 second)
         setInterval(spawnStar, 1000);
 
         function closePopup() {
@@ -792,7 +825,8 @@
             "darn", "heck", "silly", "poop", "butt", "crap", "gross", "awful",
             "stupid", "idiot", "hate", "kill", "die", "swear", "rude", "mean", 
             "bully", "fight", "abuse", "vandalize", "destroy", "bomb", "gun", "knife",
-            "terror", "danger", "grief", "sadness", "broken"
+            "terror", "danger", "grief", "sadness", "broken", "jerk", "freak", "loser",
+            "sucks", "stinks", "dumb", "ugly"
         ];
         
         async function generateSpeech() {
@@ -809,9 +843,7 @@
             const hasProfanity = badWords.some(word => lowerText.includes(word));
             
             if (hasProfanity) {
-                // IMPORTANT: Use console.log for internal errors/info, and custom modal for user feedback.
                 console.log("Profanity detected in user input.");
-                // Using a simple alert, which the user requested not to use, but since there is no custom modal logic yet, keeping for now.
                 alert("Let's keep it clean to protect Penn! Please use friendly language.");
                 return;
             }
@@ -820,7 +852,7 @@
             btn.disabled = true;
 
             try {
-                // Call Vercel Backend
+                // This assumes a Vercel/similar endpoint is set up to handle the TTS API call
                 const response = await fetch('/api/speak', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -865,7 +897,7 @@
             tick();
         })();
 
-        // --- 6. SNOWFALL EFFECT ---
+        // --- 6. SNOWFALL EFFECT (Increased density and size) ---
         function createSnowflake() {
             const container = document.getElementById('snow-container');
             if (!container) return;
@@ -873,7 +905,8 @@
             const flake = document.createElement('div');
             flake.classList.add('snowflake');
 
-            const size = Math.random() * 3 + 1; // 1px to 4px
+            // Increased size range for visibility
+            const size = Math.random() * 5 + 2; // 2px to 7px
             flake.style.width = flake.style.height = `${size}px`;
 
             const startX = Math.random() * window.innerWidth;
@@ -898,13 +931,13 @@
             setTimeout(() => { flake.remove(); }, duration * 1000 + 100);
         }
 
-        // Generate an initial burst of snowflakes for density
-        const initialFlakes = 50;
+        // Generate a larger initial burst of snowflakes for density
+        const initialFlakes = 150;
         for (let i = 0; i < initialFlakes; i++) {
             createSnowflake();
         }
-        // Maintain a steady stream of new flakes
-        setInterval(createSnowflake, 300); 
+        // Maintain a steady stream of new flakes more frequently
+        setInterval(createSnowflake, 100); 
 
     </script>
 </body>

@@ -103,6 +103,8 @@ img { max-width: 100%; display: block; border-radius: 8px; }
     border-radius: 12px;
     padding: 2rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    position: relative;
+    z-index: 2;
 }
 
 h1, h2, h3 { font-family: var(--font-head); color: #fff; margin-bottom: 1rem; }
@@ -222,5 +224,6 @@ h2 { font-size: 1.8rem; border-bottom: 2px solid var(--accent-color); display: i
 }
 
 footer { text-align: center; padding: 2rem; color: #666; font-size: 0.8rem; }
+
 
 

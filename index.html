@@ -1,21 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pennbrenn.com | Portfolio</title>
+    <title>Pennbrenn.com | About</title>
     <meta name="description" content="The official website of Penn Brenn / William Villongco.">
     <link rel="icon" type="image/png" href="Images/favicon96.png">
-
-    <!-- Fonts & Icons -->
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
-    <!-- FontAwesome for Play/Pause Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="style.css">
 
-    <!-- Analytics (Note: This is mock data as I cannot access external analytics services) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-JB57Z2S19V"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
@@ -23,499 +20,105 @@
         gtag('js', new Date());
         gtag('config', 'G-JB57Z2S19V');
     </script>
-
-    <style>
-        /* --- RESET & VARIABLES --- */
-        :root {
-            --bg-dark: #0b1114; /* Original dark color */
-            --bg-accent-shade: #152528; /* Dark shade incorporating accent color for the fade */
-            --bg-current: var(--bg-dark); /* Dynamic current background color */
-            --text-color: #e5e7eb;
-            --accent-color: #25818e;
-            --accent-hover: #1f6f7a;
-            --glass-bg: rgba(17, 24, 28, 0.65);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --font-main: 'Inter', sans-serif;
-            --font-head: 'Poppins', sans-serif;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: var(--font-main);
-            /* Use the variable and apply smooth transition */
-            background-color: var(--bg-current);
-            transition: background-color 15s ease-in-out; 
-            color: var(--text-color);
-            line-height: 1.6;
-            overflow-x: hidden;
-            position: relative;
-        }
-
-        /* --- NORTHERN LIGHTS BG (Modified for dynamic color) --- */
-        .aurora-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            /* Only for faint, fixed subtle effects, background color is handled by body */
-            background: transparent; 
-            overflow: hidden;
-        }
-
-        /* Removed .aurora-light and @keyframes auroraShift for simplicity */
-
-        /* --- SHOOTING STARS --- */
-        .star-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        .shooting-star {
-            position: absolute;
-            /* Using top:0 and left:0 as origin, position is handled by transform */
-            top: 0;
-            left: 0;
-            height: 2px;
-            /* FIXED: Head (bright) is now on the RIGHT side of the element, 
-               so the rotation angle calculated in JS correctly points the element 
-               in the direction of travel. */
-            background: linear-gradient(to left, rgba(255,255,255,1), transparent);
-            border-radius: 50%;
-            pointer-events: auto;
-            cursor: pointer;
-            
-            /* Flicker and glow effect for the tail */
-            box-shadow: 0 0 5px rgba(255, 255, 255, 0.7), 0 0 10px rgba(255, 255, 255, 0.5);
-            animation-name: star-flicker;
-            animation-iteration-count: infinite;
-            animation-direction: alternate;
-        }
-        
-        /* New keyframes for the flickering tail */
-        @keyframes star-flicker {
-            0% { opacity: 1; transform: scaleX(1); }
-            50% { opacity: 0.7; transform: scaleX(0.98); }
-            100% { opacity: 1; transform: scaleX(1.02); }
-        }
-        
-        .shooting-star::after {
-            content: '';
-            position: absolute;
-            top: -30px;
-            bottom: -30px;
-            left: -30px;
-            right: -30px;
-            background: transparent;
-        }
-
-        /* --- LAYOUT UTILITIES --- */
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 2rem 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-            position: relative;
-            z-index: 3;
-        }
-
-        .glass-panel {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 12px;
-            padding: 2rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-        }
-
-        h1, h2, h3 {
-            font-family: var(--font-head);
-            color: #fff;
-            margin-bottom: 1rem;
-        }
-
-        h2 {
-            font-size: 1.8rem;
-            border-bottom: 2px solid var(--accent-color);
-            display: inline-block;
-            margin-bottom: 1.5rem;
-        }
-
-        a {
-            text-decoration: none;
-            color: inherit;
-            transition: 0.3s;
-        }
-
-        img {
-            max-width: 100%;
-            display: block;
-            border-radius: 8px;
-        }
-
-        /* --- HEADER --- */
-        .site-header {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: rgba(11, 11, 11, 0.95);
-            border-bottom: 1px solid var(--glass-border);
-            padding: 1rem 0;
-        }
-
-        .header-content {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 0 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .brand {
-            font-size: 1.25rem;
-            font-weight: 700;
-        }
-        .brand span { color: var(--accent-color); }
-
-        .music-toggle {
-            background: none;
-            border: 1px solid var(--accent-color);
-            color: var(--accent-color);
-            padding: 0.5rem 1rem;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .music-toggle:hover {
-            background: var(--accent-color);
-            color: white;
-        }
-
-        /* --- HERO --- */
-        .hero-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 2rem;
-        }
-        @media (min-width: 768px) {
-            .hero-grid { grid-template-columns: 2fr 1fr; }
-        }
-
-        .status-bar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-            font-size: 0.9rem;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 1rem;
-            border-radius: 8px;
-        }
-        .status-item span { color: var(--accent-color); font-weight: bold; }
-        
-        #typewriter-word { color: var(--accent-color); }
-        .typewriter-cursor { animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0; } }
-
-        .profile-pic {
-            border: 3px solid var(--accent-color);
-            width: 100%;
-            max-width: 300px;
-            margin: 0 auto;
-        }
-
-        /* --- SITES SECTION --- */
-        .sites-category {
-            margin-bottom: 1.5rem;
-        }
-        .sites-category h3 {
-            font-size: 1.2rem;
-            color: #aaa;
-            margin-bottom: 0.5rem;
-        }
-        .sites-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 1rem;
-        }
-        .site-card {
-            background: rgba(255,255,255,0.05);
-            padding: 1rem;
-            border-radius: 8px;
-            border: 1px solid transparent;
-            text-align: center;
-        }
-        .site-card:hover {
-            border-color: var(--accent-color);
-            background: rgba(37, 129, 142, 0.1);
-        }
-        .site-name { font-weight: 700; color: #fff; display: block; margin-bottom: 0.2rem;}
-        .site-url { font-size: 0.8rem; color: #888; }
-
-        /* --- VOICE TTS --- */
-        .voice-controls {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        .voice-input-group {
-            display: flex;
-            gap: 1rem;
-        }
-        .voice-input {
-            flex: 1;
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid var(--glass-border);
-            background: rgba(0,0,0,0.3);
-            color: white;
-        }
-        .voice-btn {
-            background: var(--accent-color);
-            color: white;
-            border: none;
-            padding: 0 1.5rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-        .voice-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        /* --- CARDS & HOBBIES (Universal Grid) --- */
-        .card-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1.5rem; /* Even spacing */
-        }
-        @media (min-width: 600px) {
-            .card-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-        .card {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 8px;
-            overflow: hidden;
-            transition: 0.3s;
-            height: 100%;
-        }
-        .card:hover { transform: scale(1.02); }
-        .card-img { 
-            height: 200px; 
-            width: 100%; 
-            object-fit: cover; 
-            /* Added aspect ratio for placeholder images */
-            object-position: center; 
-        }
-        .card-content { padding: 1rem; }
-        .card-title { font-weight: bold; font-size: 1.1rem; color: var(--accent-color); display: block; margin-bottom: 0.5rem; }
-        .card-details { font-size: 0.85rem; color: #ccc; }
-        .card-details > div { margin-bottom: 0.25rem; } /* Added spacing for pet details */
-
-        .hobbies-flex {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 2rem;
-            align-items: center;
-        }
-        .hobby-list div {
-            margin-bottom: 0.5rem;
-            padding-left: 1rem;
-            border-left: 2px solid var(--accent-color);
-        }
-
-        /* --- FOOTER --- */
-        footer { text-align: center; padding: 2rem; color: #666; font-size: 0.8rem; }
-
-        /* --- POPUP MODAL --- */
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 200;
-            backdrop-filter: blur(5px);
-        }
-        .modal-content {
-            background: var(--bg-current); /* Use dynamic background color */
-            border: 1px solid var(--accent-color);
-            padding: 2rem;
-            border-radius: 12px;
-            max-width: 400px;
-            text-align: center;
-            position: relative;
-        }
-        .close-modal {
-            position: absolute;
-            top: 10px; right: 15px;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #aaa;
-        }
-    </style>
 </head>
-
 <body>
 
-    <!-- Animated Aurora Background -->
-    <div class="aurora-bg">
-        <!-- Removed aurora-light -->
-    </div>
-    
-    <!-- Shooting Star Container -->
-    <div id="star-container" class="star-container"></div>
-    
-    <!-- Snowfall Container (Removed) -->
-
-    <!-- Background Music Audio -->
-    <audio id="bg-music" loop>
-        <!-- Replace with your actual music file path -->
-        <source src="Images/background_music.mp3" type="audio/mpeg">
-    </audio>
+    <div class="bg-layer stars-bg"></div>
+    <div class="bg-layer aurora"></div>
+    <div id="star-container"></div>
 
     <header class="site-header">
         <div class="header-content">
-            <a href="./index.html" class="brand"><span>P</span>enn<span>B</span>renn<small>.com</small></a>
+            <a href="#" class="brand"><span>P</span>enn<span>B</span>renn<small>.com</small></a>
             
-            <button id="musicBtn" class="music-toggle" onclick="toggleMusic()">
-                <i class="fa-solid fa-play"></i> <span>Music</span>
-            </button>
+            <div class="music-player">
+                <button id="musicToggle" class="icon-btn">► Play Music</button>
+                <audio id="bgMusic" loop>
+                    <source src="Images/music.mp3" type="audio/mpeg">
+                </audio>
+            </div>
+
+            <a href="#sites-section" class="nav-link">Sites</a>
         </div>
     </header>
 
     <main class="container">
 
-        <!-- HERO SECTION -->
         <section class="glass-panel">
             <div class="hero-grid">
                 <div>
                     <h1><span id="typewriter-word">Im Penn</span><span class="typewriter-cursor">|</span></h1>
                     <div class="status-bar">
-                        <div class="status-item">It is <span id="laTime">Loading...</span> where i am</div>
-                        <div class="status-item">There are <span id="days">0</span> days until my birthday</div>
+                        <div class="status-item">It is <span id="laTime">...</span> in LA</div>
+                        <div class="status-item"><span id="days" class="birthday-count">0</span> days until b-day</div>
                     </div>
                     <article class="about-text">
                         <h3>🇺🇸🏳️‍🌈♂️he/him</h3>
                         <p><b>PUBLIC PROFILE</b></p>
-                        <p><small>Specific information is is not revealed openly.</small></p>
-                        <p>Hiiii im penn, the name has no relation to any historical figures. This is the first website that I actually coded. I keep lizards and geckos, and enjoy starting new projects and never finishing them! I play airsoft, I run a hpa gbb kriss vector. I enjoy playing online games with friends.</p>
-                        <p style="margin-top: 1rem;"><b>Taken</b></p>
+                        <p><small>Specific information is not revealed openly.</small></p>
+                        <p>Hiiii im Penn. I keep lizards and geckos, start new projects and never finish them! :D I play airsoft (HPA GBB Kriss Vector user). I wish to start an ultralight aircraft business. Please buy my camera, I need money.</p>
+                        <p><b>Taken</b></p>
                     </article>
                 </div>
                 <div class="profile-pic-container">
-                    <img src="Images/me.jpg" alt="Penn/William Profile" class="profile-pic">
+                    <img src="Images/me.jpg" alt="Penn Profile" class="profile-pic">
+                    <div class="caption">It me</div>
                 </div>
             </div>
         </section>
 
-        <!-- SITES SECTION -->
-        <section class="glass-panel">
-            <h2>Sites</h2>
-            
-            <div class="sites-category">
-                <h3>Professional "Stuff"</h3>
-                <div class="sites-grid">
-                    <a href="https://cam.pennbrenn.com" class="site-card">
-                        <span class="site-name">penncamm</span>
-                        <span class="site-url">cam.pennbrenn.com</span>
-                    </a>
-                    <a href="https://www.pennbrenn.com" class="site-card">
-                        <span class="site-name">about me</span>
-                        <span class="site-url">pennbrenn.com</span>
-                    </a>
-                </div>
-            </div>
-
-            <div class="sites-category">
-                <h3>Game "Stuff"</h3>
-                <div class="sites-grid">
-                    <a href="https://play.pennbrenn.com" class="site-card">
-                        <span class="site-name">Question Game</span>
-                        <span class="site-url">play.pennbrenn.com</span>
-                    </a>
-                    <a href="https://play.bbcjustice.top" class="site-card">
-                        <span class="site-name">bbcjustice</span>
-                        <span class="site-url">play.bbcjustice.top</span>
-                    </a>
-                    <a href="https://sam.pennbrenn.com" class="site-card">
-                        <span class="site-name">Sams Aura Farm</span>
-                        <span class="site-url">sam.pennbrenn.com</span>
-                    </a>
-                </div>
-            </div>
-
-            <div class="sites-category">
-                <h3>Old "Stuff"</h3>
-                <div class="sites-grid">
-                    <a href="https://moveon.pennbrenn.com/" class="site-card">
-                        <span class="site-name">move on lol</span>
-                        <span class="site-url">moveon.pennbrenn.com</span>
-                    </a>
-                    <a href="https://2guys1mic.top" class="site-card">
-                        <span class="site-name">2g1m</span>
-                        <span class="site-url">2guys1mic.top</span>
-                    </a>
-                    <a href="#" class="site-card" style="opacity: 0.5;">
-                        <span class="site-name">old games/missing</span>
-                        <span class="site-url">Offline</span>
-                    </a>
-                </div>
-            </div>
-        </section>
-
-        <!-- HEAR MY VOICE SECTION -->
         <section class="glass-panel">
             <h2>Hear My Voice</h2>
-            <p style="margin-bottom: 1rem; color: #aaa;">Type something to hear me say it using AI. (Profanity filters active).</p>
-            <div class="voice-controls">
+            <div class="voice-box">
+                <p>Type something below (max 100 chars) to hear it in my voice (William).</p>
                 <div class="voice-input-group">
-                    <input type="text" id="ttsInput" class="voice-input" placeholder="Type up to 100 chars..." maxlength="100">
-                    <button id="ttsBtn" class="voice-btn" onclick="generateSpeech()">Speak</button>
+                    <input type="text" id="ttsInput" maxlength="100" placeholder="Hello there...">
+                    <button id="ttsBtn" class="action-btn">Speak</button>
                 </div>
-                <audio id="ttsAudio" controls style="width: 100%; display: none;"></audio>
-                <div id="ttsStatus" style="font-size: 0.9rem; color: var(--accent-color);"></div>
+                <div id="ttsStatus" class="status-text"></div>
+                <audio id="ttsAudio" controls style="display:none; margin-top: 1rem; width: 100%;"></audio>
             </div>
         </section>
 
-        <!-- FOR BUSINESS SECTION -->
         <section class="glass-panel">
             <h2>For Business</h2>
-            <div style="border-left: 2px solid var(--accent-color); padding-left: 1.5rem;">
-                <div style="margin-bottom: 1.5rem;">
-                    <h3 style="font-size: 1.2rem; color: white;">Education</h3>
-                    <p><strong>Graduated High School</strong> | 2024</p>
-                    <p style="font-size: 0.9rem; color: #ccc;">Relevant Coursework: Computer Science, Physics.</p>
-                </div>
-                <div>
-                    <h3 style="font-size: 1.2rem; color: white;">Skills</h3>
-                    <p>HTML / CSS / Basic JS</p>
-                    <p>Business Management & Startup Experience</p>
-                    <p>3D Printing & Prototyping</p>
-                </div>
+            <div class="business-content">
+                <p><b>Professional Summary:</b></p>
+                <ul>
+                    <li>Graduated High School</li>
+                    <li>Experience in Frontend Web Development & API Integration</li>
+                    <li>Entrepreneurial spirit (Ultralight Aircraft & Tech)</li>
+                </ul>
+                <p style="margin-top:1rem"><i>More detailed CV available upon request via email.</i></p>
             </div>
         </section>
 
-        <!-- GAMES SECTION -->
+        <section id="sites-section" class="glass-panel">
+            <h2>My Sites</h2>
+            
+            <h3 class="sub-head">Professional "Stuff"</h3>
+            <div class="links-grid">
+                <a href="https://cam.pennbrenn.com" class="social-btn">penncamm</a>
+                <a href="https://www.pennbrenn.com" class="social-btn">about me</a>
+            </div>
+
+            <h3 class="sub-head">Game "Stuff"</h3>
+            <div class="links-grid">
+                <a href="https://play.pennbrenn.com" class="social-btn">Different Question Game</a>
+                <a href="https://play.bbcjustice.top" class="social-btn">bbcjustice</a>
+                <a href="https://sam.pennbrenn.com" class="social-btn">Sams Aura Farm 2025</a>
+            </div>
+
+            <h3 class="sub-head">Old "Stuff"</h3>
+            <div class="links-grid">
+                <a href="https://moveon.pennbrenn.com/" class="social-btn">move on lol</a>
+                <a href="https://2guys1mic.top" class="social-btn">2g1m</a>
+                <a href="#" class="social-btn disabled">old games (missing)</a>
+            </div>
+        </section>
+
         <section class="glass-panel">
-            <h2>My Fav Games</h2>
+            <h2>Fav Games</h2>
             <div class="card-grid">
                 <div class="card">
                     <img src="Images/storm1.jpg" alt="Stormworks" class="card-img">
@@ -548,83 +151,47 @@
             </div>
         </section>
 
-        <!-- PETS SECTION (UPDATED) -->
         <section class="glass-panel">
             <h2>My Pets</h2>
             <div class="card-grid">
-                
-                <!-- The Pennclave (Mourning geckos) -->
                 <div class="card">
-                    <img src="Images/pennclavebig.jpg" onerror="this.onerror=null; this.src='https://placehold.co/400x200/25818e/ffffff?text=The+Pennclave';" alt="The Pennclave" class="card-img">
+                    <img src="Images/pennclavebig.jpg" alt="Mourning Geckos" class="card-img">
                     <div class="card-content">
                         <div class="card-title">The Pennclave</div>
-                        <div class="card-details">
-                            <div>Mourning geckos x4</div>
-                            <div>40 gal bioactive vivarium</div>
-                            <div>They chirp loudly at night</div>
-                            <div>Female (Asexual) | 2025</div>
-                        </div>
+                        <div class="card-details">Mourning geckos x4 • 40gal bioactive • Loud chirping</div>
                     </div>
                 </div>
-                
-                <!-- Trick (Cat) -->
                 <div class="card">
-                    <img src="Images/trickbig.jpg" onerror="this.onerror=null; this.src='https://placehold.co/400x200/25818e/ffffff?text=Trick';" alt="Trick" class="card-img">
+                    <img src="Images/trickbig.jpg" alt="Trick" class="card-img">
                     <div class="card-content">
                         <div class="card-title">Trick</div>
-                        <div class="card-details">
-                            <div>Kitty :3</div>
-                            <div>He yearns for food</div>
-                            <div>Male | 2019</div>
-                        </div>
+                        <div class="card-details">Kitty • Yearns for food • Male • 2019</div>
                     </div>
                 </div>
-                
-                <!-- Penn (Northern Alligator Lizard) -->
                 <div class="card">
-                    <img src="Images/pennbig.jpg" onerror="this.onerror=null; this.src='https://placehold.co/400x200/25818e/ffffff?text=Penn';" alt="Penn" class="card-img">
+                    <img src="Images/pennbig.jpg" alt="Penn" class="card-img">
                     <div class="card-content">
                         <div class="card-title">Penn</div>
-                        <div class="card-details">
-                            <div>Northern alligator lizard</div>
-                            <div>Does not know he is alive</div>
-                            <div>Female (I think) | 2022</div>
-                        </div>
+                        <div class="card-details">Northern Alligator Lizard • Unaware of life • Female? • 2022</div>
                     </div>
                 </div>
-                
-                <!-- Bren (Eyelash crested gecko) -->
                 <div class="card">
-                    <img src="Images/brennbig.jpg" onerror="this.onerror=null; this.src='https://placehold.co/400x200/25818e/ffffff?text=Bren';" alt="Bren" class="card-img">
+                    <img src="Images/brennbig.jpg" alt="Bren" class="card-img">
                     <div class="card-content">
                         <div class="card-title">Bren</div>
-                        <div class="card-details">
-                            <div>Eyelash crested gecko</div>
-                            <div>20 gal bioactive vivarium</div>
-                            <div>Very jumpy</div>
-                            <div>Male | 2024</div>
-                        </div>
+                        <div class="card-details">Crested Gecko • Jumpy • Male • 2024</div>
                     </div>
                 </div>
-                
-                <!-- The Penest (Veromessor pergandei) -->
                 <div class="card">
-                    <img src="Images/nestbig.jpg" onerror="this.onerror=null; this.src='https://placehold.co/400x200/25818e/ffffff?text=The+Penest';" alt="The Penest" class="card-img">
+                    <img src="Images/nestbig.jpg" alt="Nest" class="card-img">
                     <div class="card-content">
                         <div class="card-title">The Penest</div>
-                        <div class="card-details">
-                            <div>Veromessor pergandei (Harvester Ants)</div>
-                            <div>5x10x5 custom tank</div>
-                            <div>They dig holes and eat seeds</div>
-                            <div>Female | 2025</div>
-                        </div>
+                        <div class="card-details">Veromessor pergandei • Seed eaters • 2025</div>
                     </div>
                 </div>
-                
             </div>
         </section>
 
-        <!-- HOBBIES -->
         <section class="glass-panel">
             <h2>Hobbies</h2>
             <div class="hobbies-flex">
@@ -635,17 +202,18 @@
                     <div>‣ Sailing</div>
                     <div>‣ 3d printing</div>
                     <div>‣ Making things</div>
+                    <div>‣ Development</div>
+                    <div>‣ Being cute</div>
                 </div>
                 <div>
-                    <img src="Images/printer.jpg" alt="3D Printer" style="max-width: 250px; border-radius: 8px;">
+                    <img src="Images/printer.jpg" alt="3D Printer" class="rounded-img" style="max-width: 300px;">
                 </div>
             </div>
         </section>
 
-        <!-- OUT AND ABOUT -->
         <section class="glass-panel">
             <h2>Fav Out & About</h2>
-            <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+            <div class="card-grid small-grid">
                 <div class="card">
                     <img src="Images/opensause.jpg" alt="Opensauce" class="card-img">
                     <div class="card-content"><div class="card-title">Opensauce 2025</div></div>
@@ -661,248 +229,38 @@
             </div>
         </section>
 
+        <section class="glass-panel">
+            <h2>Socials & Contact</h2>
+            <div class="links-grid">
+                <a href="https://drive.google.com/drive/folders/1xdJv-bT4wKyydjSxMpCK-iUGIhIML98O?usp=sharing" class="social-btn">Drive</a>
+                <a href="https://discord.com/users/973736168011231233" class="social-btn">Discord</a>
+                <a href="https://www.instagram.com/penn_brenn/" class="social-btn">Instagram</a>
+                <a href="https://www.youtube.com/@PennBrenn" class="social-btn">Youtube</a>
+                <a href="https://www.twitch.tv/pennbrenn" class="social-btn">Twitch</a>
+                <a href="https://www.tiktok.com/@pennbrenn?lang=en" class="social-btn">TikTok</a>
+                <a href="https://github.com/PennBrenn" class="social-btn">Github</a>
+                <a href="https://steamcommunity.com/id/Pennnnnnnnnnnnn/" class="social-btn">Steam</a>
+            </div>
+            <div class="contact-row">
+                <a href="mailto:william@pennbrenn.com" class="contact-pill">📧 w@pennbrenn.com</a>
+                <a href="tel:+18054104273" class="contact-pill">📞 +1 (805) 410-4273</a>
+            </div>
+        </section>
+
     </main>
 
     <footer>
         <p>&copy; 2025 Penn Brenn. All rights reserved.</p>
     </footer>
 
-    <!-- FACT POPUP MODAL -->
-    <div id="factModal" class="modal-overlay">
+    <div id="star-modal" class="modal hidden">
         <div class="modal-content">
-            <span class="close-modal" onclick="closePopup()">&times;</span>
-            <h3 style="color: var(--accent-color);">Random Fact!</h3>
-            <p id="factText" style="margin-top: 1rem; font-size: 1.1rem;"></p>
+            <span id="close-modal">&times;</span>
+            <h3>Random Fact about Me:</h3>
+            <p id="fact-text">...</p>
         </div>
     </div>
 
-    <script>
-        // --- 1. TIME & BIRTHDAY ---
-        function updateTime() {
-            const options = { timeZone: 'America/Los_Angeles', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true };
-            document.getElementById('laTime').textContent = new Date().toLocaleTimeString('en-US', options);
-        }
-        setInterval(updateTime, 1000);
-        updateTime();
-
-        function updateBirthday() {
-            const today = new Date();
-            let nextBday = new Date(today.getFullYear(), 10, 17); // Nov 17
-            if (today > nextBday) nextBday.setFullYear(today.getFullYear() + 1);
-            const diff = Math.ceil((nextBday - today) / (1000 * 60 * 60 * 24));
-            document.getElementById("days").textContent = diff;
-        }
-        updateBirthday();
-
-        // --- 2. MUSIC PLAYER ---
-        const audio = document.getElementById("bg-music");
-        audio.volume = 0.3; // Lower volume
-        let isPlaying = false;
-        
-        function toggleMusic() {
-            const btn = document.getElementById("musicBtn");
-            if (isPlaying) {
-                audio.pause();
-                btn.innerHTML = '<i class="fa-solid fa-play"></i> <span>Music</span>';
-            } else {
-                audio.play();
-                btn.innerHTML = '<i class="fa-solid fa-pause"></i> <span>Pause</span>';
-            }
-            isPlaying = !isPlaying;
-        }
-
-        // --- 3. BACKGROUND COLOR CYCLING ---
-        let isBackgroundAccent = false;
-
-        function cycleBackground() {
-            const root = document.documentElement;
-            
-            if (isBackgroundAccent) {
-                // Fade back to dark
-                root.style.setProperty('--bg-current', 'var(--bg-dark)');
-            } else {
-                // Fade towards a dark variant of the accent color
-                root.style.setProperty('--bg-current', 'var(--bg-accent-shade)');
-            }
-            
-            isBackgroundAccent = !isBackgroundAccent;
-        }
-
-        // Cycle every 30 seconds (15s fade out + 15s fade in)
-        setInterval(cycleBackground, 30000);
-        cycleBackground(); // Initial call
-
-        // --- 4. SHOOTING STARS & FACTS (Updated Movement Logic) ---
-        const facts = [
-            "I own 4 geckos.",
-            "I play HPA GBB Kriss Vector in Airsoft.",
-            "I want to start an aircraft business.",
-            "I built this site myself.",
-            "My cat's name is Trick."
-        ];
-
-        function spawnStar() {
-            const container = document.getElementById('star-container');
-            const star = document.createElement('div');
-            star.classList.add('shooting-star');
-            
-            const viewportW = window.innerWidth;
-            const viewportH = window.innerHeight;
-            
-            const startEdge = Math.floor(Math.random() * 4); // 0=Top, 1=Right, 2=Bottom, 3=Left
-            
-            let startX, startY, endX, endY, rotationAngle;
-
-            // Randomize the length of the tail
-            const length = Math.random() * 50 + 80; // 80px to 130px
-            star.style.width = length + 'px';
-            const duration = Math.random() * 4 + 4; // 4 to 8 seconds
-
-            // Randomize flicker rate
-            const flickerDuration = Math.random() * 0.4 + 0.1; // 0.1s to 0.5s
-            star.style.animationDuration = `${flickerDuration}s`;
-            
-            // Determine Start/End points
-            if (startEdge === 0) { // Top -> Down/Diagonal
-                startX = Math.random() * viewportW;
-                startY = -50;
-                endX = startX + (Math.random() - 0.5) * viewportW * 0.8;
-                endY = viewportH + 50;
-            } else if (startEdge === 1) { // Right -> Left/Diagonal
-                startX = viewportW + 50;
-                startY = Math.random() * viewportH;
-                endX = -50;
-                endY = startY + (Math.random() - 0.5) * viewportH * 0.8;
-            } else if (startEdge === 2) { // Bottom -> Up/Diagonal
-                startX = Math.random() * viewportW;
-                startY = viewportH + 50;
-                endX = startX + (Math.random() - 0.5) * viewportW * 0.8;
-                endY = -50;
-            } else { // 3: Left -> Right/Diagonal
-                startX = -50;
-                startY = Math.random() * viewportH;
-                endX = viewportW + 50;
-                endY = startY + (Math.random() - 0.5) * viewportH * 0.8;
-            }
-
-            const deltaX = endX - startX;
-            const deltaY = endY - startY;
-
-            // Calculate the angle of the path
-            rotationAngle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
-
-            star.style.transition = `transform ${duration}s linear`;
-            
-            // Apply initial position using translate and rotation
-            // FIXED: Use translate for initial position instead of top/left
-            star.style.transform = `translate(${startX}px, ${startY}px) rotate(${rotationAngle}deg)`;
-            
-            container.appendChild(star);
-            
-            // Trigger move after render
-            setTimeout(() => {
-                // Apply final position using translate, which triggers the transition
-                // FIXED: Target the final coordinates (endX, endY)
-                star.style.transform = `translate(${endX}px, ${endY}px) rotate(${rotationAngle}deg)`;
-            }, 50);
-
-            // Interaction
-            star.addEventListener('click', () => {
-                const randomFact = facts[Math.floor(Math.random() * facts.length)];
-                document.getElementById('factText').textContent = randomFact;
-                document.getElementById('factModal').style.display = 'flex';
-                star.remove(); // Remove clicked star
-            });
-
-            // Cleanup
-            setTimeout(() => { star.remove(); }, duration * 1000);
-        }
-
-        // Spawn a star more frequently (every 1 second)
-        setInterval(spawnStar, 1000);
-
-        function closePopup() {
-            document.getElementById('factModal').style.display = 'none';
-        }
-
-        // --- 5. TTS (ELEVENLABS) ---
-        // Expanded Profanity list for age-appropriate safety.
-        const badWords = [
-            "darn", "heck", "silly", "poop", "butt", "crap", "gross", "awful",
-            "stupid", "idiot", "hate", "kill", "die", "swear", "rude", "mean", 
-            "bully", "fight", "abuse", "vandalize", "destroy", "bomb", "gun", "knife",
-            "terror", "danger", "grief", "sadness", "broken", "jerk", "freak", "loser",
-            "sucks", "stinks", "dumb", "ugly"
-        ];
-        
-        // This function is placeholder logic as I cannot perform actual API calls.
-        async function generateSpeech() {
-            const input = document.getElementById('ttsInput');
-            const status = document.getElementById('ttsStatus');
-            const btn = document.getElementById('ttsBtn');
-            const text = input.value.trim();
-            const player = document.getElementById('ttsAudio');
-
-            if (!text) return;
-
-            // Profanity Check
-            const lowerText = text.toLowerCase();
-            const hasProfanity = badWords.some(word => lowerText.includes(word));
-            
-            if (hasProfanity) {
-                console.log("Profanity detected in user input.");
-                // Changed from alert() to a custom console/status message as alert() is forbidden.
-                status.textContent = "Please use friendly language!";
-                setTimeout(() => status.textContent = "", 3000);
-                return;
-            }
-
-            status.textContent = "Generating voice (API call simulation)...";
-            btn.disabled = true;
-
-            try {
-                // --- Start of API Call Simulation/Placeholder ---
-                
-                // Simulate network delay
-                await new Promise(resolve => setTimeout(resolve, 2000)); 
-                
-                player.style.display = 'none';
-                status.textContent = "Generation complete, awaiting audio file.";
-
-                // --- End of API Call Simulation/Placeholder ---
-
-            } catch (err) {
-                console.error("TTS Generation Error:", err);
-                status.textContent = "Error generating audio.";
-            } finally {
-                btn.disabled = false;
-            }
-        }
-
-        // --- 6. TYPEWRITER ---
-        (function () {
-            const words = ["Im Penn", "Im William"];
-            const el = document.getElementById("typewriter-word");
-            let wordIndex = 0, charIndex = 0, typing = true;
-            
-            function tick() {
-                const current = words[wordIndex];
-                if (typing) {
-                    charIndex++;
-                    el.textContent = current.slice(0, charIndex);
-                    if (charIndex === current.length) { typing = false; setTimeout(tick, 2000); return; }
-                } else {
-                    charIndex--;
-                    el.textContent = current.slice(0, charIndex);
-                    if (charIndex === 0) { typing = true; wordIndex = (wordIndex + 1) % words.length; }
-                }
-                setTimeout(tick, typing ? 100 : 50);
-            }
-            tick();
-        })();
-
-        // --- 7. SNOWFALL EFFECT (REMOVED) ---
-        // Removed all code related to the snowflake creation and animation.
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>

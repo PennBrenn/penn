@@ -24,7 +24,7 @@ export default async function handler(req) {
     if (!ELEVEN_KEY) return new Response('Server misconfigured: missing ELEVENLABS_API_KEY', { status:500 });
 
     // VOICE ID: replace with your preferred voice ID. Example "William J" id shown publicly.
-    const VOICE_ID = 'C8OtYB0OTgD7K0YWkg7y'; // optional: replace with your own voice id
+    const VOICE_ID = 'ElVDyvTtykmY2kynfxR8'; // optional: replace with your own voice id
 
     // ElevenLabs stream endpoint
     const apiUrl = `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}/stream`;

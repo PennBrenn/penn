@@ -16,11 +16,11 @@ export default async function handler(req) {
         }
 
         // 2. Profanity Filter (Basic List)
-        const badWords = ["fuck", "shit", "bitch", "cunt", "nigger", "asshole", "dick", "pussy", "whore", "slut", "bastard"];
+        const badWords = ["fuck", "shit", "bitch", "cunt", "nigger", "asshole", "dick", "pussy", "whore", "slut", "bastard" "faggot", "neggurt", "negurt", "flagot", "retigga", "swast", "jew", "nig", "neck", "67", "six"];
         const containsProfanity = badWords.some(word => text.toLowerCase().includes(word));
 
         if (containsProfanity) {
-            return new Response("Profanity detected. Please be nice!", { status: 400 });
+            return new Response("Im not gonna fuckin say that", { status: 400 });
         }
 
         // 3. Call ElevenLabs API

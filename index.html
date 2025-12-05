@@ -91,14 +91,15 @@
             width: 100vw;
             height: 100vh;
             pointer-events: none; /* Let clicks pass through empty space */
-            z-index: 50;
+            z-index: 1; /* Moved to lowest layer (above -1 background) */
         }
 
         .shooting-star {
             position: absolute;
             width: 100px; /* Visible tail length */
             height: 2px;
-            background: linear-gradient(90deg, rgba(255,255,255,1), transparent);
+            /* Changed to 270deg for tail to follow the star head when moving right-to-left */
+            background: linear-gradient(270deg, rgba(255,255,255,1), transparent);
             border-radius: 50%;
             pointer-events: auto; /* Make the star itself clickable */
             cursor: pointer;
@@ -673,25 +674,37 @@
             const star = document.createElement('div');
             star.classList.add('shooting-star');
             
-            // Random start position
-            const startY = Math.random() * (window.innerHeight / 2); // Top half only
-            star.style.top = startY + 'px';
-            star.style.left = '-100px';
+            // Full Random Start Y across the whole screen height
+            const startY = Math.random() * window.innerHeight; 
             
-            // Animate
-            const duration = Math.random() * 5 + 5; // 5 to 10 seconds (Slow)
+            // Start off the RIGHT side of the screen (for backward/right-to-left movement)
+            const startX = window.innerWidth + 100;
+            
+            star.style.top = startY + 'px';
+            star.style.left = startX + 'px'; // Start from the right
+
+            // Randomized end position (diagonal movement)
+            const duration = Math.random() * 6 + 4; // 4 to 10 seconds (Slow)
+            
+            // End X is far off the LEFT side
+            const endX = -200; 
+            
+            // End Y is randomized above or below the start Y to create diagonal movement
+            const endYOffset = (Math.random() - 0.5) * window.innerHeight * 0.5; // +/- 25% height change
+            const endY = startY + endYOffset;
+            
             star.style.transition = `transform ${duration}s linear`;
             
             container.appendChild(star);
             
             // Trigger move after render
             setTimeout(() => {
-                star.style.transform = `translate(${window.innerWidth + 200}px, ${Math.random() * 100}px)`;
+                // Apply a translation that moves it left and diagonally
+                star.style.transform = `translate(${endX - startX}px, ${endYOffset}px)`;
             }, 50);
 
             // Interaction
             star.addEventListener('click', () => {
-                // Pause star visually (optional, hard with CSS transition, so we just pop up)
                 const randomFact = facts[Math.floor(Math.random() * facts.length)];
                 document.getElementById('factText').textContent = randomFact;
                 document.getElementById('factModal').style.display = 'flex';
@@ -710,7 +723,11 @@
         }
 
         // --- 4. TTS (ELEVENLABS) ---
-        const badWords = ["darn", "heck", "stupid"]; // Add real filter list here
+        // Expanded Profanity list for age-appropriate safety.
+        const badWords = [
+            "darn", "heck", "stupid", "idiot", "silly", "poop", "butt", "crap", 
+            "hate", "kill", "die", "swear", "rude", "mean", "gross", "awful"
+        ];
         
         async function generateSpeech() {
             const input = document.getElementById('ttsInput');
@@ -722,9 +739,13 @@
             if (!text) return;
 
             // Profanity Check
-            const hasProfanity = badWords.some(word => text.toLowerCase().includes(word));
+            const lowerText = text.toLowerCase();
+            const hasProfanity = badWords.some(word => lowerText.includes(word));
+            
             if (hasProfanity) {
-                alert("Let's keep it clean to protect Penn!");
+                // IMPORTANT: Use console.log for internal errors/info, and alert (or modal) for user feedback.
+                console.log("Profanity detected in user input.");
+                alert("Let's keep it clean to protect Penn! Please use friendly language.");
                 return;
             }
 
@@ -748,7 +769,7 @@
                 player.play();
                 status.textContent = "Playing...";
             } catch (err) {
-                console.error(err);
+                console.error("TTS Generation Error:", err);
                 status.textContent = "Error generating audio.";
             } finally {
                 btn.disabled = false;

@@ -1,555 +1,781 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>PennBrenn — About</title>
-  <meta name="description" content="The official website of Penn Brenn / William Villongco.">
-  <link rel="icon" href="/Images/favicon96.png">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pennbrenn.com | Portfolio</title>
+    <meta name="description" content="The official website of Penn Brenn / William Villongco.">
+    <link rel="icon" type="image/png" href="Images/favicon96.png">
 
-  <style>
-    :root{
-      --bg:#0b1114;
-      --text:#e5e7eb;
-      --accent:#25818e;
-      --accent-hover:#1f6f7a;
-      --glass-bg: rgba(17,24,28,0.65);
-      --glass-border: rgba(255,255,255,0.08);
-      --max-w:1100px;
-      --pad:1.25rem;
-      --g-radius:12px;
-      --transition:.18s ease;
-      font-synthesis: none;
-    }
-    *{box-sizing:border-box;margin:0;padding:0}
-    html,body{height:100%}
-    body{
-      min-height:100%;
-      font-family:Inter,system-ui,Segoe UI,Arial;
-      background:var(--bg);
-      color:var(--text);
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-      overflow-x:hidden;
-    }
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Play/Pause Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    /* NIGHT SKY CANVAS (behind everything) */
-    #sky{
-      position:fixed;
-      inset:0;
-      z-index:0;
-      pointer-events:none;
-    }
+    <!-- Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JB57Z2S19V"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-JB57Z2S19V');
+    </script>
 
-    /* LAYOUT */
-    header.site-header{
-      position:sticky; top:0; z-index:60;
-      background: linear-gradient(180deg, rgba(11,11,11,0.85), rgba(11,11,11,0.55));
-      border-bottom:1px solid var(--glass-border);
-      backdrop-filter: blur(6px);
-      display:flex; align-items:center; justify-content:center;
-      padding:.8rem 1rem;
-    }
-    .header-inner{ width:100%; max-width:var(--max-w); display:flex; gap:1rem; align-items:center; justify-content:space-between; padding:0 var(--pad); }
-    .brand{ font-family:Poppins, Inter; font-weight:700; letter-spacing:.6px; color:var(--text); }
-    .brand span{ color:var(--accent) }
-    /* centered music control */
-    .header-controls { display:flex; gap:.5rem; align-items:center; justify-content:center; }
-    .music-btn{
-      width:46px; height:46px; border-radius:50%;
-      background:rgba(255,255,255,0.03); border:1px solid var(--glass-border);
-      display:flex; align-items:center; justify-content:center;
-      cursor:pointer; transition:transform var(--transition), background var(--transition);
-    }
-    .music-btn:hover{ transform:translateY(-3px); background:var(--accent) }
+    <style>
+        /* --- RESET & VARIABLES --- */
+        :root {
+            --bg-color: #0b1114;
+            --text-color: #e5e7eb;
+            --accent-color: #25818e;
+            --accent-hover: #1f6f7a;
+            --glass-bg: rgba(17, 24, 28, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --font-main: 'Inter', sans-serif;
+            --font-head: 'Poppins', sans-serif;
+        }
 
-    main.container{ position:relative; z-index:10; max-width:var(--max-w); margin:2rem auto; padding:0 var(--pad) 4rem; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-    .glass{
-      background:var(--glass-bg); border:1px solid var(--glass-border);
-      border-radius:var(--g-radius); padding:1.4rem; margin-bottom:1.6rem;
-      box-shadow:0 6px 18px rgba(0,0,0,0.45);
-    }
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
 
-    h1,h2,h3{ font-family:'Poppins', Inter; color:#fff; margin-bottom:.6rem }
-    h1{ font-size:2rem; letter-spacing:.6px }
-    h2{ font-size:1.25rem; color:var(--text); border-bottom:2px solid var(--accent); display:inline-block; padding-bottom:.25rem }
+        /* --- NORTHERN LIGHTS BG --- */
+        .aurora-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, #0b1114 0%, #000000 100%);
+            overflow: hidden;
+        }
 
-    /* HERO GRID */
-    .hero-grid{ display:grid; gap:1.25rem; grid-template-columns:1fr; align-items:center }
-    @media(min-width:820px){ .hero-grid{ grid-template-columns: 1.6fr .9fr } }
+        .aurora-light {
+            position: absolute;
+            width: 150%;
+            height: 150%;
+            top: -25%;
+            left: -25%;
+            background: radial-gradient(circle at 50% 50%, rgba(37, 129, 142, 0.15), transparent 60%),
+                        radial-gradient(circle at 20% 80%, rgba(30, 200, 150, 0.1), transparent 50%);
+            filter: blur(60px);
+            animation: auroraShift 20s infinite alternate ease-in-out;
+            opacity: 0.6;
+        }
 
-    .meta-row{ display:flex; flex-wrap:wrap; gap:.6rem; align-items:center; color:#cfd5d8; font-size:.95rem }
-    .pill{ background:rgba(255,255,255,0.03); padding:.55rem .7rem; border-radius:999px; border:1px solid var(--glass-border) }
-    .accent{ color:var(--accent); font-weight:700 }
+        @keyframes auroraShift {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(5deg) scale(1.1); }
+            100% { transform: rotate(-5deg) scale(1); }
+        }
 
-    .profile-pic{ width:100%; max-width:300px; border-radius:10px; border:3px solid var(--accent); display:block; margin:0 auto }
+        /* --- SHOOTING STARS --- */
+        .star-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none; /* Let clicks pass through empty space */
+            z-index: 50;
+        }
 
-    /* LINKS GRID / SITES */
-    .links-grid{ display:grid; gap:.9rem; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); margin-top:.9rem }
-    .link-card{
-      padding:.75rem; border-radius:8px; background:rgba(255,255,255,0.02);
-      border:1px solid transparent; text-align:center; font-weight:600; transition:all var(--transition);
-    }
-    .link-card a{ color:var(--text); display:block }
-    .link-card:hover{ transform:translateY(-4px); background:var(--accent); color:white; border-color:rgba(255,255,255,0.06) }
+        .shooting-star {
+            position: absolute;
+            width: 100px; /* Visible tail length */
+            height: 2px;
+            background: linear-gradient(90deg, rgba(255,255,255,1), transparent);
+            border-radius: 50%;
+            pointer-events: auto; /* Make the star itself clickable */
+            cursor: pointer;
+            /* Big Hitbox hack using pseudo element */
+        }
+        
+        .shooting-star::after {
+            content: '';
+            position: absolute;
+            top: -30px;
+            bottom: -30px;
+            left: -30px;
+            right: -30px;
+            background: transparent;
+        }
 
-    /* CARDS */
-    .card-grid{ display:grid; gap:1rem; grid-template-columns:1fr }
-    @media(min-width:700px){ .card-grid{ grid-template-columns: repeat(2,1fr) } }
-    .card{ overflow:hidden; border-radius:8px; background:rgba(255,255,255,0.02); border:1px solid var(--glass-border) }
-    .card .card-img{ height:190px; width:100%; object-fit:cover; display:block }
-    .card-body{ padding:.9rem }
-    .card-title{ color:var(--accent); font-weight:700; margin-bottom:.35rem }
+        /* --- LAYOUT UTILITIES --- */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem; /* Even spacing between all sections */
+        }
 
-    /* HOBBIES / LIST */
-    .hobbies{ display:flex; gap:1.25rem; flex-wrap:wrap; align-items:center }
-    .h-list div{ padding:.35rem 0; border-left:3px solid var(--accent); padding-left:.85rem; color:#d1d6d8 }
+        .glass-panel {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
 
-    /* CONTACT ROW */
-    .contact-row{ display:flex; gap:1rem; margin-top:1rem }
-    .contact-pill{ flex:1; padding:.6rem 1rem; border-radius:999px; text-align:center; border:1px solid var(--glass-border); background:rgba(255,255,255,0.02) }
-    .contact-pill:hover{ background:var(--accent); color:white; transform:translateY(-3px) }
+        h1, h2, h3 {
+            font-family: var(--font-head);
+            color: #fff;
+            margin-bottom: 1rem;
+        }
 
-    /* MODAL / POPUP */
-    .modal{
-      position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:120;
-      background:linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.6));
-      padding:2rem; visibility:hidden; opacity:0; transition:opacity .18s;
-    }
-    .modal.show{ visibility:visible; opacity:1 }
-    .modal-card{ width:100%; max-width:600px; background:var(--glass-bg); border-radius:10px; padding:1.25rem; border:1px solid var(--glass-border); }
+        h2 {
+            font-size: 1.8rem;
+            border-bottom: 2px solid var(--accent-color);
+            display: inline-block;
+            margin-bottom: 1.5rem;
+        }
 
-    /* TTS UI */
-    .tts-row{ display:flex; gap:.6rem; align-items:center; margin-top:.6rem; flex-wrap:wrap }
-    .tts-row input[type="text"]{ flex:1; min-width:180px; padding:.6rem; border-radius:8px; border:1px solid var(--glass-border); background:transparent; color:var(--text) }
-    .btn{ padding:.6rem .9rem; border-radius:8px; border:0; background:var(--accent); color:#fff; cursor:pointer; font-weight:700 }
-    .btn[disabled]{ opacity:.5; cursor:not-allowed }
+        a {
+            text-decoration: none;
+            color: inherit;
+            transition: 0.3s;
+        }
 
-    /* SITES SECTION special */
-    .sites-list{ display:flex; flex-direction:column; gap:.5rem }
-    .site-item{ display:flex; gap:.7rem; align-items:center; padding:.55rem; border-radius:8px; background:rgba(255,255,255,0.02); border:1px solid var(--glass-border) }
-    .site-item a{ color:var(--text); font-weight:700 }
-    .site-tag{ font-size:.8rem; color:#bfc6c7; border-left:4px solid var(--accent); padding-left:.6rem }
+        img {
+            max-width: 100%;
+            display: block;
+            border-radius: 8px;
+        }
 
-    /* tiny helpers */
-    .muted{ color:#9aa0a3; font-size:.95rem }
-    footer{ text-align:center; color:#7e878a; padding:2rem 1rem; font-size:.9rem }
+        /* --- HEADER --- */
+        .site-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(11, 11, 11, 0.95);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 1rem 0;
+        }
 
-    /* big-hitbox shooting star (in DOM) */
-    .star-btn{ position:fixed; z-index:80; pointer-events:auto; border-radius:999px; background:transparent; border:0; cursor:pointer; }
-    .star-hit{ width:80px; height:80px; background:transparent; border-radius:999px; position:absolute; transform:translate(-50%,-50%); }
+        .header-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-    /* small-screen tweaks */
-    @media(max-width:520px){ .header-inner{ padding:0 .6rem } .brand small{ display:none } .hero-grid{ gap:1rem } }
-  </style>
+        .brand {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+        .brand span { color: var(--accent-color); }
+
+        .music-toggle {
+            background: none;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .music-toggle:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        /* --- HERO --- */
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        @media (min-width: 768px) {
+            .hero-grid { grid-template-columns: 2fr 1fr; }
+        }
+
+        .status-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            border-radius: 8px;
+        }
+        .status-item span { color: var(--accent-color); font-weight: bold; }
+        
+        #typewriter-word { color: var(--accent-color); }
+        .typewriter-cursor { animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        .profile-pic {
+            border: 3px solid var(--accent-color);
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        /* --- SITES SECTION --- */
+        .sites-category {
+            margin-bottom: 1.5rem;
+        }
+        .sites-category h3 {
+            font-size: 1.2rem;
+            color: #aaa;
+            margin-bottom: 0.5rem;
+        }
+        .sites-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        .site-card {
+            background: rgba(255,255,255,0.05);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            text-align: center;
+        }
+        .site-card:hover {
+            border-color: var(--accent-color);
+            background: rgba(37, 129, 142, 0.1);
+        }
+        .site-name { font-weight: 700; color: #fff; display: block; margin-bottom: 0.2rem;}
+        .site-url { font-size: 0.8rem; color: #888; }
+
+        /* --- VOICE TTS --- */
+        .voice-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .voice-input-group {
+            display: flex;
+            gap: 1rem;
+        }
+        .voice-input {
+            flex: 1;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid var(--glass-border);
+            background: rgba(0,0,0,0.3);
+            color: white;
+        }
+        .voice-btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 0 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .voice-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* --- CARDS & HOBBIES (Universal Grid) --- */
+        .card-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem; /* Even spacing */
+        }
+        @media (min-width: 600px) {
+            .card-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        .card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: 0.3s;
+            height: 100%;
+        }
+        .card:hover { transform: scale(1.02); }
+        .card-img { height: 200px; width: 100%; object-fit: cover; }
+        .card-content { padding: 1rem; }
+        .card-title { font-weight: bold; font-size: 1.1rem; color: var(--accent-color); display: block; margin-bottom: 0.5rem; }
+        .card-details { font-size: 0.85rem; color: #ccc; }
+
+        .hobbies-flex {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            align-items: center;
+        }
+        .hobby-list div {
+            margin-bottom: 0.5rem;
+            padding-left: 1rem;
+            border-left: 2px solid var(--accent-color);
+        }
+
+        /* --- FOOTER --- */
+        footer { text-align: center; padding: 2rem; color: #666; font-size: 0.8rem; }
+
+        /* --- POPUP MODAL --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background: var(--bg-color);
+            border: 1px solid var(--accent-color);
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 400px;
+            text-align: center;
+            position: relative;
+        }
+        .close-modal {
+            position: absolute;
+            top: 10px; right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #aaa;
+        }
+    </style>
 </head>
+
 <body>
 
-  <!-- Night sky canvas sits behind everything -->
-  <canvas id="sky" aria-hidden="true"></canvas>
-
-  <header class="site-header">
-    <div class="header-inner">
-      <div class="brand"><span>P</span>enn<span>B</span>renn<small style="opacity:0.8">.com</small></div>
-
-      <div class="header-controls">
-        <!-- background music control -->
-        <button id="musicBtn" class="music-btn" title="Toggle background music" aria-pressed="false">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 3v18l11-9L5 3z"></path></svg>
-        </button>
-      </div>
+    <!-- Animated Aurora Background -->
+    <div class="aurora-bg">
+        <div class="aurora-light"></div>
     </div>
-  </header>
+    
+    <!-- Shooting Star Container -->
+    <div id="star-container" class="star-container"></div>
 
-  <main class="container">
-    <!-- HERO -->
-    <section class="glass">
-      <div class="hero-grid">
-        <div>
-          <h1><span id="typewriter">Im Penn</span> <span style="opacity:.8">| he/him</span></h1>
-          <div class="meta-row">
-            <div class="pill">It is <strong id="laTime">Loading...</strong> where I am</div>
-            <div class="pill">Birthday in <span id="days" class="accent">0</span> days</div>
-            <div class="pill muted">Links retain the same color</div>
-          </div>
+    <!-- Background Music Audio -->
+    <audio id="bg-music" loop>
+        <!-- Replace with your actual music file path -->
+        <source src="Images/background_music.mp3" type="audio/mpeg">
+    </audio>
 
-          <article style="margin-top:1rem; color:#d7dbe0">
-            <p><strong>PUBLIC PROFILE</strong></p>
-            <p style="margin-top:.35rem">Hi—I'm Penn (William). I code, keep lizards, play airsoft, and make weird projects. I also build cameras — buy one? :)</p>
-          </article>
+    <header class="site-header">
+        <div class="header-content">
+            <a href="./index.html" class="brand"><span>P</span>enn<span>B</span>renn<small>.com</small></a>
+            
+            <button id="musicBtn" class="music-toggle" onclick="toggleMusic()">
+                <i class="fa-solid fa-play"></i> <span>Music</span>
+            </button>
         </div>
+    </header>
 
-        <div style="text-align:center">
-          <img src="/Images/me.jpg" alt="Penn/William" class="profile-pic">
+    <main class="container">
+
+        <!-- HERO SECTION -->
+        <section class="glass-panel">
+            <div class="hero-grid">
+                <div>
+                    <h1><span id="typewriter-word">Im Penn</span><span class="typewriter-cursor">|</span></h1>
+                    <div class="status-bar">
+                        <div class="status-item">It is <span id="laTime">Loading...</span> where i am</div>
+                        <div class="status-item">There are <span id="days">0</span> days until my birthday</div>
+                    </div>
+                    <article class="about-text">
+                        <h3>🇺🇸🏳️‍🌈♂️he/him</h3>
+                        <p><b>PUBLIC PROFILE</b></p>
+                        <p><small>Specific information is is not revealed openly.</small></p>
+                        <p>Hiiii im penn, the name has no relation to any historical figures. This is the first website that I actually coded. I keep lizards and geckos, and enjoy starting new projects and never finishing them! I play airsoft, I run a hpa gbb kriss vector. I enjoy playing online games with friends.</p>
+                        <p style="margin-top: 1rem;"><b>Taken</b></p>
+                    </article>
+                </div>
+                <div class="profile-pic-container">
+                    <img src="Images/me.jpg" alt="Penn/William Profile" class="profile-pic">
+                </div>
+            </div>
+        </section>
+
+        <!-- SITES SECTION -->
+        <section class="glass-panel">
+            <h2>Sites</h2>
+            
+            <div class="sites-category">
+                <h3>Professional "Stuff"</h3>
+                <div class="sites-grid">
+                    <a href="https://cam.pennbrenn.com" class="site-card">
+                        <span class="site-name">penncamm</span>
+                        <span class="site-url">cam.pennbrenn.com</span>
+                    </a>
+                    <a href="https://www.pennbrenn.com" class="site-card">
+                        <span class="site-name">about me</span>
+                        <span class="site-url">pennbrenn.com</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="sites-category">
+                <h3>Game "Stuff"</h3>
+                <div class="sites-grid">
+                    <a href="https://play.pennbrenn.com" class="site-card">
+                        <span class="site-name">Question Game</span>
+                        <span class="site-url">play.pennbrenn.com</span>
+                    </a>
+                    <a href="https://play.bbcjustice.top" class="site-card">
+                        <span class="site-name">bbcjustice</span>
+                        <span class="site-url">play.bbcjustice.top</span>
+                    </a>
+                    <a href="https://sam.pennbrenn.com" class="site-card">
+                        <span class="site-name">Sams Aura Farm</span>
+                        <span class="site-url">sam.pennbrenn.com</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="sites-category">
+                <h3>Old "Stuff"</h3>
+                <div class="sites-grid">
+                    <a href="https://moveon.pennbrenn.com/" class="site-card">
+                        <span class="site-name">move on lol</span>
+                        <span class="site-url">moveon.pennbrenn.com</span>
+                    </a>
+                    <a href="https://2guys1mic.top" class="site-card">
+                        <span class="site-name">2g1m</span>
+                        <span class="site-url">2guys1mic.top</span>
+                    </a>
+                    <a href="#" class="site-card" style="opacity: 0.5;">
+                        <span class="site-name">old games/missing</span>
+                        <span class="site-url">Offline</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- HEAR MY VOICE SECTION -->
+        <section class="glass-panel">
+            <h2>Hear My Voice</h2>
+            <p style="margin-bottom: 1rem; color: #aaa;">Type something to hear me say it using AI. (Profanity filters active).</p>
+            <div class="voice-controls">
+                <div class="voice-input-group">
+                    <input type="text" id="ttsInput" class="voice-input" placeholder="Type up to 100 chars..." maxlength="100">
+                    <button id="ttsBtn" class="voice-btn" onclick="generateSpeech()">Speak</button>
+                </div>
+                <audio id="ttsAudio" controls style="width: 100%; display: none;"></audio>
+                <div id="ttsStatus" style="font-size: 0.9rem; color: var(--accent-color);"></div>
+            </div>
+        </section>
+
+        <!-- FOR BUSINESS SECTION -->
+        <section class="glass-panel">
+            <h2>For Business</h2>
+            <div style="border-left: 2px solid var(--accent-color); padding-left: 1.5rem;">
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 1.2rem; color: white;">Education</h3>
+                    <p><strong>Graduated High School</strong> | 2024</p>
+                    <p style="font-size: 0.9rem; color: #ccc;">Relevant Coursework: Computer Science, Physics.</p>
+                </div>
+                <div>
+                    <h3 style="font-size: 1.2rem; color: white;">Skills</h3>
+                    <p>HTML / CSS / Basic JS</p>
+                    <p>Business Management & Startup Experience</p>
+                    <p>3D Printing & Prototyping</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- GAMES SECTION -->
+        <section class="glass-panel">
+            <h2>My Fav Games</h2>
+            <div class="card-grid">
+                <div class="card">
+                    <img src="Images/storm1.jpg" alt="Stormworks" class="card-img">
+                    <div class="card-content">
+                        <a href="https://store.steampowered.com/app/573090/Stormworks_Build_and_Rescue/" class="card-title">#1 Stormworks</a>
+                        <p class="card-details">Build anything simulator</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="Images/star1.jpg" alt="Star Citizen" class="card-img">
+                    <div class="card-content">
+                        <a href="https://robertsspaceindustries.com/en/" class="card-title">#2 Star Citizen</a>
+                        <p class="card-details">Do whatever simulator</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="Images/people.jpg" alt="People Playground" class="card-img">
+                    <div class="card-content">
+                        <a href="https://store.steampowered.com/app/1118200/People_Playground/" class="card-title">#3 People Playground</a>
+                        <p class="card-details">War crime simulator</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="Images/liero1.jpg" alt="Liero" class="card-img">
+                    <div class="card-content">
+                        <a href="https://www.liero.be/" class="card-title">#4 Liero</a>
+                        <p class="card-details">1v1 simulator</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PETS SECTION -->
+        <section class="glass-panel">
+            <h2>My Pets</h2>
+            <div class="card-grid">
+                <!-- Pennclave -->
+                <div class="card">
+                    <img src="Images/pennclavebig.jpg" alt="Mourning Geckos" class="card-img">
+                    <div class="card-content">
+                        <div class="card-title">The Pennclave</div>
+                        <div class="card-details">
+                            <div>Mourning geckos x4</div>
+                            <div>40 gal bioactive</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Trick -->
+                <div class="card">
+                    <img src="Images/trickbig.jpg" alt="Trick" class="card-img">
+                    <div class="card-content">
+                        <div class="card-title">Trick</div>
+                        <div class="card-details">
+                            <div>Kitty :3</div>
+                            <div>He yearns for food</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Add other pets similarly -->
+                <div class="card">
+                    <img src="Images/pennbig.jpg" alt="Penn" class="card-img">
+                    <div class="card-content">
+                        <div class="card-title">Penn</div>
+                        <div class="card-details">
+                            <div>Alligator Lizard</div>
+                            <div>2022</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- HOBBIES -->
+        <section class="glass-panel">
+            <h2>Hobbies</h2>
+            <div class="hobbies-flex">
+                <div class="hobby-list">
+                    <div>‣ Airsoft</div>
+                    <div>‣ Petting cat</div>
+                    <div>‣ Gaming</div>
+                    <div>‣ Sailing</div>
+                    <div>‣ 3d printing</div>
+                    <div>‣ Making things</div>
+                </div>
+                <div>
+                    <img src="Images/printer.jpg" alt="3D Printer" style="max-width: 250px; border-radius: 8px;">
+                </div>
+            </div>
+        </section>
+
+        <!-- OUT AND ABOUT -->
+        <section class="glass-panel">
+            <h2>Fav Out & About</h2>
+            <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                <div class="card">
+                    <img src="Images/opensause.jpg" alt="Opensauce" class="card-img">
+                    <div class="card-content"><div class="card-title">Opensauce 2025</div></div>
+                </div>
+                <div class="card">
+                    <img src="Images/dc.jpg" alt="DC" class="card-img">
+                    <div class="card-content"><div class="card-title">Washington DC</div></div>
+                </div>
+                <div class="card">
+                    <img src="Images/airsoftcon.jpg" alt="Airsoftcon" class="card-img">
+                    <div class="card-content"><div class="card-title">Airsoftcon 2024</div></div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Penn Brenn. All rights reserved.</p>
+    </footer>
+
+    <!-- FACT POPUP MODAL -->
+    <div id="factModal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closePopup()">&times;</span>
+            <h3 style="color: var(--accent-color);">Random Fact!</h3>
+            <p id="factText" style="margin-top: 1rem; font-size: 1.1rem;"></p>
         </div>
-      </div>
-    </section>
-
-    <!-- SITES -->
-    <section class="glass" id="sites">
-      <h2>Sites</h2>
-      <div class="sites-list" style="margin-top:.8rem;">
-        <div class="site-item"><div class="site-tag">Professional</div><a href="https://cam.pennbrenn.com" target="_blank" rel="noopener">penncamm</a></div>
-        <div class="site-item"><div class="site-tag">Professional</div><a href="https://www.pennbrenn.com" target="_blank" rel="noopener">about me</a></div>
-        <div class="site-item"><div class="site-tag">Game</div><a href="https://play.pennbrenn.com" target="_blank" rel="noopener">that game where one person has a different question</a></div>
-        <div class="site-item"><div class="site-tag">Game</div><a href="https://play.bbcjustice.top" target="_blank" rel="noopener">bbcjustice</a></div>
-        <div class="site-item"><div class="site-tag">Game</div><a href="https://sam.pennbrenn.com" target="_blank" rel="noopener">sams aura farm simulator 2025</a></div>
-        <div class="site-item"><div class="site-tag">Old</div><a href="https://moveon.pennbrenn.com/" target="_blank" rel="noopener">move on lol</a></div>
-        <div class="site-item"><div class="site-tag">Old</div><a href="https://2guys1mic.top" target="_blank" rel="noopener">2g1m</a></div>
-        <div class="site-item"><div class="site-tag">Old</div><span class="muted">old games / missing</span></div>
-      </div>
-    </section>
-
-    <!-- LINKS GRID -->
-    <section class="glass">
-      <h2>Linky Links</h2>
-      <div class="links-grid" style="margin-top:.6rem;">
-        <div class="link-card"><a href="/sites.html">My Websites</a></div>
-        <div class="link-card"><a href="https://drive.google.com">Drive</a></div>
-        <div class="link-card"><a href="https://discord.com">Discord</a></div>
-        <div class="link-card"><a href="https://www.instagram.com/penn_brenn/">Instagram</a></div>
-        <div class="link-card"><a href="https://www.youtube.com/@PennBrenn">YouTube</a></div>
-        <div class="link-card"><a href="https://www.twitch.tv/pennbrenn">Twitch</a></div>
-        <div class="link-card"><a href="https://www.tiktok.com/@pennbrenn?lang=en">TikTok</a></div>
-        <div class="link-card"><a href="https://github.com/PennBrenn">Github</a></div>
-        <div class="link-card"><a href="https://steamcommunity.com/id/Pennnnnnnnnnnnn/">Steam</a></div>
-      </div>
-
-      <div class="contact-row" style="margin-top:1rem">
-        <a class="contact-pill" href="mailto:william@pennbrenn.com">Work Email · w@pennbrenn.com</a>
-        <a class="contact-pill" href="tel:+18054104273">Work Phone · +1 (805) 410-4273</a>
-      </div>
-    </section>
-
-    <!-- TTS (Hear My Voice) -->
-    <section class="glass" id="hear-voice">
-      <h2>Hear my voice</h2>
-      <p class="muted" style="margin-top:.25rem">Type up to 100 characters. Profanity is blocked for safety.</p>
-
-      <div class="tts-row" style="margin-top:.6rem">
-        <input id="ttsText" type="text" maxlength="100" placeholder="Type here (max 100 chars)" aria-label="Text to speak">
-        <button id="ttsBtn" class="btn">Play</button>
-      </div>
-
-      <div id="ttsStatus" style="margin-top:.6rem;color:#bfc6c7"></div>
-
-      <audio id="ttsAudio" controls style="width:100%; margin-top:.6rem; display:none;"></audio>
-    </section>
-
-    <!-- Example games/pets cards kept but spaced -->
-    <section class="glass">
-      <h2>My Fav Games</h2>
-      <div class="card-grid" style="margin-top:.8rem">
-        <div class="card">
-          <img src="/Images/storm1.jpg" class="card-img" alt="">
-          <div class="card-body"><div class="card-title">Stormworks</div><div class="muted">Build anything simulator</div></div>
-        </div>
-        <div class="card">
-          <img src="/Images/star1.jpg" class="card-img" alt="">
-          <div class="card-body"><div class="card-title">Star Citizen</div><div class="muted">Do whatever simulator</div></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="glass">
-      <h2>For business</h2>
-      <p class="muted">Sample text — replace with your business info. Example: Graduated HS. Available for hire. Contact via email above.</p>
-    </section>
-
-    <section class="glass">
-      <h2>Hobbies</h2>
-      <div class="hobbies" style="margin-top:.6rem">
-        <div class="h-list">
-          <div>‣ Airsoft</div>
-          <div>‣ Petting cat</div>
-          <div>‣ Gaming</div>
-          <div>‣ 3d printing</div>
-          <div>‣ Making things</div>
-        </div>
-        <div><img src="/Images/printer.jpg" alt="3D printer" style="width:260px; max-width:100%; border-radius:8px"></div>
-      </div>
-    </section>
-
-  </main>
-
-  <footer>
-    &copy; 2025 Penn Brenn. All rights reserved.
-  </footer>
-
-  <!-- Random fact modal -->
-  <div id="modal" class="modal" aria-hidden="true">
-    <div class="modal-card">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h3 id="modalTitle">Fun fact</h3>
-        <button id="closeModal" class="btn" aria-label="Close">Close</button>
-      </div>
-      <div id="modalBody" style="margin-top:.7rem; color:#d6dbe0"></div>
     </div>
-  </div>
 
-<script>
-/* ---------------------------
-  Utility + small UI behaviors
-----------------------------*/
-(function(){ /* time + typewriter + birthday */
-  function showLATime(){
-    const opts={timeZone:'America/Los_Angeles',hour:'numeric',minute:'numeric',second:'numeric',hour12:true};
-    document.getElementById('laTime').textContent = new Date().toLocaleTimeString('en-US', opts);
-  }
-  setInterval(showLATime,1000);
-  showLATime();
+    <script>
+        // --- 1. TIME & BIRTHDAY ---
+        function updateTime() {
+            const options = { timeZone: 'America/Los_Angeles', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true };
+            document.getElementById('laTime').textContent = new Date().toLocaleTimeString('en-US', options);
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
 
-  // birthday: Nov 17 (0-index month = 10)
-  function calcDays(){
-    const today=new Date();
-    const t=new Date(today.getFullYear(),10,17);
-    if(today>t) t.setFullYear(today.getFullYear()+1);
-    const days=Math.ceil((t - today)/(1000*60*60*24));
-    document.getElementById('days').textContent = days;
-  }
-  calcDays();
+        function updateBirthday() {
+            const today = new Date();
+            let nextBday = new Date(today.getFullYear(), 10, 17); // Nov 17
+            if (today > nextBday) nextBday.setFullYear(today.getFullYear() + 1);
+            const diff = Math.ceil((nextBday - today) / (1000 * 60 * 60 * 24));
+            document.getElementById("days").textContent = diff;
+        }
+        updateBirthday();
 
-  // typewriter small
-  const words=["Im Penn","Im William"];
-  let wi=0,ci=0, typing=true;
-  const el=document.getElementById('typewriter');
-  function tick(){
-    const w=words[wi];
-    if(typing){ ci++; el.textContent=w.slice(0,ci);
-      if(ci===w.length){ typing=false; setTimeout(tick,1800); return; }
-      setTimeout(tick,90);
-    } else { ci--; el.textContent=w.slice(0,ci);
-      if(ci===0){ typing=true; wi=(wi+1)%words.length; setTimeout(tick,180); return; }
-      setTimeout(tick,40);
-    }
-  }
-  tick();
-})();
+        // --- 2. MUSIC PLAYER ---
+        const audio = document.getElementById("bg-music");
+        audio.volume = 0.3; // Lower volume
+        let isPlaying = false;
+        
+        function toggleMusic() {
+            const btn = document.getElementById("musicBtn");
+            if (isPlaying) {
+                audio.pause();
+                btn.innerHTML = '<i class="fa-solid fa-play"></i> <span>Music</span>';
+            } else {
+                audio.play();
+                btn.innerHTML = '<i class="fa-solid fa-pause"></i> <span>Pause</span>';
+            }
+            isPlaying = !isPlaying;
+        }
 
-/* ---------------------------
-  Background music control
-----------------------------*/
-(function(){
-  // small ambient audio
-  const audio = new Audio('/Audio/ambient-loop.mp3'); // add this file in Images/ or /Audio/
-  audio.loop = true;
-  audio.volume = 0.35;
-  const btn = document.getElementById('musicBtn');
-  function setPlaying(on){
-    btn.setAttribute('aria-pressed', !!on);
-    btn.innerHTML = on ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>' : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 3v18l11-9L5 3z"></path></svg>';
-  }
-  btn.addEventListener('click', () => {
-    if(audio.paused){ audio.play().catch(()=>{}); setPlaying(true); } else { audio.pause(); setPlaying(false); }
-  });
-  // if user navigates away or focus, pause
-  window.addEventListener('pagehide', ()=>audio.pause());
-  setPlaying(false);
-})();
+        // --- 3. SHOOTING STARS & FACTS ---
+        const facts = [
+            "I own 4 geckos.",
+            "I play HPA GBB Kriss Vector in Airsoft.",
+            "I want to start an aircraft business.",
+            "I built this site myself.",
+            "My cat's name is Trick."
+        ];
 
-/* ---------------------------
-  NIGHT SKY + AURORA + Shooting Stars
-----------------------------*/
-(function(){
-  const canvas = document.getElementById('sky');
-  const ctx = canvas.getContext('2d');
-  let W = canvas.width = innerWidth;
-  let H = canvas.height = innerHeight;
-  const stars = [];
-  const shootingStars = [];
-  const facts = [
-    "I code in JS and Python.",
-    "I keep mourning geckos and an ant farm.",
-    "I play airsoft with a Kriss Vector.",
-    "I like 3D printing and building cameras.",
-    "I start projects and sometimes never finish them!"
-  ];
+        function spawnStar() {
+            const container = document.getElementById('star-container');
+            const star = document.createElement('div');
+            star.classList.add('shooting-star');
+            
+            // Random start position
+            const startY = Math.random() * (window.innerHeight / 2); // Top half only
+            star.style.top = startY + 'px';
+            star.style.left = '-100px';
+            
+            // Animate
+            const duration = Math.random() * 5 + 5; // 5 to 10 seconds (Slow)
+            star.style.transition = `transform ${duration}s linear`;
+            
+            container.appendChild(star);
+            
+            // Trigger move after render
+            setTimeout(() => {
+                star.style.transform = `translate(${window.innerWidth + 200}px, ${Math.random() * 100}px)`;
+            }, 50);
 
-  // create static stars
-  for(let i=0;i<220;i++){
-    stars.push({x:Math.random()*W, y:Math.random()*H, r: Math.random()*1.2, o: Math.random()});
-  }
+            // Interaction
+            star.addEventListener('click', () => {
+                // Pause star visually (optional, hard with CSS transition, so we just pop up)
+                const randomFact = facts[Math.floor(Math.random() * facts.length)];
+                document.getElementById('factText').textContent = randomFact;
+                document.getElementById('factModal').style.display = 'flex';
+                star.remove(); // Remove clicked star
+            });
 
-  // reflow
-  window.addEventListener('resize', () => { W = canvas.width = innerWidth; H = canvas.height = innerHeight; });
+            // Cleanup
+            setTimeout(() => { star.remove(); }, duration * 1000);
+        }
 
-  // aurora layers (sliding gradients)
-  const auroraLayers = [
-    {y: H*0.15, speed: 0.05, hue:170, alpha:0.18},
-    {y: H*0.22, speed: 0.03, hue:160, alpha:0.12},
-    {y: H*0.30, speed: 0.02, hue:185, alpha:0.08}
-  ];
+        // Spawn a star every 4 seconds
+        setInterval(spawnStar, 4000);
 
-  // shooting star spawner
-  function spawnShootingStar(){
-    // start somewhere on left top quadrant, go to right lower
-    const startY = Math.random()*H*0.45 + 30;
-    const startX = -30;
-    const endX = W + 50;
-    const endY = startY + (Math.random()*H*0.25 + 60);
-    const duration = 8000 + Math.random()*6000; // slow
-    shootingStars.push({ x:startX, y:startY, dx:endX, dy:endY, t:0, dur:duration, id:Date.now()+Math.random() });
-    // keep spawns occasional
-    setTimeout(spawnShootingStar, 3000 + Math.random()*7000);
-  }
-  spawnShootingStar();
+        function closePopup() {
+            document.getElementById('factModal').style.display = 'none';
+        }
 
-  // render loop
-  let last = performance.now();
-  function render(now){
-    const dt = now - last; last = now;
-    ctx.clearRect(0,0,W,H);
+        // --- 4. TTS (ELEVENLABS) ---
+        const badWords = ["darn", "heck", "stupid"]; // Add real filter list here
+        
+        async function generateSpeech() {
+            const input = document.getElementById('ttsInput');
+            const status = document.getElementById('ttsStatus');
+            const btn = document.getElementById('ttsBtn');
+            const text = input.value.trim();
+            const player = document.getElementById('ttsAudio');
 
-    // dark gradient
-    const g = ctx.createLinearGradient(0,0,0,H);
-    g.addColorStop(0, "#02040a");
-    g.addColorStop(1, "#05060a");
-    ctx.fillStyle = g;
-    ctx.fillRect(0,0,W,H);
+            if (!text) return;
 
-    // aurora
-    auroraLayers.forEach(layer=>{
-      const xShift = (now*0.0001*layer.speed) % W;
-      const gA = ctx.createLinearGradient(-W + xShift, layer.y, xShift, layer.y+200);
-      gA.addColorStop(0, `hsla(${layer.hue},90%,55%,${layer.alpha})`);
-      gA.addColorStop(0.4, `hsla(${layer.hue+20},70%,45%,${layer.alpha*0.8})`);
-      gA.addColorStop(1, `rgba(0,0,0,0)`);
-      ctx.fillStyle = gA;
-      ctx.beginPath();
-      ctx.ellipse(W/2, layer.y, W*0.9, 200, 0, 0, Math.PI*2);
-      ctx.fill();
-    });
+            // Profanity Check
+            const hasProfanity = badWords.some(word => text.toLowerCase().includes(word));
+            if (hasProfanity) {
+                alert("Let's keep it clean to protect Penn!");
+                return;
+            }
 
-    // stars
-    stars.forEach(s=>{
-      const twinkle = Math.sin((now*0.002 + s.o*10)) * 0.5 + 0.5;
-      ctx.globalAlpha = 0.6*twinkle;
-      ctx.fillStyle = "#fff";
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
-      ctx.fill();
-    });
-    ctx.globalAlpha = 1;
+            status.textContent = "Generating voice...";
+            btn.disabled = true;
 
-    // shooting stars movement + draw & clickable hitboxes (we'll create HTML buttons for click area)
-    shootingStars.forEach((ss, i) => {
-      ss.t += dt;
-      const p = Math.min(1, ss.t/ss.dur);
-      const ease = p<.5? (2*p*p) : (-1 + (4 - 2*p)*p); // simple ease
-      const x = ss.x + (ss.dx - ss.x) * ease;
-      const y = ss.y + (ss.dy - ss.y) * ease;
+            try {
+                // Call Vercel Backend
+                const response = await fetch('/api/speak', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: text })
+                });
 
-      // light tail
-      ctx.strokeStyle = 'rgba(255,255,255,0.9)';
-      ctx.lineWidth = 1.3;
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-      ctx.lineTo(x - 80*ease, y - 35*ease);
-      ctx.stroke();
+                if (!response.ok) throw new Error("API Error");
 
-      // head
-      ctx.fillStyle = 'rgba(255,255,255,0.98)';
-      ctx.beginPath();
-      ctx.arc(x, y, 3.5, 0, Math.PI*2);
-      ctx.fill();
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                player.src = url;
+                player.style.display = 'block';
+                player.play();
+                status.textContent = "Playing...";
+            } catch (err) {
+                console.error(err);
+                status.textContent = "Error generating audio.";
+            } finally {
+                btn.disabled = false;
+            }
+        }
 
-      // update/create DOM hitbox
-      let btn = document.querySelector(`[data-star="${ss.id}"]`);
-      if(!btn){
-        btn = document.createElement('button');
-        btn.className = 'star-btn';
-        btn.style.left = (x)+'px';
-        btn.style.top = (y)+'px';
-        btn.dataset.star = ss.id;
-        btn.innerHTML = '<span class="star-hit" style="display:block"></span>';
-        btn.title = "Click for a fun fact";
-        btn.style.pointerEvents = 'auto';
-        btn.onclick = () => {
-          // show modal with random fact
-          const f = facts[Math.floor(Math.random()*facts.length)];
-          document.getElementById('modalBody').textContent = f;
-          document.getElementById('modal').classList.add('show');
-          document.getElementById('modal').setAttribute('aria-hidden','false');
-        };
-        document.body.appendChild(btn);
-      } else {
-        // move it (big hitbox)
-        btn.style.left = x + 'px';
-        btn.style.top = y + 'px';
-        // enlarge hitbox to make it forgiving
-        btn.querySelector('.star-hit').style.width = '120px';
-        btn.querySelector('.star-hit').style.height = '120px';
-      }
-
-      // clean finished
-      if(ss.t >= ss.dur){
-        const el = document.querySelector(`[data-star="${ss.id}"]`);
-        if(el) el.remove();
-        shootingStars.splice(i,1);
-      }
-    });
-
-    requestAnimationFrame(render);
-  }
-  requestAnimationFrame(render);
-
-  // modal close
-  document.getElementById('closeModal').addEventListener('click', ()=>{
-    document.getElementById('modal').classList.remove('show');
-    document.getElementById('modal').setAttribute('aria-hidden','true');
-  });
-
-})();
-
-/* ---------------------------
-  TTS frontend (talks to /api/eleven-tts)
-----------------------------*/
-(function(){
-  const btn = document.getElementById('ttsBtn');
-  const input = document.getElementById('ttsText');
-  const status = document.getElementById('ttsStatus');
-  const audioEl = document.getElementById('ttsAudio');
-
-  // client side profanity list (small) to protect you before sending
-  const profanity = ["fuck","shit","bitch","cunt","nigger","faggot","asshole"]; // small sample: server also filters
-  function hasProfanity(s){
-    const lower = s.toLowerCase();
-    return profanity.some(w=> lower.includes(w));
-  }
-
-  btn.addEventListener('click', async ()=>{
-    const text = input.value.trim();
-    if(!text){ status.textContent = "Type something to play."; return; }
-    if(text.length > 100){ status.textContent = "Max 100 characters."; return; }
-    if(hasProfanity(text)){ status.textContent = "Your message contains disallowed language."; return; }
-
-    btn.disabled = true;
-    status.textContent = "Generating... (this may take a second)";
-    try {
-      const resp = await fetch('/api/eleven-tts', {
-        method:'POST',
-        headers:{ 'Content-Type':'application/json' },
-        body: JSON.stringify({ text })
-      });
-      if(!resp.ok){
-        const err = await resp.text();
-        status.textContent = "Error: " + (err || resp.statusText);
-        btn.disabled = false;
-        return;
-      }
-      const blob = await resp.blob();
-      const url = URL.createObjectURL(blob);
-      audioEl.src = url;
-      audioEl.style.display = 'block';
-      audioEl.play().catch(()=>{});
-      status.textContent = "Playing.";
-    } catch(e){
-      status.textContent = "Network error.";
-    } finally { btn.disabled = false; }
-  });
-})();
-</script>
+        // --- 5. TYPEWRITER ---
+        (function () {
+            const words = ["Im Penn", "Im William"];
+            const el = document.getElementById("typewriter-word");
+            let wordIndex = 0, charIndex = 0, typing = true;
+            
+            function tick() {
+                const current = words[wordIndex];
+                if (typing) {
+                    charIndex++;
+                    el.textContent = current.slice(0, charIndex);
+                    if (charIndex === current.length) { typing = false; setTimeout(tick, 2000); return; }
+                } else {
+                    charIndex--;
+                    el.textContent = current.slice(0, charIndex);
+                    if (charIndex === 0) { typing = true; wordIndex = (wordIndex + 1) % words.length; }
+                }
+                setTimeout(tick, typing ? 100 : 50);
+            }
+            tick();
+        })();
+    </script>
 </body>
 </html>

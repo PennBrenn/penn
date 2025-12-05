@@ -16,7 +16,7 @@ export default async function handler(req) {
         }
 
 
-        const badWords = ["fuck", "shit", "bitch", "cunt", "nigger", "asshole", "dick", "pussy", "whore", "slut", "bastard", "faggot", "neggurt", "negurt", "flagot", "retigga", "swast", "jew", "nig", "neck", "67", "six"];
+        const badWords = ["fuck", "shit", "bitch", "cunt", "nigger", "asshole", "dick", "pussy", "whore", "slut", "bastard", "faggot", "neggurt", "negurt", "flagot", "retigga", "swast", "jew", "nig", "neck", "67", "six", "nig", "igga"];
         const containsProfanity = badWords.some(word => text.toLowerCase().includes(word));
 
         if (containsProfanity) {

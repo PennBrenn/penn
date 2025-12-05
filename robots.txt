@@ -1,4 +1,4 @@
 User-agent: *
 Disallow: 
-Sitemap: https://pennbrenn.com/robots.html
+Sitemap: https://pennbrenn.com/sitemap.xml
 

@@ -2,8 +2,8 @@
 :root {
     --bg-color: #0b1114;
     --text-color: #e5e7eb;
-    --accent-color: #25818e; /* Teal */
-    --accent-hover: #1f6f7a;
+    --accent-color: #465e73; /* Teal */
+    --accent-hover: #465e73;
     --glass-bg: rgba(11, 17, 20, 0.75); /* Darker, semi-transparent */
     --glass-border: rgba(255, 255, 255, 0.1);
     --font-main: 'Inter', sans-serif;

@@ -1,817 +1,386 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Pennbrenn.com | About</title>
-  <meta name="description" content="The official website of Penn Brenn / William Villongco." />
-  <link rel="icon" type="image/png" href="Images/favicon96.png" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pennbrenn.com | About</title>
+<meta name="description" content="The official website of Penn Brenn / William Villongco.">
+<meta name="robots" content="index, follow">
+<link rel="icon" type="image/png" href="Images/favicon96.png">
 
-  <style>
-    :root{
-      --bg-color:#0b1114;
-      --text-color:#e5e7eb;
-      --accent-color:#25818e;
-      --accent-hover:#1f6f7a;
-      --glass-bg: rgba(17,24,28,0.65);
-      --glass-border: rgba(255,255,255,0.08);
-      --font-main: 'Inter', sans-serif;
-      --font-head: 'Poppins', sans-serif;
-      --gap: 24px; /* global spacing for even spacing */
-    }
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
 
-    /* reset */
-    *{box-sizing:border-box;margin:0;padding:0}
-    html,body{height:100%}
-    body{
-      font-family:var(--font-main);
-      color:var(--text-color);
-      background:var(--bg-color);
-      overflow-x:hidden;
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-    }
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-JB57Z2S19V"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-JB57Z2S19V');
+</script>
 
-    /* Night sky canvas (full-screen behind content) */
-    #sky {
-      position:fixed;
-      inset:0;
-      z-index:0;
-      pointer-events:none; /* canvas does not block clicks to UI elements */
-    }
+<style>
+/* --- VARIABLES --- */
+:root{
+  --bg-color: #0b1114;
+  --text-color: #e5e7eb;
+  --accent-color: #25818e;
+  --accent-hover: #1f6f7a;
+  --glass-bg: rgba(17, 24, 28, 0.65);
+  --glass-border: rgba(255,255,255,0.1);
+  --font-main: 'Inter', sans-serif;
+  --font-head: 'Poppins', sans-serif;
+}
 
-    /* shooting stars layer */
-    #stars-layer {
-      position:fixed;
-      inset:0;
-      z-index:5;
-      pointer-events:none;
-    }
+*{box-sizing:border-box;margin:0;padding:0;}
 
-    /* header */
-    .site-header{
-      position:sticky;
-      top:0;
-      z-index:40;
-      backdrop-filter: blur(6px);
-      background: rgba(11,11,11,0.55);
-      border-bottom: 1px solid var(--glass-border);
-      padding: 14px 0;
-    }
-    .header-content{
-      max-width:1100px;
-      margin:0 auto;
-      padding:0 20px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:var(--gap);
-    }
-    .brand{
-      font-weight:700;
-      font-family:var(--font-head);
-      font-size:1.15rem;
-      color:var(--text-color);
-    }
-    .brand span{ color:var(--accent-color) }
+body{
+  font-family: var(--font-main);
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  line-height: 1.6;
+  overflow-x: hidden;
+  position: relative;
+}
 
-    /* centered play/pause in header */
-    .header-controls{
-      position:relative;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:12px;
-    }
-    .music-btn{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      width:44px;
-      height:44px;
-      border-radius:10px;
-      background:rgba(255,255,255,0.03);
-      border:1px solid var(--glass-border);
-      color:var(--text-color);
-      cursor:pointer;
-    }
-    .music-btn:hover{ background:var(--accent-hover); transform:translateY(-2px) }
+/* NIGHT SKY ANIMATION */
+#night-sky{
+  position: fixed;
+  top:0; left:0;
+  width:100%;
+  height:100%;
+  z-index:-1;
+  background: radial-gradient(ellipse at bottom, #0b1114 0%, #000000 100%);
+  overflow:hidden;
+}
 
-    /* main container */
-    .container{
-      position:relative;
-      z-index:10;
-      max-width:1100px;
-      margin:36px auto;
-      padding:0 20px 80px 20px;
-      display:grid;
-      gap:var(--gap);
-    }
+.northern-lights{
+  position:absolute;
+  width:100%;
+  height:100%;
+  background: linear-gradient(90deg, rgba(37,129,142,0.3), rgba(37,129,142,0.0));
+  filter: blur(60px);
+  animation: aurora 10s infinite alternate;
+}
 
-    /* glass-panel consistent spacing */
-    .glass-panel{
-      background: var(--glass-bg);
-      border:1px solid var(--glass-border);
-      border-radius:14px;
-      padding:22px;
-      backdrop-filter: blur(8px);
-      box-shadow: 0 8px 30px rgba(0,0,0,0.45);
-    }
+@keyframes aurora{
+  0%{transform: translateX(-100%) rotate(15deg);}
+  100%{transform: translateX(100%) rotate(-15deg);}
+}
 
-    h1,h2,h3{ font-family:var(--font-head); color:#fff; margin-bottom:12px }
-    h1{ font-size:2rem; line-height:1.15 }
-    h2{ font-size:1.4rem; border-bottom:2px solid var(--accent-color); display:inline-block; padding-bottom:6px }
+.shooting-star{
+  position:absolute;
+  width:4px;
+  height:150px;
+  background: linear-gradient(white, transparent);
+  transform: rotate(45deg);
+  opacity:0.8;
+  pointer-events:auto;
+  cursor:pointer;
+}
 
-    /* hero layout */
-    .hero-grid{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:18px;
-      align-items:center;
-    }
-    @media(min-width:880px){
-      .hero-grid{ grid-template-columns: 1fr 360px; gap:28px }
-    }
+/* HEADER */
+.site-header{
+  position: sticky;
+  top:0;
+  z-index:100;
+  background: rgba(11,11,11,0.95);
+  border-bottom:1px solid var(--glass-border);
+  padding:1rem 0;
+}
+.header-content{
+  max-width:1000px;
+  margin:0 auto;
+  padding:0 1.5rem;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.brand{font-size:1.25rem;font-weight:700;}
+.brand span{color: var(--accent-color);}
 
-    .about-text p{ margin-bottom:10px; color:#dcdcdc; line-height:1.5 }
+.music-control{
+  font-size: 0.9rem;
+  cursor:pointer;
+  padding:0.25rem 0.5rem;
+  border:1px solid var(--accent-border);
+  border-radius:5px;
+  transition:0.3s;
+}
+.music-control:hover{
+  background:var(--accent-color);
+}
 
-    .profile-pic{
-      width:100%;
-      max-width:320px;
-      border-radius:12px;
-      border:3px solid var(--accent-color);
-      display:block;
-      margin:0 auto;
-    }
+/* GLASS PANEL */
+.glass-panel{
+  background: var(--glass-bg);
+  border:1px solid var(--glass-border);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius:12px;
+  padding:2rem;
+  margin:2rem auto;
+  max-width:1000px;
+  box-shadow:0 4px 6px rgba(0,0,0,0.3);
+}
 
-    /* status bar */
-    .status-bar{
-      display:flex;
-      gap:14px;
-      flex-wrap:wrap;
-      margin:10px 0 14px 0;
-      font-size:0.95rem;
-      color:#d7d7d7;
-    }
-    .status-item{ display:flex; align-items:center; gap:8px }
+/* HEADINGS */
+h1,h2,h3{
+  font-family: var(--font-head);
+  color:#fff;
+  margin-bottom:1rem;
+}
+h1{font-size:2.5rem;line-height:1.2;}
+h2{font-size:1.8rem;border-bottom:2px solid var(--accent-color);display:inline-block;margin-top:1.5rem;}
 
-    /* links grid */
-    .links-grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fit, minmax(140px,1fr));
-      gap:12px;
-      margin-top:12px;
-    }
-    .link-pill{
-      background: rgba(255,255,255,0.03);
-      padding:12px;
-      border-radius:10px;
-      border:1px solid transparent;
-      font-weight:600;
-      text-align:center;
-      transition:all .22s;
-      color:var(--text-color);
-    }
-    .link-pill:hover{
-      background:var(--accent-color);
-      transform:translateY(-4px);
-      border-color:rgba(255,255,255,0.06);
-    }
+/* LINKS GRID */
+.links-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+  gap:1rem;
+  margin-top:1rem;
+}
+.social-btn{
+  background: rgba(255,255,255,0.05);
+  padding:0.8rem;
+  text-align:center;
+  border-radius:6px;
+  font-weight:600;
+  border:1px solid transparent;
+}
+.social-btn:hover{
+  background: var(--accent-color);
+  border-color:#fff;
+  transform: translateY(-2px);
+  transition:0.3s;
+}
 
-    /* sites section (replacement of See Other Sites) */
-    .sites-list{ display:grid; gap:10px; margin-top:12px }
-    .site-item{
-      padding:12px;
-      border-radius:8px;
-      display:flex;
-      gap:12px;
-      align-items:center;
-      justify-content:space-between;
-      background: rgba(255,255,255,0.02);
-      border:1px solid rgba(255,255,255,0.02);
-    }
-    .site-item a{ color:var(--text-color); font-weight:700; text-decoration:none }
-    .site-item small{ color:#bfc9cc; font-size:0.9rem }
+/* CARDS */
+.card-grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:1.5rem;
+  margin-top:1.5rem;
+}
+@media(min-width:600px){
+  .card-grid{grid-template-columns:repeat(2,1fr);}
+}
+.card{
+  background: rgba(0,0,0,0.3);
+  border-radius:8px;
+  overflow:hidden;
+  transition:0.3s;
+}
+.card:hover{transform:scale(1.02);}
+.card-img{height:200px;width:100%;object-fit:cover;}
+.card-content{padding:1rem;}
+.card-title{font-weight:bold;font-size:1.1rem;color:var(--accent-color);margin-bottom:0.5rem;}
+.card-details{font-size:0.85rem;color:#ccc;}
+.card-details div{margin-bottom:0.25rem;}
 
-    /* cards grid (games/pets) */
-    .card-grid{
-      display:grid;
-      gap:12px;
-      grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
-    }
-    .card{
-      border-radius:10px;
-      overflow:hidden;
-      background:rgba(0,0,0,0.28);
-      border:1px solid rgba(255,255,255,0.03);
-    }
-    .card-img{ width:100%; height:160px; object-fit:cover; display:block }
-    .card-content{ padding:12px }
-    .card-title{ color:var(--accent-color); font-weight:700; margin-bottom:6px }
-    .card-details{ color:#cfcfcf; font-size:0.9rem }
+/* HOBBIES */
+.hobbies-flex{
+  display:flex;
+  flex-wrap:wrap;
+  gap:2rem;
+  align-items:center;
+}
+.hobby-list div{
+  margin-bottom:0.5rem;
+  padding-left:1rem;
+  border-left:2px solid var(--accent-color);
+}
 
-    /* hobbies layout */
-    .hobbies-flex{ display:flex; gap:22px; align-items:center; flex-wrap:wrap }
-    .hobby-list div{ margin-bottom:8px; padding-left:10px; border-left:3px solid var(--accent-color) }
+/* FOOTER */
+footer{text-align:center;padding:2rem;color:#666;font-size:0.8rem;}
 
-    /* footer */
-    footer{ text-align:center; color:#888; padding:36px 20px; font-size:0.85rem; }
+/* CONTACT ROW */
+.contact-row{
+  display:flex;
+  gap:1rem;
+  margin-top:2rem;
+  padding-top:2rem;
+  border-top:1px solid var(--glass-border);
+}
+.contact-pill{
+  flex:1;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:0.75rem 1rem;
+  background: rgba(255,255,255,0.03);
+  border:1px solid var(--glass-border);
+  border-radius:50px;
+  color:#ccc;
+  font-size:0.95rem;
+  font-weight:500;
+  transition: all 0.3s ease;
+}
+.contact-pill:hover{
+  background: var(--accent-color);
+  color:#fff;
+  border-color: var(--accent-color);
+  transform:translateY(-2px);
+  box-shadow:0 4px 12px rgba(37,129,142,0.3);
+}
+.contact-pill .icon{font-size:1.1rem;margin-right:8px;}
+@media(max-width:450px){.contact-row{flex-direction:column;}}
 
-    /* modal popup (for star facts and voice play) */
-    .modal{
-      position:fixed;
-      inset:0;
-      display:none;
-      align-items:center;
-      justify-content:center;
-      z-index:60;
-      background: rgba(0,0,0,0.6);
-      padding:20px;
-    }
-    .modal.open{ display:flex }
-    .modal-card{
-      max-width:720px;
-      width:100%;
-      background:linear-gradient(180deg, rgba(20,24,28,0.96), rgba(14,16,18,0.98));
-      border-radius:12px;
-      padding:20px;
-      border:1px solid var(--glass-border);
-      box-shadow:0 14px 40px rgba(0,0,0,0.7);
-      color:var(--text-color);
-    }
-    .modal-close{
-      cursor:pointer;
-      font-weight:700;
-      color:#fff;
-      background:transparent;
-      border:1px solid rgba(255,255,255,0.03);
-      padding:6px 10px;
-      border-radius:8px;
-      float:right;
-    }
+/* TYPEWRITER */
+.typewriter-cursor{animation: blink 1s infinite;}
+@keyframes blink{50%{opacity:0;}}
 
-    /* shooting star elements (DOM) */
-    .shooting-star{
-      position:fixed;
-      z-index:30;
-      pointer-events:auto; /* allow click */
-      width:28px;
-      height:6px;
-      transform-origin:left center;
-      border-radius:3px;
-      background:linear-gradient(90deg, rgba(255,255,255,1), rgba(255,255,255,0.1));
-      box-shadow: 0 0 8px rgba(255,255,255,0.9), 0 0 20px rgba(37,129,142,0.08);
-      cursor:pointer;
-      opacity:0;
-      transition:opacity .2s;
-      padding: 14px;    /* enlarges clickable area */
-      margin: -14px;    /* keeps star visually same size/position */
-    }
-
-    /* small helper */
-    .muted { color:#bfc9cc; font-size:0.95rem }
-
-    /* form (Hear My Voice) */
-    .voice-form{ display:flex; gap:8px; align-items:center; margin-top:12px }
-    .voice-input{
-      flex:1;
-      padding:10px;
-      border-radius:8px;
-      background:rgba(255,255,255,0.03);
-      border:1px solid rgba(255,255,255,0.03);
-      color:var(--text-color);
-      outline:none;
-    }
-    .voice-submit{
-      padding:10px 12px;
-      border-radius:8px;
-      background:var(--accent-color);
-      color:#fff;
-      border:none;
-      cursor:pointer;
-    }
-    .voice-submit[disabled]{ opacity:0.6; cursor:not-allowed }
-
-    /* ensure links keep same color as accent for anchors inside content if intended */
-    a { color: inherit; text-decoration:none }
-    .accent-link { color:var(--accent-color); font-weight:700 }
-
-  </style>
+/* HEAR MY VOICE */
+#voice-section{display:flex;flex-direction:column;align-items:center;gap:1rem;}
+#voice-section input{padding:0.5rem;width:80%;max-width:300px;border-radius:5px;border:none;}
+#voice-section button{padding:0.5rem 1rem;background:var(--accent-color);color:#fff;border:none;border-radius:5px;cursor:pointer;}
+#voice-section button:hover{background:var(--accent-hover);}
+#audio-player{margin-top:1rem;}
+</style>
 </head>
+
 <body>
+<div id="night-sky">
+  <div class="northern-lights"></div>
+</div>
 
-  <!-- sky canvas (aurora) -->
-  <canvas id="sky"></canvas>
-
-  <!-- stars layer for DOM shooting stars (clickable) -->
-  <div id="stars-layer"></div>
-
-  <!-- header -->
-  <header class="site-header">
-    <div class="header-content">
-      <a class="brand" href="./"> <span>P</span>enn<span>B</span>renn<small>.com</small></a>
-
-      <div class="header-controls">
-        <button id="bg-music-toggle" class="music-btn" aria-label="Play background music">▶</button>
-        <!-- header small nav -->
-        <nav style="display:flex; gap:12px; align-items:center;">
-          <a href="#sites" class="link-pill" style="padding:8px 12px; font-size:0.92rem; background:transparent; border-radius:8px">Sites</a>
-          <a href="#hear" class="link-pill" style="padding:8px 12px; font-size:0.92rem; background:transparent; border-radius:8px">Hear My Voice</a>
-        </nav>
-      </div>
-    </div>
-  </header>
-
-  <!-- background audio (hidden control) -->
-  <audio id="bg-music" loop preload="auto">
-    <!-- put your background music file in /Audio/bg-music.mp3 -->
-    <source src="/Audio/bg-music.mp3" type="audio/mpeg">
-  </audio>
-
-  <main class="container">
-
-    <!-- HERO -->
-    <section class="glass-panel" aria-labelledby="hero-title">
-      <div class="hero-grid">
-        <div>
-          <h1 id="hero-title"><span id="typewriter-word">Im Penn</span><span class="typewriter-cursor">|</span></h1>
-
-          <div class="status-bar">
-            <div class="status-item">It is <strong id="laTime">Loading...</strong> where I am</div>
-            <div class="status-item">There are <strong id="days" class="muted">0</strong> days until my birthday</div>
-            <div class="status-item muted">he/him • public profile</div>
-          </div>
-
-          <article class="about-text">
-            <p><b>PUBLIC PROFILE</b></p>
-            <p><small>Specific information is not revealed openly.</small></p>
-            <p>Hiiii i’m Penn — the name has no relation to any historical figures. First website I actually coded (minus a little AI :3). I keep lizards and geckos, start new projects, and enjoy making things. I build, I game, I run businesses sometimes. I want to start an ultralight aircraft business someday.</p>
-            <p><b>Taken</b></p>
-          </article>
-        </div>
-
-        <div style="text-align:center">
-          <img src="Images/me.jpg" alt="Penn/William Profile" class="profile-pic">
-          <div class="muted" style="margin-top:10px">Profile</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- LINKS -->
-    <section class="glass-panel" id="links" aria-labelledby="links-title">
-      <h2 id="links-title">Linky Links</h2>
-      <div class="links-grid">
-        <a href="#sites" class="link-pill" style="background:var(--accent-color);">My Websites</a>
-        <a class="link-pill" href="https://drive.google.com/drive/folders/1xdJv-bT4wKyydjSxMpCK-iUGIhIML98O?usp=sharing">Drive</a>
-        <a class="link-pill" href="https://discord.com/users/973736168011231233">Discord</a>
-        <a class="link-pill" href="https://www.instagram.com/penn_brenn/">Instagram</a>
-        <a class="link-pill" href="https://www.youtube.com/@PennBrenn">YouTube</a>
-        <a class="link-pill" href="https://www.twitch.tv/pennbrenn">Twitch</a>
-        <a class="link-pill" href="https://www.tiktok.com/@pennbrenn?lang=en">TikTok</a>
-        <a class="link-pill" href="https://github.com/PennBrenn">Github</a>
-        <a class="link-pill" href="https://steamcommunity.com/id/Pennnnnnnnnnnnn/">Steam</a>
-      </div>
-
-      <div class="contact-row" style="margin-top:16px; display:flex; gap:12px; align-items:center;">
-        <a href="mailto:william@pennbrenn.com" class="link-pill" style="flex:1;">Work Email • w@pennbrenn.com</a>
-        <a href="tel:+15550000000" class="link-pill" style="flex:1;">Work Phone • +1 (805) 410-4273</a>
-      </div>
-    </section>
-
-    <!-- SITES (NEW section replacing See Other Sites) -->
-    <section class="glass-panel" id="sites" aria-labelledby="sites-title">
-      <h2 id="sites-title">Sites</h2>
-      <div class="sites-list">
-        <!-- Professional "Stuff" -->
-        <div class="site-item">
-          <div>
-            <div style="font-weight:800">Professional "Stuff"</div>
-            <small class="muted">penncamm</small>
-          </div>
-          <div><a href="https://cam.pennbrenn.com" target="_blank" rel="noopener">cam.pennbrenn.com</a></div>
-        </div>
-
-        <div class="site-item">
-          <div>
-            <div style="font-weight:800">about me</div>
-            <small class="muted">personal site</small>
-          </div>
-          <div><a href="https://www.pennbrenn.com" target="_blank" rel="noopener">pennbrenn.com</a></div>
-        </div>
-
-        <!-- Game "Stuff" -->
-        <div class="site-item">
-          <div>
-            <div style="font-weight:800">Game "Stuff"</div>
-            <small class="muted">that game where one person has a different question</small>
-          </div>
-          <div><a href="https://play.pennbrenn.com" target="_blank" rel="noopener">play.pennbrenn.com</a></div>
-        </div>
-
-        <div class="site-item">
-          <div>
-            <div style="font-weight:800">bbcjustice</div>
-            <small class="muted">multiplayer</small>
-          </div>
-          <div><a href="https://play.bbcjustice.top" target="_blank" rel="noopener">play.bbcjustice.top</a></div>
-        </div>
-
-        <div class="site-item">
-          <div>
-            <div style="font-weight:800">sam's aura farm simulator 2025</div>
-            <small class="muted">sam aura farm</small>
-          </div>
-          <div><a href="https://sam.pennbrenn.com" target="_blank" rel="noopener">sam.pennbrenn.com</a></div>
-        </div>
-
-        <!-- Old "Stuff" -->
-        <div class="site-item">
-          <div>
-            <div style="font-weight:800">Old "Stuff"</div>
-            <small class="muted">move on lol</small>
-          </div>
-          <div><a href="https://moveon.pennbrenn.com/" target="_blank" rel="noopener">moveon.pennbrenn.com</a></div>
-        </div>
-
-        <div class="site-item">
-          <div>
-            <div style="font-weight:800">2g1m</div>
-            <small class="muted">legacy</small>
-          </div>
-          <div><a href="https://2guys1mic.top" target="_blank" rel="noopener">2guys1mic.top</a></div>
-        </div>
-
-        <div class="site-item">
-          <div>
-            <div style="font-weight:800">old games</div>
-            <small class="muted">missing / archived</small>
-          </div>
-          <div><span class="muted">./missing</span></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Fav Games (kept but spacing improved) -->
-    <section class="glass-panel" aria-labelledby="games-title">
-      <h2 id="games-title">My Fav Games</h2>
-      <div class="card-grid">
-        <div class="card">
-          <img src="Images/storm1.jpg" alt="Stormworks" class="card-img">
-          <div class="card-content">
-            <a class="card-title" href="https://store.steampowered.com/app/573090/Stormworks_Build_and_Rescue/">#1 Stormworks</a>
-            <p class="card-details">Build anything simulator</p>
-          </div>
-        </div>
-        <div class="card">
-          <img src="Images/star1.jpg" alt="Star Citizen" class="card-img">
-          <div class="card-content">
-            <a class="card-title" href="https://robertsspaceindustries.com/en/">#2 Star Citizen</a>
-            <p class="card-details">Do whatever simulator</p>
-          </div>
-        </div>
-        <div class="card">
-          <img src="Images/people.jpg" alt="People Playground" class="card-img">
-          <div class="card-content">
-            <a class="card-title" href="https://store.steampowered.com/app/1118200/People_Playground/">#3 People Playground</a>
-            <p class="card-details">War crime simulator</p>
-          </div>
-        </div>
-        <div class="card">
-          <img src="Images/liero1.jpg" alt="Liero" class="card-img">
-          <div class="card-content">
-            <a class="card-title" href="https://www.liero.be/">#4 Liero</a>
-            <p class="card-details">1v1 simulator</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Hear My Voice: TTS frontend -->
-    <section class="glass-panel" id="hear" aria-labelledby="hear-title">
-      <h2 id="hear-title">Hear My Voice</h2>
-      <p class="muted">Type up to 100 characters, click submit — audio will be generated using the "william" voice.</p>
-
-      <div style="margin-top:10px;">
-        <form id="voice-form" class="voice-form" onsubmit="return false;">
-          <input id="voice-text" class="voice-input" maxlength="100" placeholder="Type something (≤100 chars)" />
-          <button id="voice-submit" class="voice-submit">Submit</button>
-        </form>
-
-        <div id="voice-status" style="margin-top:10px" class="muted"></div>
-
-        <audio id="voice-player" controls style="width:100%; margin-top:10px; display:none"></audio>
-      </div>
-    </section>
-
-    <!-- For business section -->
-    <section class="glass-panel" id="business" aria-labelledby="biz-title">
-      <h2 id="biz-title">For Business</h2>
-      <p class="muted">Sample info — edit as needed.</p>
-      <ul style="margin-top:12px; color:#dcdcdc; line-height:1.6">
-        <li>Graduated HS — (edit this later)</li>
-        <li>Available for freelance & contract work (camera / web / creative)</li>
-        <li>Contact: william@pennbrenn.com</li>
-      </ul>
-    </section>
-
-    <!-- Hobbies & Pets (kept) -->
-    <section class="glass-panel" aria-labelledby="hobbies-title">
-      <h2 id="hobbies-title">Hobbies</h2>
-      <div class="hobbies-flex">
-        <div class="hobby-list">
-          <div>‣ Airsoft</div>
-          <div>‣ Petting cat</div>
-          <div>‣ Gaming</div>
-          <div>‣ Sailing</div>
-          <div>‣ 3d printing</div>
-          <div>‣ Making things</div>
-          <div>‣ Development</div>
-          <div>‣ Being cute</div>
-        </div>
-        <div>
-          <img src="Images/printer.jpg" alt="3D Printer" style="max-width:300px; border-radius:8px">
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <footer>
-    <p>&copy; 2025 Penn Brenn. All rights reserved.</p>
-  </footer>
-
-  <!-- modal used for star facts -->
-  <div id="star-modal" class="modal" role="dialog" aria-modal="true" aria-hidden="true">
-    <div class="modal-card">
-      <button class="modal-close" id="modal-close">Close</button>
-      <div id="star-modal-content" style="margin-top:6px; color:#dcdcdc"></div>
+<header class="site-header">
+  <div class="header-content">
+    <a href="./sites.html" class="brand"><span>P</span>enn<span>B</span>renn<small>.com</small></a>
+    <div>
+      <a href="#sites" style="font-size:0.9rem;text-decoration:underline;">Sites</a>
+      <span class="music-control" id="music-toggle">Play Music</span>
     </div>
   </div>
+</header>
+
+<main class="container">
+
+<!-- HERO SECTION -->
+<section class="glass-panel">
+  <div class="hero-grid">
+    <div>
+      <h1><span id="typewriter-word">Im Penn</span><span class="typewriter-cursor">|</span></h1>
+      <div class="status-bar">
+        <div class="status-item">It is <span id="laTime">Loading...</span> where I am</div>
+        <div class="status-item">There are <span id="days" class="birthday-count">0</span> days until my birthday</div>
+      </div>
+      <article class="about-text">
+        <h3>🇺🇸🏳️‍🌈♂️ he/him</h3>
+        <p><b>PUBLIC PROFILE</b></p>
+        <p><small>Specific information is not revealed openly.</small></p>
+        <p>Hiiii I'm Penn... [existing text]</p>
+      </article>
+    </div>
+    <div class="profile-pic-container">
+      <img src="Images/me.jpg" alt="Penn/William Profile" class="profile-pic">
+    </div>
+  </div>
+</section>
+
+<!-- NEW SITES SECTION -->
+<section class="glass-panel" id="sites">
+  <h2>My Websites</h2>
+  <div class="links-grid">
+    <a href="https://cam.pennbrenn.com" class="social-btn">Professional Stuff</a>
+    <a href="https://www.pennbrenn.com" class="social-btn">About Me</a>
+    <a href="https://play.pennbrenn.com" class="social-btn">That Game</a>
+    <a href="https://play.bbcjustice.top" class="social-btn">BBC Justice</a>
+    <a href="https://sam.pennbrenn.com" class="social-btn">Sam's Aura Farm Simulator 2025</a>
+    <a href="https://moveon.pennbrenn.com" class="social-btn">Move On</a>
+    <a href="https://2guys1mic.top" class="social-btn">2G1M</a>
+  </div>
+</section>
+
+<!-- HEAR MY VOICE SECTION -->
+<section class="glass-panel" id="voice-section">
+  <h2>Hear My Voice</h2>
+  <input type="text" id="voice-input" maxlength="100" placeholder="Type something to hear my voice">
+  <button id="voice-submit">Speak</button>
+  <audio id="audio-player" controls></audio>
+</section>
+
+<!-- FOR BUSINESS SECTION -->
+<section class="glass-panel">
+  <h2>For Business</h2>
+  <p>Sample info: Graduated High School. Additional info to be added...</p>
+</section>
+
+</main>
+
+<footer>
+  <p>&copy; 2025 Penn Brenn. All rights reserved.</p>
+</footer>
+
+<!-- BACKGROUND MUSIC -->
+<audio id="bg-music" loop src="Images/bg-music.mp3"></audio>
 
 <script>
-/* -------------------------
-  1) Time & birthday & typewriter
---------------------------*/
-function showLATime() {
-  const options = { timeZone: 'America/Los_Angeles', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true };
+// 1. Time Logic
+function showLATime(){
+  const options={timeZone:'America/Los_Angeles',hour:'numeric',minute:'numeric',second:'numeric',hour12:true};
   document.getElementById('laTime').textContent = new Date().toLocaleTimeString('en-US', options);
 }
-setInterval(showLATime, 1000);
-showLATime();
+setInterval(showLATime,1000); showLATime();
 
-function calculateDays() {
-  const today = new Date();
-  // birthday on Nov 17 (month 10)
-  let target = new Date(today.getFullYear(), 10, 17);
-  if (today > target) target.setFullYear(today.getFullYear() + 1);
-  const diff = Math.ceil((target - today) / (1000*60*60*24));
-  document.getElementById('days').textContent = diff;
+// 2. Birthday Logic
+function calculateDays(){
+  const today=new Date();
+  let targetDate=new Date(today.getFullYear(),10,17);
+  if(today>targetDate){targetDate.setFullYear(today.getFullYear()+1);}
+  document.getElementById("days").textContent = Math.ceil((targetDate-today)/(1000*3600*24));
 }
 calculateDays();
 
-/* typewriter */
+// 3. Typewriter
 (function(){
-  const words = ["Im Penn","Im William"];
-  const el = document.getElementById('typewriter-word');
-  const typeSpeed = 100, eraseSpeed = 50, hold = 1600;
-  let i=0, j=0, dir=1;
+  const words=["Im Penn","Im William"];
+  const el=document.getElementById("typewriter-word");
+  const typeSpeed=100, eraseSpeed=50, holdDelay=2000;
+  let wordIndex=0,charIndex=0,typing=true;
   function tick(){
-    el.textContent = words[i].slice(0,j);
-    if(dir===1){
-      if(j<words[i].length) { j++; setTimeout(tick,typeSpeed); }
-      else { dir=-1; setTimeout(tick,hold); }
-    } else {
-      if(j>0){ j--; setTimeout(tick,eraseSpeed); }
-      else { dir=1; i=(i+1)%words.length; setTimeout(tick,150); }
-    }
+    const currentWord=words[wordIndex];
+    if(typing){charIndex++; el.textContent=currentWord.slice(0,charIndex);
+      if(charIndex===currentWord.length){typing=false; setTimeout(tick,holdDelay); return;}
+      setTimeout(tick,typeSpeed);
+    }else{charIndex--; el.textContent=currentWord.slice(0,charIndex);
+      if(charIndex===0){typing=true; wordIndex=(wordIndex+1)%words.length; setTimeout(tick,typeSpeed); return;}
+      setTimeout(tick,eraseSpeed);}
   }
   tick();
 })();
 
-/* -------------------------
-  2) Background music (header) control
---------------------------*/
-const bgMusic = document.getElementById('bg-music');
-const musicBtn = document.getElementById('bg-music-toggle');
+// 4. Shooting stars with popups
+function createStar(){
+  const star=document.createElement('div');
+  star.className='shooting-star';
+  star.style.top=Math.random()*80+'%';
+  star.style.left=Math.random()*90+'%';
+  document.body.appendChild(star);
+  star.addEventListener('click',()=>{alert('Random Fact: I like lizards!'); star.remove();});
+  setTimeout(()=>star.remove(),8000);
+}
+setInterval(createStar,4000);
 
-musicBtn.addEventListener('click', () => {
-  if(bgMusic.paused){
-    bgMusic.play().catch(()=>{ /* autoplay may be blocked */ });
-    musicBtn.textContent = '❚❚';
-  } else {
-    bgMusic.pause();
-    musicBtn.textContent = '▶';
-  }
+// 5. Background music toggle
+const music=document.getElementById('bg-music');
+document.getElementById('music-toggle').addEventListener('click',()=>{
+  if(music.paused){music.play(); document.getElementById('music-toggle').textContent='Pause Music';}
+  else{music.pause(); document.getElementById('music-toggle').textContent='Play Music';}
 });
 
-/* -------------------------
-  3) Shooting stars (DOM elements), clickable, with popup facts
---------------------------*/
-const starsLayer = document.getElementById('stars-layer');
-const starModal = document.getElementById('star-modal');
-const modalContent = document.getElementById('star-modal-content');
-const modalClose = document.getElementById('modal-close');
-
-const facts = [
-  "I keep mourning geckos and eyelash crested geckos.",
-  "I run an HPA GBB Kriss Vector for airsoft.",
-  "I want to start an ultralight aircraft business someday.",
-  "I love 3D printing and building small projects.",
-  "I started many businesses — sell me a camera pls."
-];
-
-function random(min,max){ return Math.random()*(max-min)+min; }
-
-function spawnShootingStar(){
-  const star = document.createElement('div');
-  star.className = 'shooting-star';
-  // random start near left or right edges, random top position
-  const side = Math.random() > 0.5 ? 'left' : 'right';
-  const top = random(8,85); // percent
-  const length = random(140,340); // px travel length
-  const angle = side === 'left' ? random(-5,12) : random(168,175); // degrees; mostly horizontal
-  // starting off-screen
-  const startX = side === 'left' ? -60 : window.innerWidth + 60;
-  star.style.top = top + 'vh';
-  star.style.left = startX + 'px';
-  star.style.width = '28px';
-  star.style.transform = `rotate(${angle}deg)`;
-  star.style.opacity = '1';
-  star.style.pointerEvents = 'auto';
-  // add click handler (open modal with random fact)
-  star.addEventListener('click', (e)=>{
-    e.stopPropagation();
-    const fact = facts[Math.floor(Math.random()*facts.length)];
-    modalContent.textContent = fact;
-    starModal.classList.add('open');
-    starModal.setAttribute('aria-hidden','false');
-  });
-
-  starsLayer.appendChild(star);
-
-  // animate using CSS transitions/JS
-  const duration = random(10000,20000);
-  // compute final pos
-  const travelX = side === 'left' ? length + window.innerWidth : -length - window.innerWidth;
-  // use requestAnimationFrame to allow layout first
-  requestAnimationFrame(()=>{
-    star.style.transition = `transform ${duration}ms linear, left ${duration}ms linear, opacity 700ms`;
-    const finalLeft = side === 'left' ? window.innerWidth + 80 : -80;
-    star.style.left = finalLeft + 'px';
-    // fade out near end
-    setTimeout(()=> star.style.opacity = '0', duration - 900);
-  });
-
-  // remove after animation
-  setTimeout(()=> { if(star.parentElement) star.parentNode.removeChild(star); }, duration + 50);
-}
-
-// spawn regularly, but slowly
-setInterval(()=>{
-  if(Math.random() < 0.45) spawnShootingStar();
-}, 1600);
-
-// modal close
-modalClose.addEventListener('click', ()=> {
-  starModal.classList.remove('open');
-  starModal.setAttribute('aria-hidden','true');
-});
-
-/* close modal when backdrop clicked */
-starModal.addEventListener('click', (e) => {
-  if(e.target === starModal) { starModal.classList.remove('open'); starModal.setAttribute('aria-hidden','true'); }
-});
-
-/* -------------------------
-  4) Hear My Voice (ElevenLabs) — frontend
---------------------------*/
-const voiceForm = document.getElementById('voice-form');
-const voiceInput = document.getElementById('voice-text');
-const voiceSubmit = document.getElementById('voice-submit');
-const voiceStatus = document.getElementById('voice-status');
-const voicePlayer = document.getElementById('voice-player');
-
-voiceForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const val = voiceInput.value.trim();
-  if(!val){ voiceStatus.textContent = 'Type something to generate audio (≤100 chars).'; return; }
-  voiceSubmit.disabled = true;
-  voiceStatus.textContent = 'Generating...';
-
-  try {
-    // send to our serverless function
-    const res = await fetch('/api/elevenlabs-tts', {
-      method:'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ text: val })
-    });
-
-    if(!res.ok) {
-      const err = await res.text();
-      voiceStatus.textContent = 'Error: ' + (err || res.statusText);
-      voiceSubmit.disabled = false;
-      return;
-    }
-
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    voicePlayer.src = url;
-    voicePlayer.style.display = 'block';
-    voicePlayer.play().catch(()=>{});
-    voiceStatus.textContent = 'Generated — playing below.';
-  } catch(err){
-    voiceStatus.textContent = 'Network error generating audio.';
-  } finally {
-    voiceSubmit.disabled = false;
-  }
-});
-
-/* -------------------------
-  5) Aurora rendering (canvas)
-  - simple animated layered sin waves and blurred gradient to suggest northern lights.
---------------------------*/
-const canvas = document.getElementById('sky');
-const ctx = canvas.getContext('2d');
-
-let W = canvas.width = window.innerWidth;
-let H = canvas.height = window.innerHeight;
-
-function onResize(){
-  W = canvas.width = window.innerWidth;
-  H = canvas.height = window.innerHeight;
-}
-window.addEventListener('resize', onResize);
-
-function drawAurora(t){
-  ctx.clearRect(0,0,W,H);
-
-  // dark starfield (subtle) — tiny points
-  ctx.fillStyle = '#071014';
-  ctx.fillRect(0,0,W,H);
-
-  // stars
-  for(let i=0;i<120;i++){
-    const x = (i*37 + Math.sin(t/5000+i)*80) % W;
-    const y = (i*73 + Math.cos(t/3000+i)*40) % (H*0.7);
-    const r = ((i*7)%3)+0.3;
-    ctx.fillStyle = 'rgba(255,255,255,' + (0.05 + (i%7)/70) + ')';
-    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
-  }
-
-  // aurora layers — 3 layers with sin wave vertical offsets + alpha gradient
-  for(let layer=0; layer<3; layer++){
-    const hue = 160 - layer*8; // green-teal
-    const alpha = 0.08 + layer*0.04;
-    const amplitude = 40 + layer*20;
-    const speed = 0.0009 + layer*0.0005;
-    const baseY = H*0.25 + layer*40;
-
-    const grd = ctx.createLinearGradient(0, baseY-120, 0, baseY+160);
-    grd.addColorStop(0, `rgba(${60+layer*10},${200-layer*40},${190+layer*10},${alpha*1.8})`);
-    grd.addColorStop(0.5, `rgba(${40+layer*10},${180-layer*20},${150+layer*5},${alpha})`);
-    grd.addColorStop(1, `rgba(12,20,18,0)`);
-
-    ctx.fillStyle = grd;
-    ctx.beginPath();
-    ctx.moveTo(0, H);
-    for(let x=0;x<=W;x+=6){
-      const y = baseY + Math.sin((x * 0.008) + (t * speed) + layer) * amplitude * Math.cos(t*speed*0.6 + x*0.002);
-      ctx.lineTo(x, y);
-    }
-    ctx.lineTo(W, H);
-    ctx.closePath();
-    ctx.fill();
-  }
-
-  // subtle vignette
-  const vignette = ctx.createRadialGradient(W/2,H/2, Math.max(W,H)/4, W/2,H/2, Math.max(W,H));
-  vignette.addColorStop(0, 'rgba(0,0,0,0)');
-  vignette.addColorStop(1, 'rgba(0,0,0,0.35)');
-  ctx.fillStyle = vignette;
-  ctx.fillRect(0,0,W,H);
-}
-
-function anim(t){
-  drawAurora(t);
-  requestAnimationFrame(anim);
-}
-requestAnimationFrame(anim);
-
-/* -------------------------
-  6) small accessibility: allow keyboard close
---------------------------*/
-window.addEventListener('keydown', (e)=> {
-  if(e.key === 'Escape') {
-    if(starModal.classList.contains('open')) {
-      starModal.classList.remove('open');
-      starModal.setAttribute('aria-hidden','true');
-    }
-  }
+// 6. ElevenLabs TTS API call
+document.getElementById('voice-submit').addEventListener('click',async ()=>{
+  let text=document.getElementById('voice-input').value.trim();
+  if(!text){alert('Please enter text.'); return;}
+  if(/(badword1|badword2)/i.test(text)){alert('Profanity is not allowed.'); return;} // expand list
+  const res=await fetch('/api/elevenlabs-tts',{method:'POST',body:JSON.stringify({text})});
+  const blob=await res.blob();
+  document.getElementById('audio-player').src=URL.createObjectURL(blob);
+  document.getElementById('audio-player').play();
 });
 </script>
-
 </body>
 </html>

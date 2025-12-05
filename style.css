@@ -50,29 +50,39 @@ img { max-width: 100%; display: block; border-radius: 8px; }
 }
 
 /* Shooting Stars Container */
+/* ... existing css ... */
+
+/* Shooting Stars Container */
 #star-container {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
-    z-index: 50; /* Above background, below header */
-    pointer-events: none; /* Let clicks pass through, individual stars will have events */
+    z-index: 50; 
+    pointer-events: none;
+    overflow: hidden; /* Prevents scrollbars when stars spawn off-screen */
 }
 
 .shooting-star {
     position: absolute;
-    width: 100px;
-    height: 2px;
-    background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,1));
+    width: 150px; /* Longer trail */
+    height: 3px;  /* Slightly thicker for visibility */
+    /* 90deg Gradient: Transparent (Tail) -> White (Head) */
+    background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);
     border-radius: 50%;
     cursor: pointer;
-    pointer-events: auto; /* Clickable */
-    /* Big Hitbox via padding */
-    box-shadow: 0 0 10px #fff;
+    pointer-events: auto;
+    
+    /* Box shadow creates a "glow" around the head */
+    box-shadow: 4px 0 8px rgba(255, 255, 255, 0.8);
+    
+    /* Start hidden, animation controls opacity */
+    opacity: 0; 
 }
-/* Invisible big hitbox */
+
+/* Big invisible hitbox for easier clicking */
 .shooting-star::after {
     content: '';
     position: absolute;
-    top: -30px; bottom: -30px; left: -30px; right: -30px;
+    top: -40px; bottom: -40px; left: -40px; right: -40px;
 }
 
 /* --- LAYOUT UTILITIES --- */
@@ -212,3 +222,4 @@ h2 { font-size: 1.8rem; border-bottom: 2px solid var(--accent-color); display: i
 }
 
 footer { text-align: center; padding: 2rem; color: #666; font-size: 0.8rem; }
+

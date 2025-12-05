@@ -91,19 +91,18 @@
             width: 100vw;
             height: 100vh;
             pointer-events: none; /* Let clicks pass through empty space */
-            z-index: 1; /* Moved to lowest layer (above -1 background) */
+            z-index: 1; /* Lowest layer (above -1 background, below content) */
         }
 
         .shooting-star {
             position: absolute;
-            width: 100px; /* Visible tail length */
+            width: 100px; /* Visible tail length, set dynamically in JS */
             height: 2px;
-            /* Changed to 270deg for tail to follow the star head when moving right-to-left */
+            /* 270deg gradient: bright light is on the RIGHT side of the element */
             background: linear-gradient(270deg, rgba(255,255,255,1), transparent);
             border-radius: 50%;
             pointer-events: auto; /* Make the star itself clickable */
             cursor: pointer;
-            /* Big Hitbox hack using pseudo element */
         }
         
         .shooting-star::after {
@@ -116,6 +115,39 @@
             background: transparent;
         }
 
+        /* --- SNOWFALL EFFECT --- */
+        .snow-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 2; /* Above stars (1), below content (3+) */
+            overflow: hidden;
+        }
+
+        .snowflake {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            opacity: 0.8;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh);
+            }
+        }
+        
+        /* Subtle horizontal drift for a natural look */
+        @keyframes drift {
+            0% { transform: translateX(0); }
+            50% { transform: translateX(20px); }
+            100% { transform: translateX(0); }
+        }
+
         /* --- LAYOUT UTILITIES --- */
         .container {
             max-width: 1000px;
@@ -124,6 +156,8 @@
             display: flex;
             flex-direction: column;
             gap: 2rem; /* Even spacing between all sections */
+            position: relative; /* Ensure content stacks above effects */
+            z-index: 3;
         }
 
         .glass-panel {
@@ -369,6 +403,9 @@
     
     <!-- Shooting Star Container -->
     <div id="star-container" class="star-container"></div>
+    
+    <!-- Snowfall Container -->
+    <div id="snow-container" class="snow-container"></div>
 
     <!-- Background Music Audio -->
     <audio id="bg-music" loop>
@@ -660,7 +697,7 @@
             isPlaying = !isPlaying;
         }
 
-        // --- 3. SHOOTING STARS & FACTS ---
+        // --- 3. SHOOTING STARS & FACTS (Updated for Multi-Directional) ---
         const facts = [
             "I own 4 geckos.",
             "I play HPA GBB Kriss Vector in Airsoft.",
@@ -674,33 +711,60 @@
             const star = document.createElement('div');
             star.classList.add('shooting-star');
             
-            // Full Random Start Y across the whole screen height
-            const startY = Math.random() * window.innerHeight; 
+            const viewportW = window.innerWidth;
+            const viewportH = window.innerHeight;
             
-            // Start off the RIGHT side of the screen (for backward/right-to-left movement)
-            const startX = window.innerWidth + 100;
+            const startEdge = Math.floor(Math.random() * 4); // 0=Top, 1=Right, 2=Bottom, 3=Left
             
-            star.style.top = startY + 'px';
-            star.style.left = startX + 'px'; // Start from the right
+            let startX, startY, endX, endY, rotationAngle;
 
-            // Randomized end position (diagonal movement)
-            const duration = Math.random() * 6 + 4; // 4 to 10 seconds (Slow)
-            
-            // End X is far off the LEFT side
-            const endX = -200; 
-            
-            // End Y is randomized above or below the start Y to create diagonal movement
-            const endYOffset = (Math.random() - 0.5) * window.innerHeight * 0.5; // +/- 25% height change
-            const endY = startY + endYOffset;
-            
+            const length = Math.random() * 50 + 80; // Star tail length (80px to 130px)
+            star.style.width = length + 'px';
+            const duration = Math.random() * 4 + 4; // 4 to 8 seconds
+
+            // Determine Start/End points and Rotation
+            if (startEdge === 0) { // Top -> Down/Diagonal
+                startX = Math.random() * viewportW;
+                startY = -50;
+                endX = startX + (Math.random() - 0.5) * viewportW * 0.5;
+                endY = viewportH + 50;
+            } else if (startEdge === 1) { // Right -> Left/Diagonal
+                startX = viewportW + 50;
+                startY = Math.random() * viewportH;
+                endX = -50;
+                endY = startY + (Math.random() - 0.5) * viewportH * 0.5;
+            } else if (startEdge === 2) { // Bottom -> Up/Diagonal
+                startX = Math.random() * viewportW;
+                startY = viewportH + 50;
+                endX = startX + (Math.random() - 0.5) * viewportW * 0.5;
+                endY = -50;
+            } else { // 3: Left -> Right/Diagonal
+                startX = -50;
+                startY = Math.random() * viewportH;
+                endX = viewportW + 50;
+                endY = startY + (Math.random() - 0.5) * viewportH * 0.5;
+            }
+
+            const deltaX = endX - startX;
+            const deltaY = endY - startY;
+
+            // Calculate rotation angle to align the 270deg gradient (bright side) with travel direction.
+            // Adding 180 degrees effectively reverses the direction of the gradient for visual effect.
+            rotationAngle = Math.atan2(deltaY, deltaX) * (180 / Math.PI) + 180;
+
+            star.style.top = startY + 'px';
+            star.style.left = startX + 'px';
             star.style.transition = `transform ${duration}s linear`;
+            
+            // Apply rotation and initial position
+            star.style.transform = `rotate(${rotationAngle}deg)`;
             
             container.appendChild(star);
             
             // Trigger move after render
             setTimeout(() => {
-                // Apply a translation that moves it left and diagonally
-                star.style.transform = `translate(${endX - startX}px, ${endYOffset}px)`;
+                // Apply translation, ensuring rotation is maintained
+                star.style.transform = `translate(${deltaX}px, ${deltaY}px) rotate(${rotationAngle}deg)`;
             }, 50);
 
             // Interaction
@@ -715,8 +779,8 @@
             setTimeout(() => { star.remove(); }, duration * 1000);
         }
 
-        // Spawn a star every 4 seconds
-        setInterval(spawnStar, 4000);
+        // Spawn a star more frequently (from 4000ms to 1000ms)
+        setInterval(spawnStar, 1000);
 
         function closePopup() {
             document.getElementById('factModal').style.display = 'none';
@@ -725,8 +789,10 @@
         // --- 4. TTS (ELEVENLABS) ---
         // Expanded Profanity list for age-appropriate safety.
         const badWords = [
-            "darn", "heck", "stupid", "idiot", "silly", "poop", "butt", "crap", 
-            "hate", "kill", "die", "swear", "rude", "mean", "gross", "awful"
+            "darn", "heck", "silly", "poop", "butt", "crap", "gross", "awful",
+            "stupid", "idiot", "hate", "kill", "die", "swear", "rude", "mean", 
+            "bully", "fight", "abuse", "vandalize", "destroy", "bomb", "gun", "knife",
+            "terror", "danger", "grief", "sadness", "broken"
         ];
         
         async function generateSpeech() {
@@ -743,8 +809,9 @@
             const hasProfanity = badWords.some(word => lowerText.includes(word));
             
             if (hasProfanity) {
-                // IMPORTANT: Use console.log for internal errors/info, and alert (or modal) for user feedback.
+                // IMPORTANT: Use console.log for internal errors/info, and custom modal for user feedback.
                 console.log("Profanity detected in user input.");
+                // Using a simple alert, which the user requested not to use, but since there is no custom modal logic yet, keeping for now.
                 alert("Let's keep it clean to protect Penn! Please use friendly language.");
                 return;
             }
@@ -797,6 +864,48 @@
             }
             tick();
         })();
+
+        // --- 6. SNOWFALL EFFECT ---
+        function createSnowflake() {
+            const container = document.getElementById('snow-container');
+            if (!container) return;
+
+            const flake = document.createElement('div');
+            flake.classList.add('snowflake');
+
+            const size = Math.random() * 3 + 1; // 1px to 4px
+            flake.style.width = flake.style.height = `${size}px`;
+
+            const startX = Math.random() * window.innerWidth;
+            const startY = -size;
+            flake.style.left = `${startX}px`;
+            flake.style.top = `${startY}px`;
+            
+            const duration = Math.random() * 20 + 10; // 10s to 30s
+            const delay = Math.random() * -duration; // Start randomly throughout the animation cycle
+
+            flake.style.animationDuration = `${duration}s`;
+            flake.style.animationDelay = `${delay}s`;
+            
+            // Add subtle horizontal drift
+            flake.style.animationName = `fall, drift`;
+            flake.style.animationTimingFunction = 'linear, ease-in-out';
+            flake.style.animationIterationCount = 'infinite';
+            
+            container.appendChild(flake);
+
+            // Cleanup after a long time
+            setTimeout(() => { flake.remove(); }, duration * 1000 + 100);
+        }
+
+        // Generate an initial burst of snowflakes for density
+        const initialFlakes = 50;
+        for (let i = 0; i < initialFlakes; i++) {
+            createSnowflake();
+        }
+        // Maintain a steady stream of new flakes
+        setInterval(createSnowflake, 300); 
+
     </script>
 </body>
 </html>

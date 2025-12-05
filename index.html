@@ -84,9 +84,14 @@
 
         .shooting-star {
             position: absolute;
+            /* Using top:0 and left:0 as origin, position is handled by transform */
+            top: 0;
+            left: 0;
             height: 2px;
-            /* 0deg gradient: bright light is on the LEFT side of the element (head) */
-            background: linear-gradient(90deg, rgba(255,255,255,1), transparent);
+            /* FIXED: Head (bright) is now on the RIGHT side of the element, 
+               so the rotation angle calculated in JS correctly points the element 
+               in the direction of travel. */
+            background: linear-gradient(to left, rgba(255,255,255,1), transparent);
             border-radius: 50%;
             pointer-events: auto;
             cursor: pointer;
@@ -727,7 +732,7 @@
         setInterval(cycleBackground, 30000);
         cycleBackground(); // Initial call
 
-        // --- 4. SHOOTING STARS & FACTS (Updated with flicker) ---
+        // --- 4. SHOOTING STARS & FACTS (Updated Movement Logic) ---
         const facts = [
             "I own 4 geckos.",
             "I play HPA GBB Kriss Vector in Airsoft.",
@@ -761,43 +766,44 @@
             if (startEdge === 0) { // Top -> Down/Diagonal
                 startX = Math.random() * viewportW;
                 startY = -50;
-                endX = startX + (Math.random() - 0.5) * viewportW * 0.5;
+                endX = startX + (Math.random() - 0.5) * viewportW * 0.8;
                 endY = viewportH + 50;
             } else if (startEdge === 1) { // Right -> Left/Diagonal
                 startX = viewportW + 50;
                 startY = Math.random() * viewportH;
                 endX = -50;
-                endY = startY + (Math.random() - 0.5) * viewportH * 0.5;
+                endY = startY + (Math.random() - 0.5) * viewportH * 0.8;
             } else if (startEdge === 2) { // Bottom -> Up/Diagonal
                 startX = Math.random() * viewportW;
                 startY = viewportH + 50;
-                endX = startX + (Math.random() - 0.5) * viewportW * 0.5;
+                endX = startX + (Math.random() - 0.5) * viewportW * 0.8;
                 endY = -50;
             } else { // 3: Left -> Right/Diagonal
                 startX = -50;
                 startY = Math.random() * viewportH;
                 endX = viewportW + 50;
-                endY = startY + (Math.random() - 0.5) * viewportH * 0.5;
+                endY = startY + (Math.random() - 0.5) * viewportH * 0.8;
             }
 
             const deltaX = endX - startX;
             const deltaY = endY - startY;
 
-            rotationAngle = Math.atan2(deltaY, deltaX) * (180 / Math.PI) - 180;
+            // Calculate the angle of the path
+            rotationAngle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
 
-            star.style.top = startY + 'px';
-            star.style.left = startX + 'px';
             star.style.transition = `transform ${duration}s linear`;
             
-            // Apply rotation and initial position
-            star.style.transform = `rotate(${rotationAngle}deg)`;
+            // Apply initial position using translate and rotation
+            // FIXED: Use translate for initial position instead of top/left
+            star.style.transform = `translate(${startX}px, ${startY}px) rotate(${rotationAngle}deg)`;
             
             container.appendChild(star);
             
             // Trigger move after render
             setTimeout(() => {
-                // Apply translation, ensuring rotation is maintained
-                star.style.transform = `translate(${deltaX}px, ${deltaY}px) rotate(${rotationAngle}deg)`;
+                // Apply final position using translate, which triggers the transition
+                // FIXED: Target the final coordinates (endX, endY)
+                star.style.transform = `translate(${endX}px, ${endY}px) rotate(${rotationAngle}deg)`;
             }, 50);
 
             // Interaction
@@ -845,7 +851,6 @@
             
             if (hasProfanity) {
                 console.log("Profanity detected in user input.");
-                // Using a simple alert, as per previous implementation
                 // Changed from alert() to a custom console/status message as alert() is forbidden.
                 status.textContent = "Please use friendly language!";
                 setTimeout(() => status.textContent = "", 3000);
@@ -857,32 +862,13 @@
 
             try {
                 // --- Start of API Call Simulation/Placeholder ---
-                // In a real environment, you would call your Vercel/server endpoint here.
                 
                 // Simulate network delay
                 await new Promise(resolve => setTimeout(resolve, 2000)); 
                 
-                // Since I cannot access the actual /api/speak endpoint, I am providing a placeholder 
-                // for the audio generation logic to prevent runtime errors in the client.
-                
-                // Example of where real audio generation logic would go:
-                /*
-                const response = await fetch('/api/speak', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text: text })
-                });
-
-                if (!response.ok) throw new Error("API Error");
-
-                const blob = await response.blob();
-                const url = URL.createObjectURL(blob);
-                player.src = url;
-                */
-                
-                // Placeholder: Use a mock URL or hide the player if no API is available
                 player.style.display = 'none';
                 status.textContent = "Generation complete, awaiting audio file.";
+
                 // --- End of API Call Simulation/Placeholder ---
 
             } catch (err) {

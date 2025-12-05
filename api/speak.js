@@ -15,7 +15,7 @@ export default async function handler(req) {
             return new Response('Text must be under 100 characters.', { status: 400 });
         }
 
-        // 2. Profanity Filter (Basic List)
+
         const badWords = ["fuck", "shit", "bitch", "cunt", "nigger", "asshole", "dick", "pussy", "whore", "slut", "bastard" "faggot", "neggurt", "negurt", "flagot", "retigga", "swast", "jew", "nig", "neck", "67", "six"];
         const containsProfanity = badWords.some(word => text.toLowerCase().includes(word));
 

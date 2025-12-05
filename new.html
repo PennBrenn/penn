@@ -267,6 +267,8 @@
       cursor:pointer;
       opacity:0;
       transition:opacity .2s;
+      padding: 14px;    /* enlarges clickable area */
+      margin: -14px;    /* keeps star visually same size/position */
     }
 
     /* small helper */
@@ -651,7 +653,7 @@ function spawnShootingStar(){
   starsLayer.appendChild(star);
 
   // animate using CSS transitions/JS
-  const duration = random(5500,9500);
+  const duration = random(10000,20000);
   // compute final pos
   const travelX = side === 'left' ? length + window.innerWidth : -length - window.innerWidth;
   // use requestAnimationFrame to allow layout first

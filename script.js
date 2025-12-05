@@ -63,41 +63,98 @@ function spawnStar() {
     const star = document.createElement('div');
     star.classList.add('shooting-star');
     
-    // Random start position
-    const startY = Math.random() * (window.innerHeight / 2); // Top half only
-    const startX = -100; // Start off screen left
+    const buffer = 150; // Distance off-screen to spawn/despawn
+    const w = window.innerWidth;
+    const h = window.innerHeight;
     
-    star.style.top = startY + 'px';
-    star.style.left = startX + 'px';
-    
-    // Random duration (SLOW: 4s to 8s)
-    const duration = 4000 + Math.random() * 4000;
-    
-    // Animate via Web Animations API for easier cleanup
+    let startX, startY, endX, endY;
+
+    // 1. Pick a random side (0: Top, 1: Right, 2: Bottom, 3: Left)
+    const side = Math.floor(Math.random() * 4);
+
+    // 2. Determine Coordinates based on side
+    switch(side) {
+        case 0: // Top -> Bottom
+            startX = Math.random() * w;
+            startY = -buffer;
+            endX = Math.random() * w;
+            endY = h + buffer;
+            break;
+        case 1: // Right -> Left
+            startX = w + buffer;
+            startY = Math.random() * h;
+            endX = -buffer;
+            endY = Math.random() * h;
+            break;
+        case 2: // Bottom -> Top
+            startX = Math.random() * w;
+            startY = h + buffer;
+            endX = Math.random() * w;
+            endY = -buffer;
+            break;
+        case 3: // Left -> Right
+            startX = -buffer;
+            startY = Math.random() * h;
+            endX = w + buffer;
+            endY = Math.random() * h;
+            break;
+    }
+
+    // 3. Calculate Angle so the trail follows the movement
+    // Math.atan2(dy, dx) gives rotation in radians
+    const deltaX = endX - startX;
+    const deltaY = endY - startY;
+    const angleRad = Math.atan2(deltaY, deltaX);
+    const angleDeg = angleRad * (180 / Math.PI); // Convert to degrees
+
+    // 4. Set Initial Position
+    // We use 'translate' for position and 'rotate' for direction
+    star.style.transform = `translate(${startX}px, ${startY}px) rotate(${angleDeg}deg)`;
+
+    // 5. Animate
+    // Random duration (Slow: 5s to 10s)
+    const duration = 5000 + Math.random() * 5000;
+
     const animation = star.animate([
-        { transform: 'translate(0, 0) rotate(20deg)', opacity: 1 },
-        { transform: `translate(${window.innerWidth + 200}px, 200px) rotate(20deg)`, opacity: 0 }
+        { 
+            transform: `translate(${startX}px, ${startY}px) rotate(${angleDeg}deg)`, 
+            opacity: 1 
+        },
+        { 
+            transform: `translate(${endX}px, ${endY}px) rotate(${angleDeg}deg)`, 
+            opacity: 0 
+        }
     ], {
         duration: duration,
         easing: 'linear'
     });
 
-    // Interaction
-    star.addEventListener('click', () => {
+    // 6. Interaction
+    star.addEventListener('click', (e) => {
+        // Stop bubbling so we don't click things behind it
+        e.stopPropagation();
         showFact();
-        star.remove(); // Remove immediately on click
+        
+        // Visual feedback on click (optional: simple pop effect)
+        star.style.opacity = 0;
+        star.style.transition = "opacity 0.2s";
+        
+        // Remove after short delay
+        setTimeout(() => star.remove(), 200);
     });
 
+    // Cleanup when animation ends
     animation.onfinish = () => star.remove();
+
+    // Add to DOM
     document.getElementById('star-container').appendChild(star);
     
-    // Recursion: Spawn next star randomly between 2s and 6s
-    setTimeout(spawnStar, 2000 + Math.random() * 4000);
+    // Spawn next star (Random delay between 1s and 3s)
+    setTimeout(spawnStar, 1000 + Math.random() * 2000);
 }
 
 // Start Star Loop
 setTimeout(spawnStar, 1000);
-
 // --- MODAL FACT ---
 const modal = document.getElementById('star-modal');
 const factText = document.getElementById('fact-text');

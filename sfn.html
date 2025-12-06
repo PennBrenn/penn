@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>SellFilesNow – Sell digital files in minutes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050810;
+            --bg-soft: #0e1220;
+            --bg-softer: #14192b;
+            --accent: #8b5cff;
+            --accent-soft: rgba(139, 92, 255, 0.12);
+            --accent-strong: #b692ff;
+            --accent-alt: #22d3ee;
+            --text: #f9fafb;
+            --text-soft: #9ca3af;
+            --border: #1f2933;
+            --danger: #f97373;
+            --radius-lg: 18px;
+            --radius-md: 12px;
+            --radius-full: 999px;
+            --shadow-soft: 0 18px 60px rgba(0, 0, 0, 0.7);
+            --blur: blur(24px);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            background: radial-gradient(circle at top, #111827 0, #020617 42%, #000 100%);
+            color: var(--text);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button {
+            font-family: inherit;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            background: none;
+        }
+
+        .page {
+            min-height: 100vh;
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 24px 16px 72px;
+        }
+
+        .glass-ring {
+            position: fixed;
+            inset: auto auto -200px -100px;
+            width: 420px;
+            height: 420px;
+            background: radial-gradient(circle, rgba(139, 92, 255, 0.55), transparent 60%);
+            filter: blur(40px);
+            opacity: 0.7;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .glass-ring-top {
+            position: fixed;
+            inset: -220px -160px auto auto;
+            width: 420px;
+            height: 420px;
+            background: radial-gradient(circle, rgba(34, 211, 238, 0.55), transparent 60%);
+            filter: blur(40px);
+            opacity: 0.5;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .logo-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 14px;
+            background: radial-gradient(circle at 20% 0, var(--accent-alt), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        .logo-icon span {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0b1020;
+        }
+
+        .logo-text-main {
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            font-size: 17px;
+        }
+
+        .logo-tagline {
+            font-size: 11px;
+            color: var(--text-soft);
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            font-size: 14px;
+            color: var(--text-soft);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 18px;
+        }
+
+        .nav-link {
+            padding: 4px 0;
+            opacity: 0.9;
+        }
+
+        .nav-link:hover {
+            color: #e5e7eb;
+        }
+
+        .nav-cta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ghost-btn {
+            padding: 7px 16px;
+            border-radius: var(--radius-full);
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            font-size: 13px;
+            color: var(--text-soft);
+            background: radial-gradient(circle at top left, rgba(148, 163, 184, 0.15), transparent 55%);
+        }
+
+        .ghost-btn:hover {
+            border-color: rgba(209, 213, 219, 0.7);
+            color: #e5e7eb;
+        }
+
+        .primary-btn {
+            padding: 8px 18px;
+            border-radius: var(--radius-full);
+            font-size: 14px;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--accent), var(--accent-alt));
+            color: #020617;
+            box-shadow: 0 14px 40px rgba(15, 23, 42, 0.85);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .primary-btn span {
+            font-size: 16px;
+        }
+
+        .primary-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        main {
+            display: flex;
+            flex-direction: column;
+            gap: 64px;
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+            gap: 36px;
+            align-items: center;
+        }
+
+        .hero-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 10px 4px 4px;
+            border-radius: var(--radius-full);
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            font-size: 11px;
+            color: var(--text-soft);
+            margin-bottom: 16px;
+            backdrop-filter: var(--blur);
+        }
+
+        .hero-tag-pill {
+            padding: 4px 10px;
+            border-radius: var(--radius-full);
+            background: radial-gradient(circle at top left, rgba(139, 92, 255, 0.36), rgba(30, 64, 175, 0.8));
+            color: #e5e7eb;
+            font-weight: 600;
+            font-size: 11px;
+        }
+
+        .hero-title {
+            font-size: clamp(2.4rem, 4vw, 3.2rem);
+            line-height: 1.08;
+            letter-spacing: -0.03em;
+            margin-bottom: 14px;
+        }
+
+        .hero-title span {
+            background: linear-gradient(120deg, var(--accent-alt), var(--accent-strong));
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 14px;
+            color: var(--text-soft);
+            max-width: 460px;
+            line-height: 1.6;
+            margin-bottom: 18px;
+        }
+
+        .hero-subtitle strong {
+            color: #e5e7eb;
+            font-weight: 500;
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .hero-secondary-btn {
+            padding: 8px 16px;
+            border-radius: var(--radius-full);
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            background: rgba(15, 23, 42, 0.9);
+            font-size: 13px;
+            color: var(--text-soft);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .hero-secondary-btn span {
+            font-size: 16px;
+        }
+
+        .hero-footnote {
+            font-size: 11px;
+            color: #6b7280;
+        }
+
+        .hero-footnote b {
+            color: #e5e7eb;
+            font-weight: 500;
+        }
+
+        .hero-right {
+            position: relative;
+        }
+
+        .hero-card {
+            border-radius: 22px;
+            padding: 18px 18px 16px;
+            background: radial-gradient(circle at 0 0, rgba(148, 163, 184, 0.24), transparent 55%), linear-gradient(145deg, #020617, #020617, #020617, #020617, #020617);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            box-shadow: var(--shadow-soft);
+            backdrop-filter: blur(22px);
+            color: #e5e7eb;
+        }
+
+        .hero-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+            font-size: 12px;
+        }
+
+        .hero-card-title {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .hero-card-title span:first-child {
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .hero-card-title span:last-child {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        .hero-card-pill {
+            padding: 4px 9px;
+            border-radius: var(--radius-full);
+            background: rgba(34, 197, 94, 0.18);
+            color: #bbf7d0;
+            font-size: 11px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .hero-card-pill-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 999px;
+            background: #4ade80;
+            box-shadow: 0 0 12px rgba(74, 222, 128, 0.8);
+        }
+
+        .hero-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            margin-bottom: 18px;
+            font-size: 11px;
+        }
+
+        .hero-metric {
+            padding: 8px 9px;
+            border-radius: 14px;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(55, 65, 81, 0.85);
+        }
+
+        .hero-metric-label {
+            color: #9ca3af;
+            margin-bottom: 3px;
+        }
+
+        .hero-metric-value {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .hero-metric-sub {
+            font-size: 10px;
+            color: #6b7280;
+            margin-top: 1px;
+        }
+
+        .hero-card-divider {
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.4), transparent);
+            margin-bottom: 16px;
+        }
+
+        .hero-flow {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            margin-bottom: 14px;
+            font-size: 11px;
+        }
+
+        .hero-flow-step {
+            padding: 9px 9px;
+            border-radius: 14px;
+            border: 1px dashed rgba(75, 85, 99, 0.8);
+            background: rgba(15, 23, 42, 0.98);
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .hero-flow-step-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .hero-flow-step-badge {
+            font-size: 10px;
+            padding: 3px 7px;
+            border-radius: 999px;
+            background: rgba(148, 163, 184, 0.16);
+        }
+
+        .hero-flow-step-icon {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .hero-flow-step-body {
+            font-size: 11px;
+            color: #e5e7eb;
+        }
+
+        .hero-card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        .hero-card-footer span strong {
+            color: #e5e7eb;
+            font-weight: 600;
+        }
+
+        .hero-timestamp {
+            font-size: 10px;
+            color: #6b7280;
+        }
+
+        .hero-blip {
+            position: absolute;
+            inset: auto -6px 14px auto;
+            padding: 8px 11px;
+            border-radius: 16px;
+            font-size: 11px;
+            background: radial-gradient(circle at top, rgba(34, 197, 94, 0.32), rgba(15, 23, 42, 0.98));
+            border: 1px solid rgba(52, 211, 153, 0.7);
+            color: #d1fae5;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            box-shadow: 0 14px 35px rgba(22, 101, 52, 0.7);
+        }
+
+        .hero-blip-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 999px;
+            background: #22c55e;
+            box-shadow: 0 0 12px rgba(34, 197, 94, 0.9);
+        }
+
+        .hero-blip small {
+            display: block;
+            font-size: 9px;
+            opacity: 0.85;
+        }
+
+        .hero-top-strip {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 16px;
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        .hero-top-strip-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 9px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(31, 41, 55, 0.9);
+        }
+
+        .hero-top-strip-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, var(--accent-alt), var(--accent));
+        }
+
+        .stats-band {
+            margin-top: 10px;
+            padding: 10px 14px;
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(31, 41, 55, 0.9);
+            background: radial-gradient(circle at 0 0, rgba(148, 163, 184, 0.18), transparent 55%);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            font-size: 11px;
+        }
+
+        .stats-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stats-pill-label {
+            color: #9ca3af;
+        }
+
+        .stats-pill-value {
+            font-weight: 600;
+            color: #e5e7eb;
+        }
+
+        .section {
+            margin-top: 10px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .section-subtitle {
+            font-size: 13px;
+            color: var(--text-soft);
+        }
+
+        .section-link {
+            font-size: 12px;
+            color: var(--accent-strong);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .feature-card {
+            padding: 14px 14px 13px;
+            border-radius: var(--radius-md);
+            background: rgba(15, 23, 42, 0.96);
+            border: 1px solid rgba(31, 41, 55, 0.9);
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.7);
+            font-size: 13px;
+        }
+
+        .feature-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 11px;
+            background: radial-gradient(circle at top, rgba(139, 92, 255, 0.55), rgba(15, 23, 42, 1));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            margin-bottom: 10px;
+        }
+
+        .feature-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 13px;
+        }
+
+        .feature-body {
+            color: var(--text-soft);
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .flow-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+            font-size: 13px;
+        }
+
+        .flow-step {
+            padding: 13px 13px 11px;
+            border-radius: var(--radius-md);
+            border: 1px dashed rgba(55, 65, 81, 0.95);
+            background: rgba(10, 15, 30, 0.95);
+        }
+
+        .flow-step-label {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-bottom: 5px;
+        }
+
+        .flow-step-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .flow-step-body {
+            font-size: 12px;
+            color: var(--text-soft);
+            line-height: 1.5;
+        }
+
+        .pricing {
+            display: grid;
+            grid-template-columns: 1.05fr 1fr;
+            gap: 14px;
+        }
+
+        .pricing-card-main {
+            padding: 16px 16px 15px;
+            border-radius: var(--radius-lg);
+            background: radial-gradient(circle at 0 0, rgba(129, 140, 248, 0.35), transparent 55%), linear-gradient(145deg, #020617, #020617);
+            border: 1px solid rgba(129, 140, 248, 0.8);
+            box-shadow: 0 18px 55px rgba(30, 64, 175, 0.9);
+            font-size: 13px;
+        }
+
+        .pricing-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 9px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(191, 219, 254, 0.8);
+            font-size: 11px;
+            margin-bottom: 8px;
+        }
+
+        .pricing-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .pricing-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .pricing-sub {
+            font-size: 12px;
+            color: #e5e7eb;
+        }
+
+        .pricing-price {
+            text-align: right;
+            font-size: 13px;
+        }
+
+        .pricing-price strong {
+            font-size: 20px;
+        }
+
+        .pricing-price small {
+            font-size: 11px;
+            color: #d1d5db;
+        }
+
+        .pricing-list {
+            list-style: none;
+            margin: 10px 0 14px;
+            padding: 0;
+            font-size: 12px;
+            color: #e5e7eb;
+        }
+
+        .pricing-list li {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            margin-bottom: 6px;
+        }
+
+        .pricing-check {
+            width: 13px;
+            height: 13px;
+            border-radius: 999px;
+            background: #22c55e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #022c22;
+        }
+
+        .pricing-cta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .pricing-note {
+            font-size: 11px;
+            color: #d1d5db;
+        }
+
+        .pricing-secondary {
+            padding: 14px 14px 13px;
+            border-radius: var(--radius-lg);
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px dashed rgba(55, 65, 81, 0.95);
+            font-size: 12px;
+            color: var(--text-soft);
+        }
+
+        .pricing-secondary-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #e5e7eb;
+            margin-bottom: 6px;
+        }
+
+        .pricing-secondary-note {
+            font-size: 11px;
+            margin-top: 6px;
+            color: #9ca3af;
+        }
+
+        .faq-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            font-size: 13px;
+        }
+
+        .faq-item {
+            border-radius: var(--radius-md);
+            background: rgba(15, 23, 42, 0.96);
+            border: 1px solid rgba(31, 41, 55, 0.95);
+            padding: 11px 12px 10px;
+        }
+
+        .faq-q {
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .faq-a {
+            font-size: 12px;
+            color: var(--text-soft);
+            line-height: 1.5;
+        }
+
+        footer {
+            margin-top: 40px;
+            padding-top: 18px;
+            border-top: 1px solid rgba(31, 41, 55, 0.95);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 10px;
+            font-size: 11px;
+            color: var(--text-soft);
+        }
+
+        .footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .pill-outline {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(71, 85, 105, 0.9);
+            font-size: 11px;
+            color: #e5e7eb;
+            background: rgba(15, 23, 42, 0.9);
+        }
+
+        .pill-outline small {
+            color: #9ca3af;
+            font-size: 10px;
+        }
+
+        @media (max-width: 900px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
+
+            nav {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .hero {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .hero-right {
+                order: -1;
+            }
+
+            .pricing {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .features-grid,
+            .flow-grid,
+            .faq-grid {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .hero-top-strip {
+                margin-bottom: 4px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .page {
+                padding-inline: 14px;
+            }
+
+            nav {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .nav-links {
+                gap: 12px;
+            }
+
+            .hero-actions {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .stats-band {
+                flex-direction: column;
+            }
+
+            .hero-card {
+                padding: 16px 14px 14px;
+            }
+
+            .hero-blip {
+                position: static;
+                margin-top: 8px;
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            footer {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="glass-ring"></div>
+    <div class="glass-ring-top"></div>
+    <div class="page">
+        <header>
+            <div class="logo-wrap">
+                <div class="logo-icon">
+                    <span>SF</span>
+                </div>
+                <div>
+                    <div class="logo-text-main">SellFilesNow</div>
+                    <div class="logo-tagline">Upload once. Get paid on repeat.</div>
+                </div>
+            </div>
+            <nav>
+                <div class="nav-links">
+                    <a href="#features" class="nav-link">Features</a>
+                    <a href="#pricing" class="nav-link">Pricing</a>
+                    <a href="#faq" class="nav-link">FAQ</a>
+                </div>
+                <div class="nav-cta">
+                    <button class="ghost-btn">Sign in</button>
+                    <button class="primary-btn">
+                        <span>⇪</span>
+                        <span>Start selling</span>
+                    </button>
+                </div>
+            </nav>
+        </header>
+
+        <main>
+            <section class="hero">
+                <div class="hero-left">
+                    <div class="hero-tag">
+                        <div class="hero-tag-pill">New</div>
+                        <span>Launch a digital product store in under 5 minutes.</span>
+                    </div>
+                    <h1 class="hero-title">
+                        Sell your files, <span>not your time.</span>
+                    </h1>
+                    <p class="hero-subtitle">
+                        Drag, drop, done. Upload your files, plug in Stripe, and start taking payments with a single
+                        shareable link.
+                        <strong>No storefront setup, no bloat, no headache.</strong>
+                    </p>
+                    <div class="hero-actions">
+                        <button class="primary-btn">
+                            <span>⚡</span>
+                            <span>Launch my first product</span>
+                        </button>
+                        <button class="hero-secondary-btn">
+                            <span>▶</span>
+                            <span>View interactive demo</span>
+                        </button>
+                    </div>
+                    <p class="hero-footnote">
+                        <b>Creators, devs, and side hustlers</b> use SellFilesNow to drop templates, e-books, presets,
+                        bots, and more.
+                    </p>
+
+                    <div class="hero-top-strip">
+                        <div class="hero-top-strip-item">
+                            <div class="hero-top-strip-dot"></div>
+                            <span>Payments handled by Stripe and PayPal</span>
+                        </div>
+                        <div class="hero-top-strip-item">
+                            <div class="hero-top-strip-dot"></div>
+                            <span>No monthly fees to start</span>
+                        </div>
+                    </div>
+
+                    <div class="stats-band">
+                        <div class="stats-pill">
+                            <span class="stats-pill-label">Average setup time</span>
+                            <span class="stats-pill-value">4m 27s</span>
+                        </div>
+                        <div class="stats-pill">
+                            <span class="stats-pill-label">Creators onboarded</span>
+                            <span class="stats-pill-value">+1,200</span>
+                        </div>
+                        <div class="stats-pill">
+                            <span class="stats-pill-label">Files delivered</span>
+                            <span class="stats-pill-value">98.7k</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hero-right">
+                    <div class="hero-card">
+                        <div class="hero-card-header">
+                            <div class="hero-card-title">
+                                <span>Live revenue snapshot</span>
+                                <span>Last 30 days · Demo creator account</span>
+                            </div>
+                            <div class="hero-card-pill">
+                                <div class="hero-card-pill-dot"></div>
+                                <span>Auto-payouts on</span>
+                            </div>
+                        </div>
+
+                        <div class="hero-metrics">
+                            <div class="hero-metric">
+                                <div class="hero-metric-label">Revenue</div>
+                                <div class="hero-metric-value">$2,983.40</div>
+                                <div class="hero-metric-sub">From 137 orders</div>
+                            </div>
+                            <div class="hero-metric">
+                                <div class="hero-metric-label">Top product</div>
+                                <div class="hero-metric-value">$47 preset pack</div>
+                                <div class="hero-metric-sub">61% of sales</div>
+                            </div>
+                            <div class="hero-metric">
+                                <div class="hero-metric-label">Avg. payout</div>
+                                <div class="hero-metric-value">$221.65</div>
+                                <div class="hero-metric-sub">Every 48 hours</div>
+                            </div>
+                        </div>
+
+                        <div class="hero-card-divider"></div>
+
+                        <div class="hero-flow">
+                            <div class="hero-flow-step">
+                                <div class="hero-flow-step-header">
+                                    <div class="hero-flow-step-badge">Step 1</div>
+                                    <div class="hero-flow-step-icon">📁</div>
+                                </div>
+                                <div class="hero-flow-step-body">Upload your file and write a quick description.</div>
+                            </div>
+                            <div class="hero-flow-step">
+                                <div class="hero-flow-step-header">
+                                    <div class="hero-flow-step-badge">Step 2</div>
+                                    <div class="hero-flow-step-icon">💳</div>
+                                </div>
+                                <div class="hero-flow-step-body">Connect Stripe or PayPal once, globally.</div>
+                            </div>
+                            <div class="hero-flow-step">
+                                <div class="hero-flow-step-header">
+                                    <div class="hero-flow-step-badge">Step 3</div>
+                                    <div class="hero-flow-step-icon">🔗</div>
+                                </div>
+                                <div class="hero-flow-step-body">Share your link. We handle delivery & receipts.</div>
+                            </div>
+                        </div>
+
+                        <div class="hero-card-footer">
+                            <span>Every paid order gets an instant, secure download link and branded receipt.</span>
+                            <span class="hero-timestamp">Updated a few seconds ago</span>
+                        </div>
+                    </div>
+
+                    <div class="hero-blip">
+                        <div class="hero-blip-dot"></div>
+                        <div>
+                            <span>“I set this up between classes and woke up to sales.”</span>
+                            <small>@studioorbit · UI preset creator</small>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section" id="features">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">Built for people who hate setup screens</div>
+                        <div class="section-subtitle">No bloated dashboard, no 24-step onboarding. Everything is tuned
+                            for launching fast and getting paid even faster.</div>
+                    </div>
+                    <a href="#" class="section-link">
+                        View full feature list
+                        <span>↗</span>
+                    </a>
+                </div>
+
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <div class="feature-title">Drop a file, get a storefront</div>
+                        <div class="feature-body">
+                            Upload a single file or bundle and we auto-generate a clean, mobile-ready sales page with
+                            your branding baked in.
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">💳</div>
+                        <div class="feature-title">Use your own payment accounts</div>
+                        <div class="feature-body">
+                            Connect Stripe or PayPal once. Customers pay you directly, we just sit in the middle and
+                            take a tiny platform fee.
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔐</div>
+                        <div class="feature-title">Instant, secure delivery</div>
+                        <div class="feature-body">
+                            Every purchase gets a unique, time-limited download link. No manual sending files, no “did
+                            you send it yet?” DMs.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">How it actually works</div>
+                        <div class="section-subtitle">You don’t need a business plan. You need a link that turns
+                            attention into money.</div>
+                    </div>
+                </div>
+
+                <div class="flow-grid">
+                    <div class="flow-step">
+                        <div class="flow-step-label">Step 1</div>
+                        <div class="flow-step-title">Upload your file</div>
+                        <div class="flow-step-body">
+                            Presets, bots, templates, PDFs, code, packs, zips. If it’s a file, you can sell it. Add a
+                            title, description, and price.
+                        </div>
+                    </div>
+                    <div class="flow-step">
+                        <div class="flow-step-label">Step 2</div>
+                        <div class="flow-step-title">Connect payments</div>
+                        <div class="flow-step-body">
+                            Link Stripe or PayPal in under a minute. You keep full control, payouts hit your accounts
+                            like normal.
+                        </div>
+                    </div>
+                    <div class="flow-step">
+                        <div class="flow-step-label">Step 3</div>
+                        <div class="flow-step-title">Share the link everywhere</div>
+                        <div class="flow-step-body">
+                            Drop it in your bio, Discord, TikTok, Twitter, YouTube description, wherever. We handle
+                            checkout and delivery automatically.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section" id="pricing">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">Start free. Pay when you’re actually making money.</div>
+                        <div class="section-subtitle">No paywalls just to experiment. Ship something, get a sale, then
+                            upgrade if you want the extras.</div>
+                    </div>
+                </div>
+
+                <div class="pricing">
+                    <div class="pricing-card-main">
+                        <div class="pricing-tag">
+                            <span>Best for solo creators</span>
+                        </div>
+                        <div class="pricing-heading">
+                            <div>
+                                <div class="pricing-title">Creator plan</div>
+                                <div class="pricing-sub">Launch unlimited products with zero monthly commitment.</div>
+                            </div>
+                            <div class="pricing-price">
+                                <strong>$0/mo</strong>
+                                <div><small>+ 4% platform fee per sale</small></div>
+                            </div>
+                        </div>
+
+                        <ul class="pricing-list">
+                            <li>
+                                <div class="pricing-check">✓</div>
+                                <span>Unlimited products and file updates</span>
+                            </li>
+                            <li>
+                                <div class="pricing-check">✓</div>
+                                <span>Stripe and PayPal integration</span>
+                            </li>
+                            <li>
+                                <div class="pricing-check">✓</div>
+                                <span>Instant, branded download pages</span>
+                            </li>
+                            <li>
+                                <div class="pricing-check">✓</div>
+                                <span>Email receipts and order history for customers</span>
+                            </li>
+                            <li>
+                                <div class="pricing-check">✓</div>
+                                <span>Basic analytics on views and sales</span>
+                            </li>
+                        </ul>
+
+                        <div class="pricing-cta">
+                            <button class="primary-btn">
+                                <span>⬆</span>
+                                <span>Open my free account</span>
+                            </button>
+                            <div class="pricing-note">
+                                No card required. Set up your first product before you finish this playlist.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pricing-secondary">
+                        <div class="pricing-secondary-title">When you’re ready to go harder</div>
+                        <div>
+                            Upgrade to Pro for a lower fee, custom domains, team access, and deeper analytics. Keep your
+                            existing products and links.
+                        </div>
+                        <div class="pricing-secondary-note">
+                            Pro starts at $9/mo with just 1.5% platform fee. Turn your side products into a proper
+                            mini-storefront.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section" id="faq">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">Questions, answered without corporate speak</div>
+                        <div class="section-subtitle">If you’re still confused after reading this, you probably just
+                            need to upload a file and click around.</div>
+                    </div>
+                </div>
+
+                <div class="faq-grid">
+                    <div class="faq-item">
+                        <div class="faq-q">What kind of files can I sell?</div>
+                        <div class="faq-a">
+                            Anything digital you legally own the rights to: presets, plugins, templates, scripts, bots,
+                            PDFs, icon packs, e-books, zips, you name it.
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-q">Do I get paid instantly?</div>
+                        <div class="faq-a">
+                            Yes. Payments go through your own Stripe or PayPal account. We just take our cut
+                            automatically so you never have to withdraw from us.
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-q">Can I use this with Discord, TikTok, or my website?</div>
+                        <div class="faq-a">
+                            Yep. Every product gets a simple link you can drop in bios, servers, link-in-bio tools, or
+                            embed behind buttons on your own site.
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-q">What happens if someone shares the download link?</div>
+                        <div class="faq-a">
+                            Links are unique and time-limited. You can rotate files, expire links, or push updated
+                            versions without resending anything manually.
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <div>
+                <span>© <span id="year"></span> SellFilesNow.</span>
+                <span>Built for people who would rather ship than babysit storefronts.</span>
+            </div>
+            <div class="footer-links">
+                <a href="#" class="pill-outline">
+                    <span>🔒</span>
+                    <span>Stripe & PayPal native</span>
+                </a>
+                <a href="#" class="pill-outline">
+                    <span>📄</span>
+                    <span>Terms</span>
+                </a>
+                <a href="#" class="pill-outline">
+                    <span>📫</span>
+                    <span>Support <small>(24h response)</small></span>
+                </a>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
+</body>
+
+</html>

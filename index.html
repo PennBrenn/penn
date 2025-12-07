@@ -32,12 +32,11 @@
             <nav class="nav-buttons">
                 <a href="#about-section" class="nav-link">About</a>
                 <a href="#socials-section" class="nav-link">Socials</a>
-                <a href="#voice-section" class="nav-link">Voice</a>
-                <a href="#business-section" class="nav-link">Business</a>
                 <a href="#sites-section" class="nav-link">Sites</a>
-                <a href="#games-section" class="nav-link">Games</a>
+                <a href="#voice-section" class="nav-link">Voice</a>
                 <a href="#pets-section" class="nav-link">Pets</a>
                 <a href="#hobbies-section" class="nav-link">Hobbies</a>
+                <a href="#places-section" class="nav-link">Places</a>
             </nav>
             <div class="music-player">
 
@@ -52,7 +51,7 @@
             </div>
         </div>
     </header>
-    <main class="container">
+    <main id="about-section" class="container">
         <section class="glass-panel">
             <div class="hero-grid">
                 <div>
@@ -73,6 +72,16 @@
                             money. ^w^<br><em>P.S. You can click on the shooting stars for semi-fun facts. :p</em>
                         </p>
                         <p><b>Taken&nbsp;<small>(yippe!)</small></b></p>
+                        <section class="glass-panel">
+                            <h2>For Business</h2>
+                            <div class="business-content">
+                                <p><b>Professional Summary:</b></p>
+                                <br>
+                                <p>Attending High School</p>
+                                <br>
+                                <p>Minimal Work experience</p>
+                            </div>
+                        </section>
                     </article>
                 </div>
                 <div class="profile-pic-container">
@@ -80,7 +89,7 @@
                 </div>
             </div>
         </section>
-        <section class="glass-panel">
+        <section id="socials-section" class="glass-panel">
             <h2>Socials & Contact</h2>
             <div class="links-grid">
                 <a href="https://drive.google.com/drive/folders/1xdJv-bT4wKyydjSxMpCK-iUGIhIML98O?usp=sharing"
@@ -98,28 +107,6 @@
             <div class="contact-row">
                 <a href="mailto:w@pennbrenn.com" class="contact-pill"><em>Work Email</em>&nbsp;w@pennbrenn.com</a>
                 <a href="tel:+18054104273" class="contact-pill"><em>Work Phone</em>&nbsp;+1 (805) 410-4273</a>
-            </div>
-        </section>
-        <section class="glass-panel">
-            <h2>Hear My Voice</h2>
-            <div class="voice-box">
-                <p>Type something below to hear it in my voice.&nbsp;<small>100 Characters max</small></p>
-                <div class="voice-input-group">
-                    <input type="text" id="ttsInput" maxlength="100" placeholder="100 Character Limit">
-                    <button id="ttsBtn" class="action-btn">Run</button>
-                </div>
-                <div id="ttsStatus" class="status-text"></div>
-                <audio id="ttsAudio" controls style="display:none; margin-top: 1rem; width: 100%;"></audio>
-            </div>
-        </section>
-        <section class="glass-panel">
-            <h2>For Business</h2>
-            <div class="business-content">
-                <p><b>Professional Summary:</b></p>
-                <br>
-                <p>Attending High School</p>
-                <br>
-                <p>Minimal Work experience</p>
             </div>
         </section>
         <section id="sites-section" class="glass-panel">
@@ -142,6 +129,18 @@
                 <a href="https://sites.google.com/student.lvusd.org/programming/home" class="social-btn">Old
                     <a href="https://play.pennbrenn.com" class="social-btn">Imposter Game</a>
                     Games</a>
+            </div>
+        </section>
+        <section id="voice-section" class="glass-panel">
+            <h2>Hear My Voice</h2>
+            <div class="voice-box">
+                <p>Type something below to hear it in my voice.&nbsp;<small>100 Characters max</small></p>
+                <div class="voice-input-group">
+                    <input type="text" id="ttsInput" maxlength="100" placeholder="100 Character Limit">
+                    <button id="ttsBtn" class="action-btn">Run</button>
+                </div>
+                <div id="ttsStatus" class="status-text"></div>
+                <audio id="ttsAudio" controls style="display:none; margin-top: 1rem; width: 100%;"></audio>
             </div>
         </section>
         <section class="glass-panel">
@@ -179,7 +178,7 @@
                 </div>
             </div>
         </section>
-        <section class="glass-panel">
+        <section id="pets-section" class="glass-panel">
             <h2>My Pets</h2>
             <div class="card-grid">
                 <div class="card">
@@ -219,7 +218,7 @@
                 </div>
             </div>
         </section>
-        <section class="glass-panel">
+        <section id="hobbies-section" class="glass-panel">
             <h2>Hobbies</h2>
             <div class="hobbies-flex">
                 <div class="hobby-list">
@@ -237,7 +236,7 @@
                 </div>
             </div>
         </section>
-        <section class="glass-panel">
+        <section id="places-section" class="glass-panel">
             <h2>Fav Out & About</h2>
             <div class="card-grid small-grid">
                 <div class="card">

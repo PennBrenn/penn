@@ -1,0 +1,274 @@
+    class PagePet {
+        constructor() {
+            // Configuration
+            this.petName = "Penn";
+            this.frameRate = 150; 
+            
+            // Physics Config
+            this.walkSpeed = 3;
+            this.climbSpeed = 2;
+            this.gravity = 0.6;   // Slightly lower gravity for floatier jumps
+            this.jumpPower = -15; // How high he jumps (negative is up)
+            this.bounce = 0.4; 
+            
+            // Animation States
+            this.states = {
+                IDLE: 'idle',
+                WALK_LEFT: 'walk left',
+                WALK_RIGHT: 'walk right',
+                CLIMB_LEFT: 'climb left',
+                CLIMB_RIGHT: 'climb right',
+                PICKED_UP: 'picked up',
+                FALLING: 'falling' // Used for jumping too
+            };
+
+            // Initial State
+            this.currentState = this.states.FALLING;
+            this.currentFrame = 1;
+            this.totalFrames = 6;
+            this.animPaused = false; 
+            
+            // Position & Physics
+            this.x = window.innerWidth / 2;
+            this.y = 0; 
+            this.vx = 0; 
+            this.vy = 0; 
+            
+            // Interaction Flags
+            this.isDragging = false;
+            this.mouseX = 0;
+            this.mouseY = 0;
+            this.dragOffsetX = 0;
+            this.dragOffsetY = 0;
+
+            // DOM Setup
+            this.createDOM();
+            this.bindEvents();
+
+            // Start Loops
+            this.animLoop = setInterval(() => this.updateAnimation(), this.frameRate);
+            this.gameLoop = requestAnimationFrame(() => this.updatePhysics());
+        }
+
+        createDOM() {
+            this.container = document.createElement('div');
+            this.container.id = 'penn-pet-container';
+            
+            this.img = document.createElement('img');
+            this.img.id = 'penn-pet-img';
+            this.img.draggable = false; 
+            
+            this.nameTag = document.createElement('div');
+            this.nameTag.id = 'penn-name';
+            this.nameTag.innerText = this.petName;
+
+            this.container.appendChild(this.nameTag);
+            this.container.appendChild(this.img);
+            document.body.appendChild(this.container);
+        }
+
+        bindEvents() {
+            window.addEventListener('mousemove', (e) => {
+                this.mouseX = e.clientX;
+                this.mouseY = e.clientY;
+                // If he's idle, he notices the mouse moving and might react
+                if(this.currentState === this.states.IDLE) {
+                    // Small chance to react instantly to mouse movement
+                    if(Math.random() < 0.05) this.decideNextMove();
+                }
+            });
+
+            this.container.addEventListener('mousedown', (e) => {
+                this.isDragging = true;
+                this.currentState = this.states.PICKED_UP;
+                this.animPaused = false; 
+                this.container.classList.add('grabbing');
+                
+                this.dragOffsetX = e.clientX - this.x;
+                this.dragOffsetY = e.clientY - this.y;
+                this.vx = 0;
+                this.vy = 0;
+            });
+
+            window.addEventListener('mouseup', () => {
+                if (this.isDragging) {
+                    this.isDragging = false;
+                    this.currentState = this.states.FALLING;
+                    this.animPaused = false; 
+                    this.container.classList.remove('grabbing');
+                }
+            });
+        }
+
+        // --- VISUALS ---
+        
+        updateAnimation() {
+            if (this.animPaused) return;
+
+            this.currentFrame++;
+            if (this.currentFrame > this.totalFrames) this.currentFrame = 1;
+
+            const path = `animations/${this.currentState}/frame${this.currentFrame}.png`;
+            this.img.src = path;
+        }
+
+        // --- LOGIC & PHYSICS ---
+
+        updatePhysics() {
+            const floor = window.innerHeight - 96; 
+            const rightWall = window.innerWidth - 96;
+
+            if (this.isDragging) {
+                this.x = this.mouseX - this.dragOffsetX;
+                this.y = this.mouseY - this.dragOffsetY;
+                // Track velocity while dragging for "throwing" effect
+                // (optional, but feels nice)
+            } 
+            else {
+                // 1. FALLING / JUMPING
+                if (this.currentState === this.states.FALLING) {
+                    this.vy += this.gravity;
+                    this.y += this.vy;
+                    this.x += this.vx; // Apply horizontal momentum
+
+                    // Hit Floor
+                    if (this.y >= floor) {
+                        this.y = floor;
+                        this.vy = -this.vy * this.bounce; 
+                        
+                        // Friction on floor
+                        this.vx *= 0.8;
+
+                        // Stop bouncing
+                        if (Math.abs(this.vy) < 1 && Math.abs(this.vy) > -1) {
+                            this.vy = 0;
+                            this.vx = 0;
+                            this.currentState = this.states.IDLE;
+                            // Decide what to do next quickly
+                            setTimeout(() => this.decideNextMove(), 500);
+                        }
+                    }
+                }
+
+                // 2. WALKING
+                else if (this.currentState === this.states.WALK_LEFT) {
+                    this.x -= this.walkSpeed;
+                    if (this.x <= 0) {
+                        this.x = 0;
+                        this.currentState = this.states.CLIMB_LEFT; 
+                    }
+                }
+                else if (this.currentState === this.states.WALK_RIGHT) {
+                    this.x += this.walkSpeed;
+                    if (this.x >= rightWall) {
+                        this.x = rightWall;
+                        this.currentState = this.states.CLIMB_RIGHT; 
+                    }
+                }
+
+                // 3. CLIMBING
+                else if (this.currentState === this.states.CLIMB_LEFT || this.currentState === this.states.CLIMB_RIGHT) {
+                    let isMoving = false;
+
+                    // NEW: Random chance to WALL JUMP towards mouse
+                    // 1% chance per frame if mouse is far away from wall
+                    if (Math.random() < 0.015) {
+                        this.animPaused = false;
+                        this.currentState = this.states.FALLING;
+                        this.vy = this.jumpPower * 0.8; // Upward
+                        
+                        // Jump away from the wall
+                        if (this.currentState === this.states.CLIMB_LEFT) {
+                            this.vx = 6; // Jump Right
+                        } else {
+                            this.vx = -6; // Jump Left
+                        }
+                        return; // Exit physics loop for this frame
+                    }
+
+                    // Standard Climb Logic
+                    if (this.y > this.mouseY + 10) {
+                        this.y -= this.climbSpeed;
+                        isMoving = true;
+                    } else if (this.y < this.mouseY - 10) {
+                        this.y += this.climbSpeed;
+                        isMoving = true;
+                    }
+
+                    this.animPaused = !isMoving; 
+
+                    if (this.y <= 0) {
+                        this.y = 0;
+                        this.animPaused = false; 
+                        this.currentState = this.states.FALLING;
+                    }
+                    if (this.y >= floor) {
+                        this.y = floor;
+                        this.animPaused = false; 
+                        this.currentState = this.states.IDLE;
+                    }
+                }
+
+                // 4. IDLE
+                else if (this.currentState === this.states.IDLE) {
+                    // Do nothing, wait for timer
+                }
+            }
+
+            // Boundary Checks
+            if (this.x < 0) { this.x = 0; this.vx *= -1; } // Bounce off left wall
+            if (this.x > rightWall) { this.x = rightWall; this.vx *= -1; } // Bounce off right wall
+            if (this.y > floor) this.y = floor; 
+
+            // Render
+            this.container.style.left = `${this.x}px`;
+            this.container.style.top = `${this.y}px`;
+
+            requestAnimationFrame(() => this.updatePhysics());
+        }
+
+        decideNextMove() {
+            if (this.isDragging || this.currentState === this.states.FALLING) return;
+            
+            this.animPaused = false; 
+            const rand = Math.random();
+            const floor = window.innerHeight - 96;
+
+            // Only decide moves if on the floor
+            if (this.y >= floor) {
+                
+                // NEW: JUMP LOGIC
+                // If mouse is above pet (and not too high up), chance to jump
+                if (this.mouseY < this.y - 50 && rand < 0.3) {
+                    this.currentState = this.states.FALLING;
+                    this.vy = this.jumpPower; 
+                    
+                    // Add horizontal momentum towards mouse
+                    if (this.mouseX < this.x) this.vx = -4;
+                    else this.vx = 4;
+                    
+                    return;
+                }
+
+                // Standard Wandering Logic
+                if (rand < 0.5) {
+                    // 50% chance to walk towards mouse
+                    const distToMouse = this.mouseX - this.x;
+                    this.currentState = distToMouse < 0 ? this.states.WALK_LEFT : this.states.WALK_RIGHT;
+                } else if (rand < 0.8) {
+                    // 30% chance to walk randomly
+                    this.currentState = Math.random() > 0.5 ? this.states.WALK_LEFT : this.states.WALK_RIGHT;
+                } else {
+                    // 20% chance to sit idle
+                    this.currentState = this.states.IDLE;
+                }
+
+                // Make decisions faster (every 1-3 seconds)
+                setTimeout(() => this.decideNextMove(), 1000 + Math.random() * 2000);
+            }
+        }
+    }
+
+    window.addEventListener('load', () => {
+        new PagePet();
+    });

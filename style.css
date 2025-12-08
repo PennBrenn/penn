@@ -36,6 +36,50 @@ img { max-width: 100%; display: block; border-radius: 8px; }
     padding: 1rem 0;
 }
 
+        /* --- PET STYLES --- */
+        #penn-pet-container {
+            position: fixed;
+            z-index: 9999;
+            width: 96px;
+            height: 96px;
+            pointer-events: auto;
+            user-select: none;
+            touch-action: none;
+            cursor: grab;
+        }
+
+        #penn-pet-container.grabbing {
+            cursor: grabbing;
+        }
+
+        #penn-pet-img {
+            width: 100%;
+            height: 100%;
+            display: block;
+            image-rendering: pixelated;
+        }
+
+        #penn-name {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: sans-serif;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        #penn-pet-container:hover #penn-name {
+            opacity: 1;
+        }
+
 .header-content {
     max-width: 1000px;
     margin: 0 auto;
@@ -307,6 +351,7 @@ h2 { font-size: 1.8rem; border-bottom: 2px solid var(--accent-color); display: i
 }
 
 footer { text-align: center; padding: 2rem; color: #666; font-size: 0.8rem; }
+
 
 
 

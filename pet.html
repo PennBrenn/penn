@@ -1,383 +1,430 @@
-<!-- SITE PET: drop this into your page (ideally before </body>) -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Interactive Site Pet (page-mate)</title>
 <style>
-  /* --- Site Pet Styles (scoped) --- */
-  .site-pet {
-    position: fixed;
-    left: 100px;
-    top: 100px;
-    width: 96px;
-    height: 96px;
-    z-index: 999999;
-    user-select: none;
-    cursor: grab;
-    touch-action: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    will-change: transform;
-    pointer-events: auto;
+  :root{
+    /* Replace this URL with your sprite path if needed */
+    --sprite-url: url('pet-sprite.png');
+    --frame-w: 96px;
+    --frame-h: 96px;
+    --sheet-w: 288px; /* 3 * 96 */
+    --sheet-h: 192px; /* 2 * 96 */
   }
 
-  /* The visible "sprite" - simple circular face; replace innerHTML in JS if you want an image */
+  /* Make sure this doesn't break existing layout -- the pet will sit on top */
+  .site-pet {
+    position: fixed;
+    left: 20px;
+    top: 20px;
+    width: var(--frame-w);
+    height: var(--frame-h);
+    z-index: 9999;
+    pointer-events: auto; /* allow clicking */
+    user-select: none;
+    touch-action: none;
+    will-change: transform;
+    transition: transform 0.08s linear; /* helps smooth flips */
+  }
+
   .site-pet .sprite {
     width: 100%;
     height: 100%;
-    border-radius: 14px;
-    background: linear-gradient(180deg, #ffd085, #ffb347);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.22), inset 0 -8px 18px rgba(0,0,0,0.05);
-    transform-origin: center;
-    transition: transform 120ms linear;
+    background-image: var(--sprite-url);
+    background-size: var(--sheet-w) var(--sheet-h);
+    /* start at frame 0 */
+    background-position: 0 0;
+    image-rendering: pixelated; /* optional, for crisp sprites */
   }
 
-  /* Flip horizontally depending on direction */
-  .site-pet.facing-left .sprite { transform: scaleX(-1); }
+  /* FLIP when moving left */
+  .flip { transform: scaleX(-1); }
 
-  /* Animation classes - toggled by JS */
-  .site-pet.walking .sprite {
-    animation: walk-bob 0.6s infinite linear;
+  /* Different animation classes (JS toggles these) */
+  .anim-idle .sprite { animation: idle-anim 1s steps(1) infinite; }
+  .anim-walk .sprite { animation: walk-top 0.6s steps(3) infinite; }
+  .anim-climb .sprite { animation: climb-bottom 0.8s steps(3) infinite; }
+  .anim-fall  .sprite { animation: fall-anim 0.4s steps(1) infinite; }
+
+  /* KEYFRAMES: top row = frames 0..2 (left-to-right), bottom row = frames 3..5 */
+  @keyframes walk-top {
+    0%   { background-position: 0 0; }
+    33%  { background-position: -96px 0; }
+    66%  { background-position: -192px 0; }
+    100% { background-position: 0 0; }
   }
-  .site-pet.idle .sprite {
-    animation: idle-breathe 2.8s infinite ease-in-out;
+  @keyframes climb-bottom {
+    0%   { background-position: 0 -96px; }
+    33%  { background-position: -96px -96px; }
+    66%  { background-position: -192px -96px; }
+    100% { background-position: 0 -96px; }
   }
-  .site-pet.climb .sprite {
-    animation: climb-shift 0.45s infinite linear;
+  /* idle shows first top-frame */
+  @keyframes idle-anim {
+    0%   { background-position: 0 0; }
+    100% { background-position: 0 0; }
   }
-  .site-pet.fall .sprite {
-    animation: tumble 0.9s infinite linear;
+  /* falling uses a single bottom-row middle frame (use frame 4) */
+  @keyframes fall-anim {
+    0%   { background-position: -96px -96px; }
+    100% { background-position: -96px -96px; }
   }
 
-  /* Small badges for behaviour toggles (optional, unobtrusive) */
-  .site-pet .badge {
+  /* optional: add a small shadow so it's easier to see */
+  .site-pet .shadow{
     position: absolute;
-    right: -8px;
-    bottom: -8px;
-    background: rgba(255,255,255,0.9);
-    border-radius: 10px;
-    padding: 2px 6px;
-    font-size: 10px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    left: 10%;
+    right: 10%;
+    bottom: -6px;
+    height: 8px;
+    border-radius: 50%;
+    filter: blur(2px);
+    background: rgba(0,0,0,0.25);
+    transform-origin: center;
+    transition: opacity 0.15s linear, transform 0.15s linear;
+    pointer-events: none;
   }
-
-  /* Keyframes */
-  @keyframes walk-bob {
-    0%   { transform: translateY(0) rotate(-1deg); }
-    50%  { transform: translateY(-6px) rotate(1deg); }
-    100% { transform: translateY(0) rotate(-1deg); }
-  }
-  @keyframes idle-breathe {
-    0%   { transform: translateY(0) scale(1); }
-    50%  { transform: translateY(-3px) scale(1.02); }
-    100% { transform: translateY(0) scale(1); }
-  }
-  @keyframes climb-shift {
-    0% { transform: translateY(0) rotate(-6deg); }
-    50% { transform: translateY(-8px) rotate(6deg); }
-    100% { transform: translateY(0) rotate(-6deg); }
-  }
-  @keyframes tumble {
-    0% { transform: rotate(0) translateY(0); }
-    50% { transform: rotate(6deg) translateY(6px); }
-    100% { transform: rotate(0) translateY(0); }
-  }
-
-  /* Make sure the pet doesn't block text selection on the page */
-  body > .site-pet { pointer-events: auto; }
-
-  /* Optional: reduce pet size on tiny screens */
-  @media (max-width: 420px) {
-    .site-pet { width: 72px; height:72px; }
-  }
+  .hidden { opacity: 0; pointer-events: none; }
+  /* when falling, make shadow smaller */
+  .falling .shadow { transform: scale(0.6); opacity: 0.6; }
 </style>
+</head>
+<body>
 
-<div id="sitePet" class="site-pet idle" aria-hidden="true" title="Site Pet (drag me!)">
-  <div class="sprite" id="sitePetSprite">
-    <!-- simple face; replace with <img src="..." /> or SVG if you like -->
-    <svg viewBox="0 0 64 64" width="72" height="72" aria-hidden="true">
-      <defs>
-        <linearGradient id="g1" x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0" stop-color="#fff3d6"/>
-          <stop offset="1" stop-color="#ffd085"/>
-        </linearGradient>
-      </defs>
-      <rect width="64" height="64" rx="10" fill="url(#g1)"/>
-      <g transform="translate(6,8)">
-        <ellipse cx="18" cy="26" rx="5" ry="6" fill="#3b2b1f"/>
-        <ellipse cx="42" cy="26" rx="5" ry="6" fill="#3b2b1f"/>
-        <path d="M18 40 C26 46, 36 46, 46 40" stroke="#3b2b1f" stroke-width="2.6" fill="none" stroke-linecap="round"/>
-      </g>
-    </svg>
-  </div>
-  <div class="badge" id="petBadge">follow: off</div>
+<!-- You can drop this div into your site wherever you like. -->
+<div id="sitePet" class="site-pet anim-idle" aria-hidden="true" title="Page pet (drag me!)">
+  <div class="sprite"></div>
+  <div class="shadow"></div>
 </div>
 
 <script>
-/* SITE PET SCRIPT
-   Drop this whole script into your page. All pet behavior is contained here and doesn't rely
-   on external libraries. Tweak the options below.
+/*
+Interactive Site Pet
+- Drop into an existing page.
+- Edit sprite path via CSS variable --sprite-url or replace the <style>.
+- Uses requestAnimationFrame for smooth movement.
 */
 
-(function () {
+(function() {
   const petEl = document.getElementById('sitePet');
-  const sprite = document.getElementById('sitePetSprite');
-  const badge = document.getElementById('petBadge');
+  const spriteEl = petEl.querySelector('.sprite');
+  const shadowEl = petEl.querySelector('.shadow');
 
-  // Options (tweak as desired)
-  const opts = {
-    walkSpeed: 60,            // px/sec base horizontal speed when wandering
-    gravity: 1600,            // px/sec^2 gravity for fall
-    dragFriction: 0.98,       // velocity multiplier per frame while walking
-    mouseFollowDistance: 180, // px - how close the mouse needs to be to start follow
-    mouseFollowStrength: 240, // px/sec velocity toward mouse
-    randomChangeInterval: 1500, // ms - how often to pick a new random target
-    boundaryClimbThreshold: 8,  // px - how close to edge to trigger climb
-  };
+  // Config
+  const FRAME_W = 96;
+  const FRAME_H = 96;
+  const gravity = 1500; // px/s^2
+  const walkSpeedRange = [60, 140]; // px/s
+  const changeDirInterval = [1500, 4500]; // ms between random behavior changes
+  const followRadius = 160; // how close the cursor must be to trigger follow
+  const followSpeed = 280; // speed when following cursor px/s
+  const groundPadding = 4; // small gap considered "on ground"
 
   // State
-  let vx = 0, vy = 0;
-  let lastFrame = performance.now();
-  let dragging = false;
-  let dragOffset = {x:0, y:0};
-  let followMouse = false;
-  let mousePos = {x: 0, y: 0};
-  let petRect = petEl.getBoundingClientRect();
-  let target = null;
-  let lastRandomChange = 0;
-  let isFalling = false;
-  let facingLeft = false;
+  const state = {
+    x: 20,
+    y: 20,
+    vx: 80, // px/s
+    vy: 0,
+    targetVX: null,
+    width: FRAME_W,
+    height: FRAME_H,
+    dragging: false,
+    dragOffsetX: 0,
+    dragOffsetY: 0,
+    lastTime: null,
+    mode: 'idle', // idle, walk, climb, fall, follow
+    facing: 1, // 1 = right, -1 = left
+    mouseX: null,
+    mouseY: null,
+    nextBehaviorChange: Date.now() + randBetween(...changeDirInterval),
+  };
 
-  // Helpers
-  function setStateClass(state) {
-    petEl.classList.remove('walking','idle','climb','fall');
-    petEl.classList.add(state);
+  // helpers
+  function randBetween(a,b){ return Math.random()*(b-a)+a; }
+  function clamp(v,a,b){ return Math.max(a, Math.min(b,v)); }
+  function setMode(m){
+    if (state.mode === m) return;
+    state.mode = m;
+    petEl.classList.remove('anim-idle','anim-walk','anim-climb','anim-fall');
+    switch(m){
+      case 'walk': petEl.classList.add('anim-walk'); break;
+      case 'climb': petEl.classList.add('anim-climb'); break;
+      case 'fall': petEl.classList.add('anim-fall'); break;
+      default: petEl.classList.add('anim-idle'); break;
+    }
+    // add falling class for shadow adjustments
+    if(m==='fall'){ petEl.classList.add('falling'); }
+    else { petEl.classList.remove('falling'); }
   }
-  function setFacing(left) {
-    facingLeft = left;
-    petEl.classList.toggle('facing-left', !!left);
+
+  // Place pet at initial transform
+  function applyTransform(){
+    petEl.style.transform = `translate3d(${state.x}px, ${state.y}px, 0) ${state.facing===-1? 'scaleX(-1)':''}`;
+    // handle flip via class to avoid messing with other transforms
+    if(state.facing === -1) petEl.classList.add('flip');
+    else petEl.classList.remove('flip');
+    // shadow scale/opacity based on height from ground
+    const bottomY = window.innerHeight - state.height;
+    const distToGround = Math.max(0, bottomY - state.y);
+    const s = clamp(1 - distToGround / 800, 0.3, 1);
+    shadowEl.style.transform = `scale(${s})`;
+    shadowEl.style.opacity = (state.mode === 'fall' ? 0.6 : 0.9).toString();
   }
-  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
 
-  // Mouse toggles: click the pet to toggle mouse-follow behaviour (optional)
-  petEl.addEventListener('dblclick', (e) => {
-    followMouse = !followMouse;
-    badge.textContent = 'follow: ' + (followMouse ? 'on' : 'off');
+  // Mouse tracking for follow/hang
+  window.addEventListener('mousemove', (ev) => {
+    state.mouseX = ev.clientX;
+    state.mouseY = ev.clientY;
+  }, {passive:true});
+
+  // Dragging
+  petEl.addEventListener('mousedown', (ev) => {
+    ev.preventDefault();
+    state.dragging = true;
+    const rect = petEl.getBoundingClientRect();
+    state.dragOffsetX = ev.clientX - rect.left;
+    state.dragOffsetY = ev.clientY - rect.top;
+    setMode('idle');
+    state.vx = 0;
+    state.vy = 0;
   });
-
-  // Drag handling
-  petEl.addEventListener('pointerdown', (e) => {
-    e.preventDefault();
-    dragging = true;
-    petEl.style.cursor = 'grabbing';
-    petRect = petEl.getBoundingClientRect();
-    dragOffset.x = e.clientX - petRect.left;
-    dragOffset.y = e.clientY - petRect.top;
-    // capture pointer so we continue to get events outside pet
-    petEl.setPointerCapture(e.pointerId);
-    // while dragging, stop velocities to avoid snap
-    vx = 0; vy = 0;
-    isFalling = false;
-    setStateClass('idle');
-  });
-
-  window.addEventListener('pointermove', (e) => {
-    mousePos.x = e.clientX;
-    mousePos.y = e.clientY;
-    if (dragging) {
-      const x = e.clientX - dragOffset.x;
-      const y = e.clientY - dragOffset.y;
-      applyPosition(x, y);
+  window.addEventListener('mousemove', (ev) => {
+    if(!state.dragging) return;
+    state.x = clamp(ev.clientX - state.dragOffsetX, 0, window.innerWidth - state.width);
+    state.y = clamp(ev.clientY - state.dragOffsetY, 0, window.innerHeight - state.height);
+    applyTransform();
+  }, {passive:true});
+  window.addEventListener('mouseup', (ev) => {
+    if(!state.dragging) return;
+    state.dragging = false;
+    // drop: start falling physics (unless already on ground)
+    const bottomY = window.innerHeight - state.height;
+    if (state.y + groundPadding < bottomY){
+      // small initial downward velocity from release
+      state.vy = 0;
+      setMode('fall');
+    } else {
+      setMode('idle');
     }
   });
 
-  window.addEventListener('pointerup', (e) => {
-    if (!dragging) return;
-    dragging = false;
-    petEl.style.cursor = 'grab';
-    // release pointer capture if we had it
-    try { petEl.releasePointerCapture(e.pointerId); } catch (err) {}
-    // When released, simulate fall physics: initial vy is 0; gravity will take over
-    vy = 0;
-    isFalling = true;
-    setStateClass('fall');
+  // Touch support (basic)
+  petEl.addEventListener('touchstart', (ev) => {
+    const t = ev.touches[0];
+    ev.preventDefault();
+    state.dragging = true;
+    const rect = petEl.getBoundingClientRect();
+    state.dragOffsetX = t.clientX - rect.left;
+    state.dragOffsetY = t.clientY - rect.top;
+    setMode('idle');
+    state.vx = 0;
+    state.vy = 0;
+  }, {passive:false});
+  window.addEventListener('touchmove', (ev) => {
+    if(!state.dragging) return;
+    const t = ev.touches[0];
+    state.x = clamp(t.clientX - state.dragOffsetX, 0, window.innerWidth - state.width);
+    state.y = clamp(t.clientY - state.dragOffsetY, 0, window.innerHeight - state.height);
+    applyTransform();
+  }, {passive:false});
+  window.addEventListener('touchend', (ev) => {
+    if(!state.dragging) return;
+    state.dragging = false;
+    const bottomY = window.innerHeight - state.height;
+    if (state.y + groundPadding < bottomY){
+      state.vy = 0;
+      setMode('fall');
+    } else {
+      setMode('idle');
+    }
   });
 
-  // Position application (keeps from going off-screen initially)
-  function applyPosition(x, y) {
-    const w = petEl.offsetWidth, h = petEl.offsetHeight;
-    const rightLimit = window.innerWidth - w;
-    const bottomLimit = window.innerHeight - h;
-    const nx = clamp(x, 0, Math.max(0, rightLimit));
-    const ny = clamp(y, 0, Math.max(0, bottomLimit));
-    petEl.style.left = nx + 'px';
-    petEl.style.top = ny + 'px';
-  }
+  // When window resizes, ensure pet remains in viewport
+  window.addEventListener('resize', () => {
+    state.x = clamp(state.x, 0, window.innerWidth - state.width);
+    state.y = clamp(state.y, 0, window.innerHeight - state.height);
+    applyTransform();
+  });
 
-  // Random wandering target
-  function pickRandomTarget() {
-    const w = petEl.offsetWidth, h = petEl.offsetHeight;
-    const margin = 20;
-    const x = Math.random() * (window.innerWidth - w - margin*2) + margin;
-    const y = Math.random() * (window.innerHeight - h - margin*2) + margin;
-    target = {x, y};
+  // Behavior chooser: random walking, or follow mouse when near
+  function chooseRandomBehavior(){
+    const now = Date.now();
+    if (now < state.nextBehaviorChange) return;
+    state.nextBehaviorChange = now + randBetween(...changeDirInterval);
+
+    // If mouse within followRadius, choose follow
+    if (state.mouseX !== null && Math.hypot((state.mouseX - (state.x + state.width/2)), (state.mouseY - (state.y + state.height/2))) < followRadius) {
+      state.targetVX = null;
+      setMode('follow');
+      return;
+    }
+    // Otherwise random walk or idle
+    if (Math.random() < 0.7) {
+      // pick a random vx sign and speed
+      const s = randBetween(...walkSpeedRange) * (Math.random()<0.5 ? -1 : 1);
+      state.targetVX = s;
+      state.vx = s;
+      setMode('walk');
+      state.facing = s >= 0 ? 1 : -1;
+    } else {
+      state.targetVX = 0;
+      state.vx = 0;
+      setMode('idle');
+    }
   }
 
   // Main loop
-  function loop(now) {
-    const dt = Math.min(0.05, (now - lastFrame) / 1000);
-    lastFrame = now;
-    petRect = petEl.getBoundingClientRect();
+  function loop(ts){
+    if (!state.lastTime) state.lastTime = ts;
+    const dt = Math.min(60, ts - state.lastTime) / 1000; // clamp to avoid huge jumps
+    state.lastTime = ts;
 
-    if (dragging) {
-      // while dragging everything is handled in pointermove
-      requestAnimationFrame(loop);
-      return;
-    }
-
-    // If following mouse and mouse is near enough, set velocity toward it
-    if (followMouse) {
-      const dx = mousePos.x - (petRect.left + petRect.width/2);
-      const dy = mousePos.y - (petRect.top + petRect.height/2);
-      const dist = Math.hypot(dx, dy);
-      if (dist < opts.mouseFollowDistance) {
-        // set velocities to approach mouse
-        const ang = Math.atan2(dy, dx);
-        vx += Math.cos(ang) * opts.mouseFollowStrength * dt;
-        vy += Math.sin(ang) * opts.mouseFollowStrength * dt;
-        setStateClass('walking');
-      }
-    }
-
-    // If falling (post-drag), apply gravity
-    if (isFalling) {
-      vy += opts.gravity * dt;
-      let newY = petRect.top + vy * dt;
-      const bottom = window.innerHeight - petRect.height;
-      if (newY >= bottom) {
-        // landed
-        newY = bottom;
-        vy = 0;
-        isFalling = false;
-        setStateClass('idle');
-      }
-      applyPosition(petRect.left, newY);
-      requestAnimationFrame(loop);
-      return;
-    }
-
-    // Wandering logic: pick random target occasionally
-    if (!target || (now - lastRandomChange) > opts.randomChangeInterval) {
-      if (Math.random() < 0.6) pickRandomTarget();
-      lastRandomChange = now;
-    }
-
-    // Move toward target if present
-    if (target) {
-      const centerX = petRect.left + petRect.width/2;
-      const centerY = petRect.top + petRect.height/2;
-      let dx = target.x + petRect.width/2 - centerX;
-      let dy = target.y + petRect.height/2 - centerY;
-      const dist = Math.hypot(dx, dy);
-
-      if (dist > 6) {
-        // accelerate toward target
-        const ang = Math.atan2(dy, dx);
-        const speed = opts.walkSpeed * (0.8 + Math.random()*0.6);
-        vx += Math.cos(ang) * speed * dt;
-        vy += Math.sin(ang) * speed * dt;
-        setStateClass('walking');
+    if(!state.dragging){
+      // If we are following mouse and it's near, move toward it
+      if (state.mode === 'follow' && state.mouseX !== null){
+        const centerX = state.x + state.width/2;
+        const centerY = state.y + state.height/2;
+        const dx = state.mouseX - centerX;
+        const dy = state.mouseY - centerY;
+        const dist = Math.hypot(dx, dy);
+        if (dist < 18) {
+          // reached close enough
+          state.vx = 0;
+          state.vy = 0;
+          setMode('idle');
+        } else {
+          // normalized velocity toward cursor
+          const nx = dx / dist;
+          const ny = dy / dist;
+          state.vx = nx * followSpeed;
+          state.vy = ny * followSpeed;
+          state.facing = state.vx >= 0 ? 1 : -1;
+          setMode('walk');
+          // but slow vertical movement when following so it "hangs"
+          state.vy *= 0.6;
+        }
+        // if mouse moved away too far, revert to random behavior eventually
+        if (dist > followRadius * 1.6) {
+          state.nextBehaviorChange = Date.now() + randBetween(...changeDirInterval);
+        }
+      } else if (state.mode === 'fall'){
+        // falling physics
+        state.vy += gravity * dt;
+        state.y += state.vy * dt;
+        // small horizontal friction
+        state.x += state.vx * dt;
+        // detect ground collision
+        const bottomY = window.innerHeight - state.height;
+        if (state.y >= bottomY){
+          state.y = bottomY;
+          state.vy = 0;
+          // when landing, go to idle
+          setMode('idle');
+          // small bounce effect
+        }
       } else {
-        // reached target -> small idle
-        if (Math.random() < 0.02) { pickRandomTarget(); }
-        setStateClass('idle');
-        vx *= 0.4;
-        vy *= 0.4;
+        // walking / idle behavior
+        // If we have a targetVX, try to approach it
+        if (state.targetVX !== null){
+          // simple damping to target
+          state.vx += (state.targetVX - state.vx) * clamp(8 * dt, 0, 1);
+        }
+        // move horizontally
+        state.x += state.vx * dt;
+        // slight vertical idle bob for character (makes it feel alive)
+        state.y += Math.sin(ts/400 + state.x/200) * 0.2;
+
+        // boundary detection (left/right/top/bottom)
+        const maxX = window.innerWidth - state.width;
+        const maxY = window.innerHeight - state.height;
+        // left boundary
+        if (state.x <= 0){
+          state.x = 0;
+          state.vx = Math.abs(state.vx) || randBetween(...walkSpeedRange);
+          state.targetVX = state.vx;
+          setMode('climb');
+          state.facing = 1;
+          state.nextBehaviorChange = Date.now() + 900; // pause a bit in climb
+        }
+        // right boundary
+        if (state.x >= maxX){
+          state.x = maxX;
+          state.vx = -Math.abs(state.vx) || -randBetween(...walkSpeedRange);
+          state.targetVX = state.vx;
+          setMode('climb');
+          state.facing = -1;
+          state.nextBehaviorChange = Date.now() + 900;
+        }
+        // top boundary (simulate climbing up)
+        if (state.y <= 0){
+          state.y = 0;
+          // when at top, reverse y slightly and stay in climb
+          setMode('climb');
+          state.vy = 0;
+          state.nextBehaviorChange = Date.now() + 900;
+        }
+        // bottom boundary (ground)
+        if (state.y >= maxY){
+          state.y = maxY;
+          // ensure falling state not stuck
+          if (state.mode === 'fall') setMode('idle');
+        }
+
+        // occasionally switch behavior
+        chooseRandomBehavior();
+
+        // If mouse nearby, start follow mode
+        if (state.mouseX !== null && Math.hypot((state.mouseX - (state.x + state.width/2)), (state.mouseY - (state.y + state.height/2))) < followRadius){
+          setMode('follow');
+        }
       }
-    }
+    } // end not dragging
 
-    // Apply friction to horizontal movement
-    vx *= Math.pow(opts.dragFriction, dt * 60);
+    // Ensure within viewport
+    state.x = clamp(state.x, 0, Math.max(0, window.innerWidth - state.width));
+    state.y = clamp(state.y, 0, Math.max(0, window.innerHeight - state.height));
 
-    // Integrate positions
-    let newX = petRect.left + vx * dt;
-    let newY = petRect.top + vy * dt;
+    // Face direction
+    if (Math.abs(state.vx) > 1) state.facing = state.vx >= 0 ? 1 : -1;
 
-    // Boundary detection for left/right walls -> climbing behaviour
-    const leftEdge = newX <= opts.boundaryClimbThreshold;
-    const rightEdge = newX + petRect.width >= window.innerWidth - opts.boundaryClimbThreshold;
-    const topEdge = newY <= 0;
-    const bottomEdge = newY + petRect.height >= window.innerHeight;
-
-    if (leftEdge || rightEdge) {
-      // trigger climb: nudge up a bit and reverse horizontal velocity
-      setStateClass('climb');
-      // move up slightly (climb)
-      newY = Math.max(0, newY - 6);
-      // reverse direction with modest speed
-      vx = (rightEdge ? -Math.abs(vx || opts.walkSpeed) : Math.abs(vx || opts.walkSpeed)) * 0.8;
-      // set facing
-      setFacing(!(leftEdge));
-      // small chance to pick new target away from wall
-      if (Math.random() < 0.35) { pickRandomTarget(); }
-    } else if (topEdge) {
-      // bounce down
-      vy = Math.abs(vy) * 0.3;
-      setStateClass('idle');
-    } else if (bottomEdge) {
-      // landed on floor
-      newY = Math.max(0, window.innerHeight - petRect.height);
-      vy = 0;
-      setStateClass('idle');
-    }
-
-    // If we have a horizontal speed, set facing direction
-    if (Math.abs(vx) > 6) setFacing(vx < 0);
-
-    // Apply final clamped positions so pet stays inside viewport
-    const finalX = clamp(newX, 0, Math.max(0, window.innerWidth - petRect.width));
-    const finalY = clamp(newY, 0, Math.max(0, window.innerHeight - petRect.height));
-    applyPosition(finalX, finalY);
+    applyTransform();
 
     requestAnimationFrame(loop);
   }
 
-  // Start walking after tiny delay
-  setTimeout(() => {
-    lastFrame = performance.now();
-    pickRandomTarget();
-    setStateClass('idle');
-    requestAnimationFrame(loop);
-  }, 120);
+  // Initialize position and start loop
+  applyTransform();
+  requestAnimationFrame(loop);
 
-  // Expose a small API on window to control the pet from site scripts
-  window.sitePet = {
-    setFollowMouse(on) {
-      followMouse = !!on;
-      badge.textContent = 'follow: ' + (followMouse ? 'on' : 'off');
-    },
-    setPosition(x,y) { applyPosition(x,y); },
-    hide() { petEl.style.display = 'none'; },
-    show() { petEl.style.display = 'block'; }
-  };
+  // small helper to set custom initial random movement
+  state.vx = (Math.random() < 0.5 ? -1 : 1) * randBetween(...walkSpeedRange);
+  state.targetVX = state.vx;
+  setMode('walk');
 
-  // Keep the pet inside on resize
-  window.addEventListener('resize', () => {
-    const r = petEl.getBoundingClientRect();
-    applyPosition(r.left, r.top);
-  });
-
-  // Accessibility: allow keyboard users to toggle follow with "f" when pet has focus
-  petEl.setAttribute('tabindex','0');
-  petEl.addEventListener('keydown', (e) => {
-    if (e.key === 'f') {
-      followMouse = !followMouse;
-      badge.textContent = 'follow: ' + (followMouse ? 'on' : 'off');
+  // Accessibility: allow user to hide pet via click+ctrl (example)
+  window.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.key === 'h') {
+      petEl.style.display = petEl.style.display === 'none' ? 'block' : 'none';
     }
   });
 
-  // Prevent the pet from interfering with general page pointer events when dragging is not active
-  petEl.style.pointerEvents = 'auto';
-
+  // Expose API to page in case integrator wants to control pet
+  window.pagePet = {
+    setSprite(url){
+      document.documentElement.style.setProperty('--sprite-url', `url('${url}')`);
+    },
+    setPosition(x,y){
+      state.x = x; state.y = y;
+      applyTransform();
+    },
+    hide(){ petEl.style.display='none'; },
+    show(){ petEl.style.display='block'; },
+    mode(){ return state.mode; }
+  };
 })();
 </script>
+</body>
+</html>

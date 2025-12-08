@@ -1,4 +1,3 @@
-<script>
     class PagePet {
         constructor() {
             // Configuration
@@ -383,4 +382,3 @@
         new PagePet();
     });
 
-</script>

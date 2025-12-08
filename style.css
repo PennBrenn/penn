@@ -39,7 +39,7 @@ img { max-width: 100%; display: block; border-radius: 8px; }
         /* --- PET STYLES --- */
         #penn-pet-container {
             position: fixed;
-            z-index: 9999;
+            z-index: 999999999999999999999;
             width: 96px;
             height: 96px;
             pointer-events: auto;
@@ -351,6 +351,7 @@ h2 { font-size: 1.8rem; border-bottom: 2px solid var(--accent-color); display: i
 }
 
 footer { text-align: center; padding: 2rem; color: #666; font-size: 0.8rem; }
+
 
 
 

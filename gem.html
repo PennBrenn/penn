@@ -6,13 +6,13 @@
     <title>Penn the Page Pet</title>
     
     <style>
-        /* --- PET STYLES --- */
+        /* --- PET STYLES (Unchanged) --- */
         #penn-pet-container {
             position: fixed;
-            z-index: 9999; /* Ensure he is on top of everything */
+            z-index: 9999;
             width: 96px;
             height: 96px;
-            pointer-events: auto; /* Allow clicking */
+            pointer-events: auto;
             user-select: none;
             touch-action: none;
             cursor: grab;
@@ -22,15 +22,13 @@
             cursor: grabbing;
         }
 
-        /* The Image Element */
         #penn-pet-img {
             width: 100%;
             height: 100%;
             display: block;
-            image-rendering: pixelated; /* Keeps pixel art crisp */
+            image-rendering: pixelated;
         }
 
-        /* The Name Tag */
         #penn-name {
             position: absolute;
             top: -30px;
@@ -48,7 +46,6 @@
             white-space: nowrap;
         }
 
-        /* Hover Logic for Name */
         #penn-pet-container:hover #penn-name {
             opacity: 1;
         }
@@ -56,16 +53,16 @@
 </head>
 <body>
 
-    <script>
+<script>
     class PagePet {
         constructor() {
             // Configuration
             this.petName = "Penn";
-            this.frameRate = 150; // ms per frame
+            this.frameRate = 150; 
             this.walkSpeed = 3;
             this.climbSpeed = 2;
             this.gravity = 0.8;
-            this.bounce = 0.4; // Bounciness when falling
+            this.bounce = 0.4; 
             
             // Animation States
             this.states = {
@@ -74,7 +71,7 @@
                 WALK_RIGHT: 'walk right',
                 CLIMB_LEFT: 'climb left',
                 CLIMB_RIGHT: 'climb right',
-                HANG: 'hang',
+                // HANG: 'hang',  <-- REMOVED
                 PICKED_UP: 'picked up',
                 FALLING: 'falling'
             };
@@ -83,12 +80,13 @@
             this.currentState = this.states.FALLING;
             this.currentFrame = 1;
             this.totalFrames = 6;
+            this.animPaused = false; /* UPDATED: Track if animation should freeze */
             
             // Position & Physics
             this.x = window.innerWidth / 2;
-            this.y = 0; // Start at top
-            this.vx = 0; // Velocity X
-            this.vy = 0; // Velocity Y
+            this.y = 0; 
+            this.vx = 0; 
+            this.vy = 0; 
             
             // Interaction Flags
             this.isDragging = false;
@@ -96,12 +94,9 @@
             this.mouseY = 0;
             this.dragOffsetX = 0;
             this.dragOffsetY = 0;
-            this.mouseActiveTimer = null;
 
             // DOM Setup
             this.createDOM();
-            
-            // Event Listeners
             this.bindEvents();
 
             // Start Loops
@@ -110,16 +105,13 @@
         }
 
         createDOM() {
-            // Container
             this.container = document.createElement('div');
             this.container.id = 'penn-pet-container';
             
-            // Image
             this.img = document.createElement('img');
             this.img.id = 'penn-pet-img';
-            this.img.draggable = false; // Disable native drag
+            this.img.draggable = false; 
             
-            // Name Tag
             this.nameTag = document.createElement('div');
             this.nameTag.id = 'penn-name';
             this.nameTag.innerText = this.petName;
@@ -130,28 +122,22 @@
         }
 
         bindEvents() {
-            // Global Mouse Tracking
             window.addEventListener('mousemove', (e) => {
                 this.mouseX = e.clientX;
                 this.mouseY = e.clientY;
-                
-                // Wake up interaction logic
                 if(this.currentState === this.states.IDLE) {
                     this.decideNextMove();
                 }
             });
 
-            // Dragging Events
             this.container.addEventListener('mousedown', (e) => {
                 this.isDragging = true;
                 this.currentState = this.states.PICKED_UP;
+                this.animPaused = false; /* UPDATED: Unpause on grab */
                 this.container.classList.add('grabbing');
                 
-                // Calculate offset so he doesn't snap to center of mouse
                 this.dragOffsetX = e.clientX - this.x;
                 this.dragOffsetY = e.clientY - this.y;
-                
-                // Reset velocities
                 this.vx = 0;
                 this.vy = 0;
             });
@@ -160,6 +146,7 @@
                 if (this.isDragging) {
                     this.isDragging = false;
                     this.currentState = this.states.FALLING;
+                    this.animPaused = false; /* UPDATED: Unpause on release */
                     this.container.classList.remove('grabbing');
                 }
             });
@@ -168,51 +155,43 @@
         // --- VISUALS ---
         
         updateAnimation() {
-            // Cycle Frames 1-6
+            /* UPDATED: If paused, do not increment frames, just exit */
+            if (this.animPaused) return;
+
             this.currentFrame++;
             if (this.currentFrame > this.totalFrames) this.currentFrame = 1;
 
-            // Construct Path: /animations/<action>/frame<x>.png
-            // NOTE: Ensure your folder structure matches this exactly
             const path = `animations/${this.currentState}/frame${this.currentFrame}.png`;
-            
-            // Update Image Source
             this.img.src = path;
         }
 
         // --- LOGIC & PHYSICS ---
 
         updatePhysics() {
-            const floor = window.innerHeight - 96; // 96 is pet height
+            const floor = window.innerHeight - 96; 
             const rightWall = window.innerWidth - 96;
 
             if (this.isDragging) {
-                // Follow Mouse directly
                 this.x = this.mouseX - this.dragOffsetX;
                 this.y = this.mouseY - this.dragOffsetY;
             } 
             else {
-                // --- STATE MACHINE LOGIC ---
-                
                 // 1. FALLING
                 if (this.currentState === this.states.FALLING) {
                     this.vy += this.gravity;
                     this.y += this.vy;
+                    this.x += this.vx;
 
-                    // Hit Floor
                     if (this.y >= floor) {
                         this.y = floor;
-                        this.vy = -this.vy * this.bounce; // Small bounce
+                        this.vy = -this.vy * this.bounce; 
                         
                         if (Math.abs(this.vy) < 1) {
                             this.vy = 0;
                             this.currentState = this.states.IDLE;
-                            // Pick a random move after landing
                             setTimeout(() => this.decideNextMove(), 1000);
                         }
                     }
-                    // Apply horizontal momentum if falling
-                    this.x += this.vx;
                 }
 
                 // 2. WALKING
@@ -220,95 +199,98 @@
                     this.x -= this.walkSpeed;
                     if (this.x <= 0) {
                         this.x = 0;
-                        this.currentState = this.states.CLIMB_LEFT; // Hit wall, start climb
+                        this.currentState = this.states.CLIMB_LEFT; 
                     }
                 }
                 else if (this.currentState === this.states.WALK_RIGHT) {
                     this.x += this.walkSpeed;
                     if (this.x >= rightWall) {
                         this.x = rightWall;
-                        this.currentState = this.states.CLIMB_RIGHT; // Hit wall, start climb
+                        this.currentState = this.states.CLIMB_RIGHT; 
                     }
                 }
 
-                // 3. CLIMBING
+                // 3. CLIMBING (UPDATED LOGIC)
                 else if (this.currentState === this.states.CLIMB_LEFT || this.currentState === this.states.CLIMB_RIGHT) {
-                    // Try to climb towards mouse height
-                    if (this.y > this.mouseY) {
+                    let isMoving = false;
+
+                    // Try to align with mouse height
+                    if (this.y > this.mouseY + 10) {
                         this.y -= this.climbSpeed;
+                        isMoving = true;
                     } else if (this.y < this.mouseY - 10) {
                         this.y += this.climbSpeed;
-                    } else {
-                        // Reached mouse height on wall
-                        this.currentState = this.states.HANG;
+                        isMoving = true;
                     }
 
-                    // If we hit the ceiling
+                    // UPDATED: If we are moving, play animation. If not, pause animation.
+                    this.animPaused = !isMoving; 
+
+                    // Ceiling Hit
                     if (this.y <= 0) {
                         this.y = 0;
+                        this.animPaused = false; // Reset pause
                         this.currentState = this.states.FALLING;
                     }
-                    // If we hit the floor
+                    // Floor Hit
                     if (this.y >= floor) {
                         this.y = floor;
+                        this.animPaused = false; // Reset pause
                         this.currentState = this.states.IDLE;
                     }
-                }
-                
-                // 4. HANGING
-                else if (this.currentState === this.states.HANG) {
-                    // If mouse moves away significantly, fall or climb
-                    if (Math.abs(this.y - this.mouseY) > 150) {
-                        this.currentState = this.states.FALLING;
+                    
+                    // Fall off wall if mouse moves too far horizontally
+                    // (Optional: keeps him from climbing invisible air if mouse moves to center)
+                    if (this.currentState === this.states.CLIMB_LEFT && this.mouseX > 200) {
+                         this.animPaused = false;
+                         this.currentState = this.states.FALLING;
+                    }
+                    if (this.currentState === this.states.CLIMB_RIGHT && this.mouseX < rightWall - 200) {
+                         this.animPaused = false;
+                         this.currentState = this.states.FALLING;
                     }
                 }
 
-                // 5. IDLE
+                // 4. IDLE
                 else if (this.currentState === this.states.IDLE) {
-                    // Just wait for the next decision or mouse interaction
+                    // Waiting for AI decision
                 }
             }
 
-            // Boundary Checks (Keep inside screen)
+            // Boundary Checks
             if (this.x < 0) this.x = 0;
             if (this.x > rightWall) this.x = rightWall;
-            if (this.y > floor) this.y = floor; // Floor hard stop
+            if (this.y > floor) this.y = floor; 
 
-            // Apply Render
+            // Render
             this.container.style.left = `${this.x}px`;
             this.container.style.top = `${this.y}px`;
 
-            // Loop
             requestAnimationFrame(() => this.updatePhysics());
         }
 
         decideNextMove() {
             if (this.isDragging || this.currentState === this.states.FALLING) return;
+            
+            // Ensure animation isn't paused if we start walking
+            this.animPaused = false; 
 
-            // Simple AI: 
-            // If on floor, 40% chance to walk to mouse, 40% random walk, 20% idle
             const rand = Math.random();
             const distToMouse = this.mouseX - this.x;
 
             if (this.y >= window.innerHeight - 100) {
-                // We are on the floor
                 if (rand < 0.4) {
-                    // Walk towards mouse
                     this.currentState = distToMouse < 0 ? this.states.WALK_LEFT : this.states.WALK_RIGHT;
                 } else if (rand < 0.8) {
-                    // Random walk
                     this.currentState = Math.random() > 0.5 ? this.states.WALK_LEFT : this.states.WALK_RIGHT;
                 } else {
                     this.currentState = this.states.IDLE;
                 }
-
-                // Change mind after 2-4 seconds
                 setTimeout(() => this.decideNextMove(), 2000 + Math.random() * 2000);
             }
         }
     }
 
-    // Initialize the Pet when the page loads
     window.addEventListener('load', () => {
         new PagePet();
     });

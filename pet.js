@@ -1,4 +1,4 @@
-    class PagePet {
+class PagePet {
         constructor() {
             // Configuration
             this.petName = "Penn";
@@ -7,8 +7,8 @@
             // Physics Config
             this.walkSpeed = 3;
             this.climbSpeed = 2;
-            this.gravity = 0.6;   // Slightly lower gravity for floatier jumps
-            this.jumpPower = -15; // How high he jumps (negative is up)
+            this.gravity = 0.6;   
+            this.jumpPower = -15; 
             this.bounce = 0.4; 
             
             // Animation States
@@ -19,7 +19,7 @@
                 CLIMB_LEFT: 'climb left',
                 CLIMB_RIGHT: 'climb right',
                 PICKED_UP: 'picked up',
-                FALLING: 'falling' // Used for jumping too
+                FALLING: 'falling'
             };
 
             // Initial State
@@ -36,8 +36,9 @@
             
             // Interaction Flags
             this.isDragging = false;
-            this.mouseX = 0;
-            this.mouseY = 0;
+            // FIX 1: Initialize mouse at bottom so he doesn't climb invisible air on load
+            this.mouseX = window.innerWidth / 2;
+            this.mouseY = window.innerHeight; 
             this.dragOffsetX = 0;
             this.dragOffsetY = 0;
 
@@ -71,9 +72,7 @@
             window.addEventListener('mousemove', (e) => {
                 this.mouseX = e.clientX;
                 this.mouseY = e.clientY;
-                // If he's idle, he notices the mouse moving and might react
                 if(this.currentState === this.states.IDLE) {
-                    // Small chance to react instantly to mouse movement
                     if(Math.random() < 0.05) this.decideNextMove();
                 }
             });
@@ -100,8 +99,6 @@
             });
         }
 
-        // --- VISUALS ---
-        
         updateAnimation() {
             if (this.animPaused) return;
 
@@ -112,8 +109,6 @@
             this.img.src = path;
         }
 
-        // --- LOGIC & PHYSICS ---
-
         updatePhysics() {
             const floor = window.innerHeight - 96; 
             const rightWall = window.innerWidth - 96;
@@ -121,30 +116,23 @@
             if (this.isDragging) {
                 this.x = this.mouseX - this.dragOffsetX;
                 this.y = this.mouseY - this.dragOffsetY;
-                // Track velocity while dragging for "throwing" effect
-                // (optional, but feels nice)
             } 
             else {
-                // 1. FALLING / JUMPING
+                // 1. FALLING
                 if (this.currentState === this.states.FALLING) {
                     this.vy += this.gravity;
                     this.y += this.vy;
-                    this.x += this.vx; // Apply horizontal momentum
+                    this.x += this.vx; 
 
-                    // Hit Floor
                     if (this.y >= floor) {
                         this.y = floor;
                         this.vy = -this.vy * this.bounce; 
-                        
-                        // Friction on floor
                         this.vx *= 0.8;
 
-                        // Stop bouncing
                         if (Math.abs(this.vy) < 1 && Math.abs(this.vy) > -1) {
                             this.vy = 0;
                             this.vx = 0;
                             this.currentState = this.states.IDLE;
-                            // Decide what to do next quickly
                             setTimeout(() => this.decideNextMove(), 500);
                         }
                     }
@@ -170,23 +158,26 @@
                 else if (this.currentState === this.states.CLIMB_LEFT || this.currentState === this.states.CLIMB_RIGHT) {
                     let isMoving = false;
 
-                    // NEW: Random chance to WALL JUMP towards mouse
-                    // 1% chance per frame if mouse is far away from wall
+                    // Wall Jump Chance
                     if (Math.random() < 0.015) {
                         this.animPaused = false;
                         this.currentState = this.states.FALLING;
-                        this.vy = this.jumpPower * 0.8; // Upward
+                        this.vy = this.jumpPower * 0.8; 
                         
                         // Jump away from the wall
                         if (this.currentState === this.states.CLIMB_LEFT) {
-                            this.vx = 6; // Jump Right
+                            this.vx = 6; 
+                            this.x += 5; // Nudge away instantly
                         } else {
-                            this.vx = -6; // Jump Left
+                            this.vx = -6; 
+                            this.x -= 5;
                         }
-                        return; // Exit physics loop for this frame
+                        // Return early to apply physics next frame
+                        requestAnimationFrame(() => this.updatePhysics());
+                        return; 
                     }
 
-                    // Standard Climb Logic
+                    // Climb movement
                     if (this.y > this.mouseY + 10) {
                         this.y -= this.climbSpeed;
                         isMoving = true;
@@ -197,30 +188,34 @@
 
                     this.animPaused = !isMoving; 
 
+                    // Hit Ceiling
                     if (this.y <= 0) {
                         this.y = 0;
                         this.animPaused = false; 
                         this.currentState = this.states.FALLING;
                     }
+                    
+                    // Hit Floor (Slide down)
                     if (this.y >= floor) {
                         this.y = floor;
                         this.animPaused = false; 
                         this.currentState = this.states.IDLE;
+                        
+                        // FIX 2: Nudge away from wall so we don't instantly re-climb
+                        if (this.x <= 0) this.x = 2;
+                        if (this.x >= rightWall) this.x = rightWall - 2;
+                        
+                        // Trigger next move decision
+                        setTimeout(() => this.decideNextMove(), 1000);
                     }
-                }
-
-                // 4. IDLE
-                else if (this.currentState === this.states.IDLE) {
-                    // Do nothing, wait for timer
                 }
             }
 
             // Boundary Checks
-            if (this.x < 0) { this.x = 0; this.vx *= -1; } // Bounce off left wall
-            if (this.x > rightWall) { this.x = rightWall; this.vx *= -1; } // Bounce off right wall
+            if (this.x < 0) { this.x = 0; this.vx *= -1; } 
+            if (this.x > rightWall) { this.x = rightWall; this.vx *= -1; } 
             if (this.y > floor) this.y = floor; 
 
-            // Render
             this.container.style.left = `${this.x}px`;
             this.container.style.top = `${this.y}px`;
 
@@ -229,41 +224,45 @@
 
         decideNextMove() {
             if (this.isDragging || this.currentState === this.states.FALLING) return;
-            
+            if (this.currentState.includes('climb')) return; // Don't decide to walk if climbing
+
             this.animPaused = false; 
             const rand = Math.random();
             const floor = window.innerHeight - 96;
+            const rightWall = window.innerWidth - 96;
 
-            // Only decide moves if on the floor
             if (this.y >= floor) {
                 
-                // NEW: JUMP LOGIC
-                // If mouse is above pet (and not too high up), chance to jump
+                // Floor Jump
                 if (this.mouseY < this.y - 50 && rand < 0.3) {
                     this.currentState = this.states.FALLING;
                     this.vy = this.jumpPower; 
-                    
-                    // Add horizontal momentum towards mouse
                     if (this.mouseX < this.x) this.vx = -4;
                     else this.vx = 4;
-                    
                     return;
                 }
 
-                // Standard Wandering Logic
+                // FIX 3: Smart Walking (Don't walk into the wall you are touching)
+                let canWalkLeft = this.x > 5;
+                let canWalkRight = this.x < rightWall - 5;
+
+                // Standard Wandering
                 if (rand < 0.5) {
-                    // 50% chance to walk towards mouse
+                    // Walk towards mouse
                     const distToMouse = this.mouseX - this.x;
-                    this.currentState = distToMouse < 0 ? this.states.WALK_LEFT : this.states.WALK_RIGHT;
+                    if (distToMouse < 0 && canWalkLeft) this.currentState = this.states.WALK_LEFT;
+                    else if (distToMouse > 0 && canWalkRight) this.currentState = this.states.WALK_RIGHT;
+                    else this.currentState = this.states.IDLE;
                 } else if (rand < 0.8) {
-                    // 30% chance to walk randomly
-                    this.currentState = Math.random() > 0.5 ? this.states.WALK_LEFT : this.states.WALK_RIGHT;
+                    // Random walk
+                    const goLeft = Math.random() > 0.5;
+                    if (goLeft && canWalkLeft) this.currentState = this.states.WALK_LEFT;
+                    else if (!goLeft && canWalkRight) this.currentState = this.states.WALK_RIGHT;
+                    else this.currentState = this.states.IDLE;
                 } else {
-                    // 20% chance to sit idle
                     this.currentState = this.states.IDLE;
                 }
 
-                // Make decisions faster (every 1-3 seconds)
                 setTimeout(() => this.decideNextMove(), 1000 + Math.random() * 2000);
             }
         }

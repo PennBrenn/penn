@@ -1,0 +1,432 @@
+<!-- Page Pet: insert near end of <body> -->
+<style>
+  /* Page Pet Styles (scoped by #page-pet) */
+  #page-pet {
+    position: fixed;
+    left: 20px;
+    top: calc(100vh - 120px); /* start near the bottom */
+    width: 96px;
+    height: 96px;
+    z-index: 9999;
+    pointer-events: auto;
+    touch-action: none;
+    user-select: none;
+  }
+
+  #page-pet .pet-img {
+    width: 96px;
+    height: 96px;
+    display: block;
+    transform-origin: 50% 50%;
+    will-change: transform, top, left;
+    transition: transform 120ms linear;
+    -webkit-user-drag: none;
+  }
+
+  /* Visual subtle drop shadow */
+  #page-pet .pet-shadow {
+    position: absolute;
+    left: 10px;
+    bottom: -8px;
+    width: 76px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.25);
+    filter: blur(4px);
+    transform-origin: center;
+    transition: transform 120ms linear, opacity 120ms linear;
+    opacity: 0.9;
+    pointer-events: none;
+  }
+
+  /* State classes for small CSS effects */
+  #page-pet.state-idle .pet-img { transform: translateY(0); }
+  #page-pet.state-walk .pet-img { /* no-op, frames do the visual */ }
+  #page-pet.state-climb .pet-img { transform: translateY(-18px) rotate(-6deg); }
+  #page-pet.state-hang .pet-shadow { opacity: 0; transform: scale(0.6); }
+  #page-pet.state-falling .pet-img { transform: translateY(6px); }
+
+  /* Flip horizontally when facing left */
+  #page-pet.facing-left .pet-img { transform: scaleX(-1); }
+  #page-pet.facing-left.state-climb .pet-img { transform: scaleX(-1) translateY(-18px) rotate(6deg); }
+  /* When picked up, scale up slightly */
+  #page-pet.state-picked-up .pet-img { transform: scale(1.08); }
+  #page-pet.state-picked-up .pet-shadow { opacity: 0.2; transform: translateY(6px) scale(0.95); }
+
+  /* Helpful small hit area */
+  #page-pet .hit-area {
+    position: absolute;
+    inset: 0;
+    cursor: grab;
+  }
+  #page-pet.dragging .hit-area { cursor: grabbing; }
+
+  /* Prevent text highlight if dragged over text */
+  .no-select { -webkit-user-select:none; -ms-user-select:none; user-select:none; }
+</style>
+
+<div id="page-pet" class="no-select" aria-hidden="true">
+  <img class="pet-img" src="" alt="page pet">
+  <div class="pet-shadow"></div>
+  <div class="hit-area" draggable="false"></div>
+</div>
+
+<script>
+(function () {
+  // CONFIG
+  const CONFIG = {
+    width: 96,
+    height: 96,
+    frameCount: 6,
+    frameInterval: 100, // ms between frames
+    walkSpeed: 80,      // px/sec
+    minWalkInterval: 1200, // ms random walk change
+    gravity: 1200,      // px/sec^2
+    terminalVelocity: 2000, // px/sec
+    mouseFollowDistance: 160, // px to start following
+    hangOffset: { x: 10, y: -30 }, // attach offset when hung near mouse
+    floorPadding: 24,   // how far from bottom is floor (so pet doesn't cut off)
+    animationFolders: {
+      walkRight: '/animations/walk-right',
+      walkLeft: '/animations/walk-left',
+      climbRight: '/animations/climb-right',
+      climbLeft: '/animations/climb-left',
+      hang: '/animations/hang',
+      pickedUp: '/animations/picked-up',
+      falling: '/animations/falling'
+    }
+  };
+
+  // STATE
+  const petEl = document.getElementById('page-pet');
+  const imgEl = petEl.querySelector('.pet-img');
+  const hitArea = petEl.querySelector('.hit-area');
+  const shadowEl = petEl.querySelector('.pet-shadow');
+
+  let state = {
+    x: 20,
+    y: window.innerHeight - CONFIG.height - CONFIG.floorPadding,
+    vx: 0,
+    vy: 0,
+    direction: 1, // 1 right, -1 left
+    currentAnim: 'walkRight',
+    currentFrame: 0,
+    lastFrameTime: 0,
+    lastAIChange: 0,
+    isDragging: false,
+    dragOffsetX: 0,
+    dragOffsetY: 0,
+    isMouseNear: false,
+    mouseX: 0,
+    mouseY: 0,
+    onFloor: true,
+    isPickedUp: false,
+    lastTick: performance.now(),
+    frames: {} // preloaded frames
+  };
+
+  // PRELOAD FRAMES
+  function preloadFrames() {
+    const map = CONFIG.animationFolders;
+    for (const key in map) {
+      const folder = map[key];
+      state.frames[key] = [];
+      for (let i = 1; i <= CONFIG.frameCount; i++) {
+        const img = new Image();
+        img.src = `${folder}/frame${i}.png`;
+        state.frames[key].push(img);
+      }
+    }
+  }
+  preloadFrames();
+
+  // Helper to set animation
+  function setAnim(animName) {
+    if (state.currentAnim === animName) return;
+    state.currentAnim = animName;
+    state.currentFrame = 0;
+    state.lastFrameTime = performance.now();
+  }
+
+  // Update visual image frame
+  function updateFrame(ts) {
+    const elapsed = ts - state.lastFrameTime;
+    if (elapsed >= CONFIG.frameInterval) {
+      state.currentFrame = (state.currentFrame + 1) % CONFIG.frameCount;
+      state.lastFrameTime = ts;
+      const frames = state.frames[state.currentAnim];
+      if (frames && frames[state.currentFrame]) {
+        imgEl.src = frames[state.currentFrame].src;
+      } else {
+        // fallback: empty
+        imgEl.src = '';
+      }
+    }
+  }
+
+  // Movement & physics tick
+  function tick(ts) {
+    const dt = Math.max(0.001, (ts - state.lastTick) / 1000);
+    state.lastTick = ts;
+
+    // AI: decide walking vs idle vs follow (only if not dragging/picked)
+    if (!state.isDragging && !state.isPickedUp) {
+      const now = ts;
+      // mouse proximity
+      const dxMouse = state.mouseX - (state.x + CONFIG.width / 2);
+      const dyMouse = state.mouseY - (state.y + CONFIG.height / 2);
+      const distMouse = Math.hypot(dxMouse, dyMouse);
+      state.isMouseNear = distMouse < CONFIG.mouseFollowDistance;
+
+      // If mouse near: hang/follow
+      if (state.isMouseNear) {
+        // move toward mouse horizontally a bit and hang if very near
+        const targetX = state.mouseX + CONFIG.hangOffset.x - CONFIG.width / 2;
+        const targetY = state.mouseY + CONFIG.hangOffset.y - CONFIG.height / 2;
+        // gentle following
+        state.vx += (targetX - state.x) * 4 * dt;
+        // If very close, go to hang animation
+        if (distMouse < 60) {
+          setAnim('hang');
+          petEl.classList.add('state-hang');
+          state.vx *= 0.6;
+        } else {
+          if (state.direction === -1) setAnim('walkLeft'); else setAnim('walkRight');
+          petEl.classList.remove('state-hang');
+        }
+      } else {
+        petEl.classList.remove('state-hang');
+        // Random walking (occasionally pick new direction/speed)
+        if (now - state.lastAIChange > CONFIG.minWalkInterval) {
+          state.lastAIChange = now;
+          // random direction and speed
+          state.direction = Math.random() < 0.5 ? -1 : 1;
+          state.vx = state.direction * (CONFIG.walkSpeed * (0.6 + Math.random() * 0.8));
+        }
+      }
+    }
+
+    // If dragging/picked up: follow mouse exactly
+    if (state.isDragging || state.isPickedUp) {
+      // position set by pointer events — but we still show picked-up animation class
+      if (state.isPickedUp) {
+        setAnim('pickedUp');
+        petEl.classList.add('state-picked-up');
+        petEl.classList.remove('state-falling');
+      } else {
+        // dragging handled elsewhere
+      }
+      state.vx = 0;
+      state.vy = 0;
+      // skip physics movement while dragging/picked
+    } else {
+      // Apply horizontal velocity and friction
+      // Clamp vx to reasonable
+      if (!state.isMouseNear) {
+        // Slight friction
+        state.vx *= 0.98;
+      } else {
+        state.vx *= 0.92;
+      }
+      // Update x
+      state.x += state.vx * dt;
+
+      // Edge detection and climbing behavior
+      const rightEdge = window.innerWidth - CONFIG.width;
+      if (state.x < 0) {
+        // climbed left edge
+        state.x = 0;
+        // climb sequence: briefly climb up then reverse
+        petEl.classList.add('state-climb');
+        if (state.direction === -1) setAnim('climbLeft'); else setAnim('climbRight');
+        state.vx = Math.abs(state.vx) * 0.4;
+        state.direction = 1;
+        // small upward bump
+        state.y = Math.max(20, state.y - 40);
+        setTimeout(() => petEl.classList.remove('state-climb'), 600);
+      } else if (state.x > rightEdge) {
+        state.x = rightEdge;
+        petEl.classList.add('state-climb');
+        if (state.direction === 1) setAnim('climbRight'); else setAnim('climbLeft');
+        state.vx = -Math.abs(state.vx) * 0.4;
+        state.direction = -1;
+        state.y = Math.max(20, state.y - 40);
+        setTimeout(() => petEl.classList.remove('state-climb'), 600);
+      } else {
+        // choose walking animation if on floor
+        if (state.onFloor && Math.abs(state.vx) > 10) {
+          if (state.vx > 0) setAnim('walkRight'); else setAnim('walkLeft');
+          petEl.classList.add('state-walk');
+          petEl.classList.remove('state-idle');
+        } else {
+          setAnim('walkRight'); // set to walk frames but we can linger
+          petEl.classList.remove('state-walk');
+          petEl.classList.add('state-idle');
+        }
+      }
+
+      // Apply gravity & vertical physics if not on floor
+      const floorY = window.innerHeight - CONFIG.height - CONFIG.floorPadding;
+      if (state.y < floorY || Math.abs(state.vy) > 1 || !state.onFloor) {
+        state.vy += CONFIG.gravity * dt;
+        if (state.vy > CONFIG.terminalVelocity) state.vy = CONFIG.terminalVelocity;
+        state.y += state.vy * dt;
+        state.onFloor = false;
+        // falling animation
+        setAnim('falling');
+        petEl.classList.add('state-falling');
+      }
+
+      // Land
+      if (state.y >= floorY) {
+        state.y = floorY;
+        state.vy = 0;
+        if (!state.onFloor) {
+          // landed
+          state.onFloor = true;
+          petEl.classList.remove('state-falling');
+          // brief idle after landing
+          setAnim('walkRight');
+        }
+      }
+    }
+
+    // Update facing class
+    if (state.direction === -1) petEl.classList.add('facing-left'); else petEl.classList.remove('facing-left');
+
+    // Apply computed transform/position
+    petEl.style.left = Math.round(state.x) + 'px';
+    petEl.style.top = Math.round(state.y) + 'px';
+    // shadow scale by height
+    const floorY = window.innerHeight - CONFIG.height - CONFIG.floorPadding;
+    const lift = Math.max(0, floorY - state.y); // how 'high' above floor
+    const shadowScale = Math.max(0.6, 1 - lift / 120);
+    shadowEl.style.transform = `translateY(${Math.min(10, lift/3)}px) scale(${shadowScale})`;
+    shadowEl.style.opacity = (state.onFloor ? 0.9 : 0.35);
+
+    // Frame update
+    updateFrame(ts);
+
+    // next frame
+    requestAnimationFrame(tick);
+  }
+
+  // Start the loop
+  state.lastTick = performance.now();
+  // Initialize image to first frame of walkRight or fallback
+  if (state.frames.walkRight && state.frames.walkRight[0]) imgEl.src = state.frames.walkRight[0].src;
+  setAnim('walkRight');
+  requestAnimationFrame(tick);
+
+  // Pointer/mouse handling
+  function onPointerDown(e) {
+    e.preventDefault();
+    const p = getPointer(e);
+    state.isDragging = true;
+    petEl.classList.add('dragging');
+    // compute offset from top-left
+    state.dragOffsetX = p.clientX - state.x;
+    state.dragOffsetY = p.clientY - state.y;
+    // set pickedUp mode
+    state.isPickedUp = true;
+    setAnim('pickedUp');
+    petEl.classList.add('state-picked-up');
+    // cancel velocities
+    state.vx = 0; state.vy = 0;
+    // capture pointer if supported
+    if (hitArea.setPointerCapture && e.pointerId) hitArea.setPointerCapture(e.pointerId);
+  }
+
+  function onPointerMove(e) {
+    const p = getPointer(e);
+    state.mouseX = p.clientX;
+    state.mouseY = p.clientY;
+    if (state.isDragging) {
+      state.x = p.clientX - state.dragOffsetX;
+      state.y = p.clientY - state.dragOffsetY;
+      // while dragging, follow exactly
+      petEl.style.left = Math.round(state.x) + 'px';
+      petEl.style.top = Math.round(state.y) + 'px';
+    }
+  }
+
+  function onPointerUp(e) {
+    const p = getPointer(e);
+    if (state.isDragging) {
+      // release
+      state.isDragging = false;
+      petEl.classList.remove('dragging');
+      // drop: give a small vx based on release and vy=0 so gravity applies
+      // estimate velocity from last mouse move (simple)
+      // For simplicity: small random vx depending on last direction and mouse position
+      if (p.clientX - (state.x + CONFIG.width/2) > 0) state.vx = 80; else state.vx = -80;
+      state.vy = -40; // slight upward bounce then gravity
+      state.isPickedUp = false;
+      petEl.classList.remove('state-picked-up');
+      setAnim('falling');
+      petEl.classList.add('state-falling');
+      // release pointer capture if held
+      if (hitArea.releasePointerCapture && e.pointerId) {
+        try { hitArea.releasePointerCapture(e.pointerId); } catch (err) {}
+      }
+    } else {
+      // quick click toggles an idle or hop
+      // small hop
+      state.vy = -160;
+      state.onFloor = false;
+      setAnim('falling');
+    }
+  }
+
+  // Utility for pointer events (works for touch and mouse)
+  function getPointer(e) {
+    if (e.touches && e.touches[0]) return e.touches[0];
+    if (e.changedTouches && e.changedTouches[0]) return e.changedTouches[0];
+    return e;
+  }
+
+  // Hit area events
+  hitArea.addEventListener('pointerdown', onPointerDown);
+  window.addEventListener('pointermove', onPointerMove);
+  window.addEventListener('pointerup', onPointerUp);
+  // Touch fallback (some browsers)
+  hitArea.addEventListener('touchstart', function(e){ onPointerDown(e.touches[0] || e); }, {passive:false});
+  window.addEventListener('touchmove', function(e){ onPointerMove(e.touches[0] || e); }, {passive:false});
+  window.addEventListener('touchend', function(e){ onPointerUp(e.changedTouches[0] || e); }, {passive:false});
+
+  // Track mouse for following/hang behavior
+  window.addEventListener('mousemove', function(e){
+    state.mouseX = e.clientX;
+    state.mouseY = e.clientY;
+  });
+
+  // Window resize -> correct floor and keep pet inside
+  window.addEventListener('resize', function () {
+    const rightEdge = window.innerWidth - CONFIG.width;
+    state.x = Math.min(Math.max(0, state.x), rightEdge);
+    const floorY = window.innerHeight - CONFIG.height - CONFIG.floorPadding;
+    if (state.y > floorY) state.y = floorY;
+  });
+
+  // Basic keyboard toggle for debugging (optional)
+  window.addEventListener('keydown', function (e) {
+    if (e.key === 'p') {
+      // toggle pause animations by toggling frameInterval
+      CONFIG.frameInterval = CONFIG.frameInterval === 0 ? 100 : 0;
+    }
+  });
+
+  // Safety: if images fail to load, set a simple emoji as fallback
+  imgEl.addEventListener('error', function () {
+    imgEl.src = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96"><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="40">🐾</text></svg>');
+  });
+
+  // Expose a small API to host page if wanted:
+  window.pagePet = {
+    setPosition(x, y) { state.x = x; state.y = y; },
+    getState() { return {...state}; },
+    setSpeed(pxPerSec) { CONFIG.walkSpeed = pxPerSec; }
+  };
+
+})();
+</script>

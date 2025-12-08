@@ -177,7 +177,7 @@
                     let isMoving = false;
 
                     // Wall Jump Logic
-                    if (Math.random() < 0.015) {
+                    if (Math.random() < 0.005) {
                         this.performWallJump();
                         return; 
                     }

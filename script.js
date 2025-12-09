@@ -15,7 +15,10 @@ const facts = [
     "My server is a ryzen7 16gb int.",
     "I built my pc",
     "I use youtube music",
-    "My fav drink is lemon sparking ice"
+    "My fav drink is lemon sparking ice",
+    "fda80sijfriuoerh9ureho8hfrw89hiofsda",
+    "Btw there is a dontate button on the site",
+    "Thi"
 ];
 
 // --- TIME & BIRTHDAY ---

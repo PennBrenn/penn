@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>User Files Viewer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+
+    input, button {
+      padding: 8px;
+      font-size: 16px;
+    }
+
+    #files {
+      margin-top: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 16px;
+    }
+
+    .file {
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 6px;
+      background: #fafafa;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      background: #eee;
+      padding: 8px;
+      max-height: 300px;
+      overflow: auto;
+    }
+
+    .error {
+      color: red;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>User File Browser</h2>
+
+<input type="text" id="userId" placeholder="Enter user ID">
+<button onclick="loadFiles()">Load Files</button>
+
+<div id="error" class="error"></div>
+<div id="files"></div>
+
+<script>
+async function loadFiles() {
+  const userId = document.getElementById('userId').value.trim();
+  const filesDiv = document.getElementById('files');
+  const errorDiv = document.getElementById('error');
+
+  filesDiv.innerHTML = '';
+  errorDiv.textContent = '';
+
+  if (!userId) {
+    errorDiv.textContent = 'Please enter a user ID.';
+    return;
+  }
+
+  try {
+    const response = await fetch(`/files/${userId}/`);
+    if (!response.ok) {
+      throw new Error('Failed to load file list');
+    }
+
+    const files = await response.json();
+
+    if (!files.length) {
+      filesDiv.textContent = 'No files found.';
+      return;
+    }
+
+    for (const file of files) {
+      const ext = file.split('.').pop().toLowerCase();
+      const fileUrl = `/files/${userId}/${file}`;
+
+      const container = document.createElement('div');
+      container.className = 'file';
+
+      if (['jpg', 'jpeg', 'png', 'gif'].includes(ext)) {
+        const img = document.createElement('img');
+        img.src = fileUrl;
+        container.appendChild(img);
+      } else {
+        const textResponse = await fetch(fileUrl);
+        const text = await textResponse.text();
+
+        const pre = document.createElement('pre');
+        pre.textContent = text;
+        container.appendChild(pre);
+      }
+
+      filesDiv.appendChild(container);
+    }
+  } catch (err) {
+    errorDiv.textContent = err.message;
+  }
+}
+</script>
+
+</body>
+</html>

@@ -8,9 +8,9 @@
             this.walkSpeed = 1;
             this.zoomSpeed = 12; // Speed during "Zoomies"
             this.climbSpeed = 1;
-            this.gravity = 0.4;   
+            this.gravity = 0.8;   
             this.jumpPower = -15; 
-            this.bounce = 1; 
+            this.bounce = 0.3; 
             
             // Animation States
             this.states = {

@@ -5,12 +5,12 @@
             this.frameRate = 150; 
             
             // Physics Config
-            this.walkSpeed = 3;
-            this.zoomSpeed = 8; // Speed during "Zoomies"
-            this.climbSpeed = 2;
-            this.gravity = 0.6;   
+            this.walkSpeed = 1;
+            this.zoomSpeed = 12; // Speed during "Zoomies"
+            this.climbSpeed = 1;
+            this.gravity = 0.4;   
             this.jumpPower = -15; 
-            this.bounce = 0.4; 
+            this.bounce = 1; 
             
             // Animation States
             this.states = {
@@ -19,8 +19,8 @@
                 WALK_RIGHT: 'walk right',
                 CLIMB_LEFT: 'climb left',
                 CLIMB_RIGHT: 'climb right',
-                CLIMB_CEILING: 'climb ceiling', // NEW
-                PEEK: 'peek',                   // NEW
+                CLIMB_CEILING: 'climb ceiling',
+                PEEK: 'peek',                   
                 PICKED_UP: 'picked up',
                 FALLING: 'falling'
             };

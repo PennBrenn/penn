@@ -9,7 +9,6 @@ const facts = [
     "I use a Miniware TS21",
     "Yes, i run android (for sideloading)",
     "Yes, im short af",
-    "Yes, i need cuddles to sleep",
     "I have horrible spending habits",
     "I have a nothing phone 2",
     "My server is a ryzen7 16gb int.",
@@ -18,7 +17,8 @@ const facts = [
     "My fav drink is lemon sparking ice",
     "fda80sijfriuoerh9ureho8hfrw89hiofsda",
     "Btw there is a dontate button on the site",
-    "Thi"
+    "Idk what else to put here",
+    "I enjoy hiking",
 ];
 
 // --- TIME & BIRTHDAY ---

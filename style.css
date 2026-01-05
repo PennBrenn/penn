@@ -12,12 +12,6 @@
   font-display: swap;
 }
 
-.ink-text {
-    text-shadow:
-        0.3px 0.3px 0 rgba(255,255,255,0.05),
-       -0.3px 0   0 rgba(0,0,0,0.35),
-        0   -0.3px 0 rgba(0,0,0,0.25);
-}
 
 
 /* --- RESET & VARIABLES --- */
@@ -28,7 +22,7 @@
     --accent-hover: #465e73;
     --glass-bg: rgba(11, 17, 20, 0.75); /* Darker, semi-transparent */
     --glass-border: rgba(255, 255, 255, 0.1);
-    --font-main: 'sf', sans-serif;
+    --font-main: 'Inter', sans-serif;
     --font-head: 'sf', sans-serif;
 }
 

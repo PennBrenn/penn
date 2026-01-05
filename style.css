@@ -12,7 +12,18 @@
   font-display: swap;
 }
 
+body {
+    text-shadow:
+        0.25px 0.25px 0 rgba(0,0,0,0.3),
+       -0.15px -0.15px 0 rgba(255,255,255,0.04);
+}
 
+h1, h2, h3 {
+    text-shadow:
+        0.4px 0.4px 0 rgba(0,0,0,0.4),
+       -0.3px -0.3px 0 rgba(255,255,255,0.07),
+        0 0 1px rgba(0,0,0,0.7);
+}
 
 /* --- RESET & VARIABLES --- */
 :root {

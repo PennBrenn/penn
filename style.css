@@ -5,7 +5,7 @@
 
 /* --- Inter (Main UI Font) --- */
 @font-face {
-  font-family: "Inter";
+  font-family: "sf";
   src: url("/fonts/SF-Pro-Rounded-Regular.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
@@ -22,8 +22,8 @@
     --accent-hover: #465e73;
     --glass-bg: rgba(11, 17, 20, 0.75); /* Darker, semi-transparent */
     --glass-border: rgba(255, 255, 255, 0.1);
-    --font-main: 'Inter', sans-serif;
-    --font-head: 'Poppins', sans-serif;
+    --font-main: 'sf', sans-serif;
+    --font-head: 'sf', sans-serif;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }

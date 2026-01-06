@@ -38,8 +38,7 @@
     --glass-bg: rgba(11, 17, 20, 0.75); /* Darker, semi-transparent */
     --glass-border: rgba(255, 255, 255, 0.1);
     --font-main: 'sf', sans-serif;
-    --font-head: 'low', sans-serif;
-    --fontbold: 'por', sans-serif;
+    --font-head: 'por', sans-serif;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }

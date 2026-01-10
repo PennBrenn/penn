@@ -21,8 +21,8 @@
   }
 
   @font-face {
-    font-family: "por";
-    src: url("/fonts/911porschav3bold.woff2") format("woff2");
+    font-family: "tit";
+    src: url("/fonts/SpecialElite-Regular.woff") format("woff2");
     font-weight: 400;
     font-style: normal;
     font-display: swap;
@@ -38,7 +38,7 @@
     --glass-bg: rgba(11, 17, 20, 0.75); /* Darker, semi-transparent */
     --glass-border: rgba(255, 255, 255, 0.1);
     --font-main: 'sf', sans-serif;
-    --font-head: 'sf', sans-serif;
+    --font-head: 'tit', sans-serif;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -451,6 +451,7 @@ footer { text-align: center; padding: 2rem; color: #666; font-size: 0.8rem; }
         gap: 1.25rem;
     }
 }
+
 
 
 

@@ -1,8 +1,7 @@
-
 /* ===============================
    Local Font Loading
+   (Kept unchanged)
    =============================== */
-
 /* --- Inter (Main UI Font) --- */
 @font-face {
   font-family: "sf";
@@ -31,12 +30,29 @@
 
 /* --- RESET & VARIABLES --- */
 :root {
-    --bg-color: #0b1114;
-    --text-color: #e5e7eb;
-    --accent-color: #465e73; /* Teal */
-    --accent-hover: #465e73;
-    --glass-bg: rgba(11, 17, 20, 0.75); /* Darker, semi-transparent */
-    --glass-border: rgba(255, 255, 255, 0.1);
+    /* 1. Background - Dark Purple Stripe (#00002C) */
+    --bg-color: #00002C; 
+    
+    /* Text - Kept off-white for readability against dark purple */
+    --text-color: #e5e7eb; 
+
+    /* 2. Primary Accent - Deep Pink Stripe (#FF5A91) */
+    --accent-color: #FF5A91; 
+    
+    /* 3. Hover Accent - Medium Blue Stripe (#675AFE) */
+    --accent-hover: #675AFE;
+
+    /* 4. Secondary Highlight - Light Pink Stripe (#FE9ACC) */
+    --highlight-pink: #FE9ACC;
+
+    /* 5. Tertiary Highlight - Light Blue Stripe (#8F9AFE) */
+    --highlight-blue: #8F9AFE;
+    
+    /* Glassmorphism based on Dark Purple */
+    --glass-bg: rgba(0, 0, 44, 0.75); 
+    /* Border uses Light Pink for a glow effect */
+    --glass-border: rgba(254, 154, 204, 0.2); 
+    
     --font-main: 'sf', sans-serif;
     --font-head: 'tit', sans-serif;
 }
@@ -49,7 +65,6 @@ body {
     color: var(--text-color);
     line-height: 1.6;
     overflow-x: hidden;
-    /* Static BG image if needed, but we use animated CSS below */
 }
 
 a { text-decoration: none; color: inherit; transition: 0.3s; }
@@ -62,12 +77,13 @@ img { max-width: 100%; display: block; border-radius: 8px; }
     position: sticky;
     top: 0;
     z-index: 100;
-    background: rgba(11, 11, 11, 0.95);
+    /* Darkened version of the Dark Purple for header */
+    background: rgba(0, 0, 44, 0.95);
     border-bottom: 1px solid var(--glass-border);
     padding: 1rem 0;
 }
 
-        /* --- PET STYLES --- */
+/* --- PET STYLES --- */
         #penn-pet-container {
             position: fixed;
             z-index: 999999999999999999999;
@@ -95,8 +111,9 @@ img { max-width: 100%; display: block; border-radius: 8px; }
             top: -30px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
+            /* Dark Purple background for label */
+            background: rgba(0, 0, 44, 0.8);
+            color: var(--highlight-pink);
             padding: 4px 8px;
             border-radius: 4px;
             font-family: sans-serif;
@@ -105,6 +122,7 @@ img { max-width: 100%; display: block; border-radius: 8px; }
             transition: opacity 0.3s ease;
             pointer-events: none;
             white-space: nowrap;
+            border: 1px solid var(--accent-color);
         }
 
         #penn-pet-container:hover #penn-name {
@@ -115,72 +133,63 @@ img { max-width: 100%; display: block; border-radius: 8px; }
     max-width: 1000px;
     margin: 0 auto;
     padding: 0 1.5rem;
-    /* Changed display to flex to better organize elements */
     display: flex; 
     justify-content: space-between;
     align-items: center;
-    /* Allow wrapping on smaller screens */
     flex-wrap: wrap; 
-    gap: 10px; /* Space between header items */
+    gap: 10px;
 }
 
-/* NEW: Style for the container holding all the section links */
 .nav-buttons {
     display: flex;
     gap: 15px;
-    overflow-x: auto; /* Allows horizontal scrolling on small screens */
-    padding-bottom: 5px; /* Adds space for potential scrollbar */
-    flex-grow: 1; /* Allows the nav to take up available space */
-    justify-content: center; /* Center links on wider screens */
-    -webkit-overflow-scrolling: touch; /* iOS smooth scrolling */
+    overflow-x: auto; 
+    padding-bottom: 5px; 
+    flex-grow: 1; 
+    justify-content: center; 
+    -webkit-overflow-scrolling: touch; 
 }
 
-/* Hide scrollbar for aesthetics, but keep functionality */
-.nav-buttons::-webkit-scrollbar {
-    display: none;
-}
-.nav-buttons {
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
-}
+.nav-buttons::-webkit-scrollbar { display: none; }
+.nav-buttons { -ms-overflow-style: none; scrollbar-width: none; }
 
 .brand { font-size: 1.25rem; font-weight: 700; }
-.brand span { color: var(--accent-color); }
+/* Use Light Pink for brand highlight */
+.brand span { color: var(--highlight-pink); text-shadow: 0 0 10px rgba(254, 154, 204, 0.3); }
 
 .music-player { display: flex; align-items: center; justify-content: center; }
 .icon-btn {
-    background: transparent; border: 1px solid var(--accent-color);
-    color: var(--accent-color); padding: 5px 15px; border-radius: 20px;
+    background: transparent; 
+    border: 1px solid var(--accent-color);
+    color: var(--accent-color); 
+    padding: 5px 15px; border-radius: 20px;
     cursor: pointer; font-size: 0.9rem; transition: 0.3s;
-    white-space: nowrap; /* Prevent music button from breaking */
+    white-space: nowrap; 
 }
-.icon-btn:hover { background: var(--accent-color); color: #fff; }
+/* Hover turns into Medium Blue */
+.icon-btn:hover { background: var(--accent-hover); border-color: var(--accent-hover); color: #fff; }
 
-/* Existing nav-link style applied to all new links */
 .nav-link { 
-    font-weight: bold; color: var(--accent-color); 
-    font-size: 0.9rem; /* Slightly smaller for more links */
-    white-space: nowrap; /* Keep link text on one line */
+    font-weight: bold; 
+    color: var(--accent-color); /* Deep Pink */
+    font-size: 0.9rem; 
+    white-space: nowrap; 
 }
-.nav-link:hover { color: #fff; }
+/* Hover turns into Light Blue */
+.nav-link:hover { color: var(--highlight-blue); text-shadow: 0 0 8px var(--highlight-blue); }
 
-/* Media query to better align elements on larger screens */
 @media (min-width: 768px) {
-    .header-content {
-        flex-wrap: nowrap; /* Prevent wrapping on desktop */
-    }
+    .header-content { flex-wrap: nowrap; }
     .nav-buttons {
-        order: 2; /* Put nav links in the middle */
+        order: 2; 
         flex-basis: auto;
-        overflow-x: hidden; /* Hide scrollbar on desktop */
+        overflow-x: hidden; 
         justify-content: center;
         margin: 0 1rem;
     }
     .brand { order: 1; }
     .music-player { order: 3; }
 }
-
-/* ... existing css ... */
 
 /* --- ANIMATED BACKGROUND --- */
 .bg-layer {
@@ -191,13 +200,15 @@ img { max-width: 100%; display: block; border-radius: 8px; }
 }
 
 .stars-bg {
-    background: #05080a url('Images/bg.jpg') center/cover no-repeat fixed; /* Fallback */
+    /* Updated fallback to Dark Purple */
+    background: #00002C url('Images/bg.jpg') center/cover no-repeat fixed; 
     z-index: -3;
 }
 
+/* UPDATED AURORA: Uses Deep Pink and Medium Blue */
 .aurora {
-    background: radial-gradient(circle at 50% 10%, rgba(37, 129, 142, 0.2), transparent 40%),
-                radial-gradient(circle at 80% 20%, rgba(30, 200, 150, 0.1), transparent 30%);
+    background: radial-gradient(circle at 50% 10%, rgba(255, 90, 145, 0.25), transparent 40%),
+                radial-gradient(circle at 80% 20%, rgba(103, 90, 254, 0.2), transparent 30%);
     animation: auroraMove 15s ease-in-out infinite alternate;
     z-index: -2;
 }
@@ -208,35 +219,29 @@ img { max-width: 100%; display: block; border-radius: 8px; }
 }
 
 /* Shooting Stars Container */
-/* ... existing css ... */
-
-/* Shooting Stars Container */
 #star-container {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
     z-index: 0; 
     pointer-events: none;
-    overflow: hidden; /* Prevents scrollbars when stars spawn off-screen */
+    overflow: hidden; 
 }
 
 .shooting-star {
     position: absolute;
-    width: 150px; /* Longer trail */
-    height: 3px;  /* Slightly thicker for visibility */
-    /* 90deg Gradient: Transparent (Tail) -> White (Head) */
-    background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);
+    width: 150px; 
+    height: 3px;  
+    /* Gradient White to Light Pink */
+    background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(254, 154, 204, 1) 100%);
     border-radius: 50%;
     cursor: pointer;
     pointer-events: auto;
     
-    /* Box shadow creates a "glow" around the head */
-    box-shadow: 4px 0 8px rgba(255, 255, 255, 0.8);
-    
-    /* Start hidden, animation controls opacity */
+    /* Glow uses Light Blue */
+    box-shadow: 4px 0 8px rgba(143, 154, 254, 0.8);
     opacity: 0; 
 }
 
-/* Big invisible hitbox for easier clicking */
 .shooting-star::after {
     content: '';
     position: absolute;
@@ -250,7 +255,7 @@ img { max-width: 100%; display: block; border-radius: 8px; }
     padding: 2rem 1.5rem;
     display: flex;
     flex-direction: column;
-    gap: 2rem; /* Even spacing between all sections */
+    gap: 2rem; 
 }
 
 .glass-panel {
@@ -266,40 +271,15 @@ img { max-width: 100%; display: block; border-radius: 8px; }
 }
 
 h1, h2, h3 { font-family: var(--font-head); color: #fff; margin-bottom: 1rem; }
-h2 { font-size: 1.8rem; border-bottom: 2px solid var(--accent-color); display: inline-block; }
+
+h2 { 
+    font-size: 1.8rem; 
+    /* Underline uses Light Blue for contrast */
+    border-bottom: 2px solid var(--highlight-blue); 
+    display: inline-block; 
+}
 .sub-head { color: var(--accent-color); font-size: 1.2rem; margin-top: 1.5rem; border-bottom: none;}
 
-/* --- HEADER --- */
-.site-header {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: rgba(11, 11, 11, 0.95);
-    border-bottom: 1px solid var(--glass-border);
-    padding: 1rem 0;
-}
-
-.header-content {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 0 1.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.brand { font-size: 1.25rem; font-weight: 700; }
-.brand span { color: var(--accent-color); }
-
-.music-player { display: flex; align-items: center; justify-content: center; }
-.icon-btn {
-    background: transparent; border: 1px solid var(--accent-color);
-    color: var(--accent-color); padding: 5px 15px; border-radius: 20px;
-    cursor: pointer; font-size: 0.9rem; transition: 0.3s;
-}
-.icon-btn:hover { background: var(--accent-color); color: #fff; }
-.nav-link { font-weight: bold; color: var(--accent-color); }
-.nav-link:hover { color: #fff; }
 
 /* --- CONTENT --- */
 .hero-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; }
@@ -309,8 +289,10 @@ h2 { font-size: 1.8rem; border-bottom: 2px solid var(--accent-color); display: i
     display: flex; gap: 1rem; margin-bottom: 1.5rem;
     font-size: 0.9rem; background: rgba(0,0,0,0.3);
     padding: 1rem; border-radius: 8px;
+    /* Subtle border using Medium Blue */
+    border: 1px solid rgba(103, 90, 254, 0.3);
 }
-.status-item span { color: var(--accent-color); font-weight: bold; }
+.status-item span { color: var(--highlight-pink); font-weight: bold; }
 
 .profile-pic { width: 100%; max-width: 300px; margin: 0 auto; border: 3px solid var(--accent-color); }
 .caption { text-align: center; font-style: italic; opacity: 0.7; font-size: 0.85rem; margin-top: 5px; }
@@ -319,15 +301,17 @@ h2 { font-size: 1.8rem; border-bottom: 2px solid var(--accent-color); display: i
 .voice-box { display: flex; flex-direction: column; gap: 1rem; }
 .voice-input-group { display: flex; gap: 10px; }
 #ttsInput {
-    flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #444;
+    flex: 1; padding: 10px; border-radius: 6px; 
+    border: 1px solid var(--glass-border);
     background: rgba(0,0,0,0.5); color: #fff;
 }
 .action-btn {
-    background: var(--accent-color); color: white; border: none; padding: 0 20px;
+    background: var(--accent-color); /* Deep Pink */
+    color: white; border: none; padding: 0 20px;
     border-radius: 6px; cursor: pointer; font-weight: bold;
 }
-.action-btn:hover { background: var(--accent-hover); }
-.status-text { font-size: 0.8rem; color: #aaa; min-height: 1.2em; }
+.action-btn:hover { background: var(--accent-hover); /* Medium Blue */ }
+.status-text { font-size: 0.8rem; color: var(--highlight-blue); min-height: 1.2em; }
 
 /* --- LINKS GRID --- */
 .links-grid {
@@ -337,7 +321,11 @@ h2 { font-size: 1.8rem; border-bottom: 2px solid var(--accent-color); display: i
     background: rgba(255, 255, 255, 0.05); padding: 0.8rem; text-align: center;
     border-radius: 6px; font-weight: 600; border: 1px solid transparent;
 }
-.social-btn:hover { background: var(--accent-color); border-color: #fff; transform: translateY(-2px); }
+.social-btn:hover { 
+    background: var(--accent-color); 
+    border-color: var(--highlight-pink); 
+    transform: translateY(-2px); 
+}
 .social-btn.disabled { opacity: 0.5; pointer-events: none; }
 
 /* --- CARDS --- */
@@ -345,16 +333,29 @@ h2 { font-size: 1.8rem; border-bottom: 2px solid var(--accent-color); display: i
 @media (min-width: 600px) { .card-grid { grid-template-columns: repeat(2, 1fr); } }
 .small-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
 
-.card { background: rgba(0, 0, 0, 0.3); border-radius: 8px; overflow: hidden; transition: 0.3s; }
-.card:hover { transform: scale(1.02); }
+.card { 
+    background: rgba(0, 0, 0, 0.3); 
+    border-radius: 8px; 
+    overflow: hidden; 
+    transition: 0.3s; 
+    border: 1px solid transparent;
+}
+.card:hover { 
+    transform: scale(1.02); 
+    border-color: var(--accent-hover);
+}
 .card-img { height: 200px; width: 100%; object-fit: cover; }
 .card-content { padding: 1rem; }
-.card-title { font-weight: bold; font-size: 1.1rem; color: var(--accent-color); margin-bottom: 0.5rem; display: block; }
+.card-title { font-weight: bold; font-size: 1.1rem; color: var(--highlight-pink); margin-bottom: 0.5rem; display: block; }
 .card-details { font-size: 0.85rem; color: #ccc; }
 
 /* --- HOBBIES --- */
 .hobbies-flex { display: flex; flex-wrap: wrap; gap: 2rem; align-items: center; }
-.hobby-list div { margin-bottom: 0.5rem; padding-left: 1rem; border-left: 2px solid var(--accent-color); }
+.hobby-list div { 
+    margin-bottom: 0.5rem; 
+    padding-left: 1rem; 
+    border-left: 2px solid var(--accent-color); 
+}
 .rounded-img { border-radius: 12px; border: 1px solid var(--glass-border); }
 
 /* --- CONTACT --- */
@@ -363,7 +364,12 @@ h2 { font-size: 1.8rem; border-bottom: 2px solid var(--accent-color); display: i
     flex: 1; text-align: center; padding: 0.75rem; background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--glass-border); border-radius: 50px; transition: 0.3s;
 }
-.contact-pill:hover { background: var(--accent-color); color: #fff; transform: translateY(-2px); }
+.contact-pill:hover { 
+    background: var(--accent-hover); 
+    color: #fff; 
+    transform: translateY(-2px); 
+    border-color: var(--highlight-blue);
+}
 
 /* --- MODAL --- */
 .hidden { display: none !important; }
@@ -373,15 +379,17 @@ h2 { font-size: 1.8rem; border-bottom: 2px solid var(--accent-color); display: i
     display: flex; align-items: center; justify-content: center;
 }
 .modal-content {
-    background: #1a1a1a; padding: 2rem; border-radius: 12px;
+    background: var(--bg-color); /* Dark Purple */
+    padding: 2rem; border-radius: 12px;
     border: 2px solid var(--accent-color); max-width: 400px; position: relative;
     text-align: center;
+    box-shadow: 0 0 20px rgba(255, 90, 145, 0.2);
 }
 #close-modal {
-    position: absolute; top: 10px; right: 15px; font-size: 1.5rem; cursor: pointer;
+    position: absolute; top: 10px; right: 15px; font-size: 1.5rem; cursor: pointer; color: var(--highlight-pink);
 }
 
-footer { text-align: center; padding: 2rem; color: #666; font-size: 0.8rem; }
+footer { text-align: center; padding: 2rem; color: #8F9AFE; font-size: 0.8rem; }
 
 
 /* --- PHOTO PAGE EXTENSIONS --- */
@@ -405,7 +413,7 @@ footer { text-align: center; padding: 2rem; color: #666; font-size: 0.8rem; }
     overflow: hidden;
     border-radius: 10px;
     border: 1px solid var(--glass-border);
-    background: rgba(0, 0, 0, 0.35);
+    background: rgba(0, 0, 44, 0.35); /* Dark Purple tint */
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -421,6 +429,7 @@ footer { text-align: center; padding: 2rem; color: #666; font-size: 0.8rem; }
 .photo-item:hover {
     transform: scale(1.02);
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+    border-color: var(--highlight-pink);
 }
 
 .photo-item:hover img {
@@ -434,7 +443,7 @@ footer { text-align: center; padding: 2rem; color: #666; font-size: 0.8rem; }
     inset: 0;
     background: linear-gradient(
         to top,
-        rgba(0, 0, 0, 0.35),
+        rgba(0, 0, 44, 0.5),
         rgba(0, 0, 0, 0)
     );
     opacity: 0;
@@ -445,13 +454,8 @@ footer { text-align: center; padding: 2rem; color: #666; font-size: 0.8rem; }
     opacity: 1;
 }
 
-/* Larger spacing on desktop */
 @media (min-width: 900px) {
     .photo-grid {
         gap: 1.25rem;
     }
 }
-
-
-
-

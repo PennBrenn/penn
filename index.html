@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deep Space Navigator V4.0</title>
+    <title>Deep Space Navigator V9.0 - Refined Sentient Navigator</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap');
 
@@ -13,20 +13,27 @@
             background-color: #000000;
             font-family: 'Courier Prime', 'Courier New', monospace;
             color: #FFFFFF;
+            cursor: crosshair;
         }
 
         canvas {
             display: block;
-            image-rendering: pixelated; /* Sharp, pixelated CAD look */
+            image-rendering: pixelated;
         }
 
         #ui-sidebar {
             position: absolute;
             top: 20px;
             right: 20px;
-            width: 300px;
+            width: 360px;
             pointer-events: none;
             user-select: none;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 15px;
+            border-left: 2px solid #FFFFFF;
+            box-shadow: -5px 5px 20px rgba(0,0,0,0.5);
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         .telemetry-row {
@@ -34,24 +41,37 @@
             justify-content: space-between;
             margin-bottom: 8px;
             font-size: 14px;
-            border-bottom: 1px solid #333333;
+            border-bottom: 1px solid #444444;
             padding-bottom: 2px;
         }
 
-        .label {
-            font-weight: bold;
+        .label { font-weight: bold; color: #888888; }
+        .value { text-align: right; color: #FFFFFF; transition: color 0.3s; }
+        .warning { color: #FF4444; }
+        .telemetry-row:nth-child(odd) { background: rgba(255,255,255,0.02); }
+        
+        #autopilot-log {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            font-size: 11px;
+            color: #AAAAAA;
+            width: 450px;
+            height: 180px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column-reverse;
+            border-left: 1.5px solid #444444;
+            padding-left: 10px;
+            background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+            text-shadow: 1px 1px 0 #000;
         }
 
-        .value {
-            text-align: right;
-        }
+        .log-entry { margin-top: 2px; }
 
         #glitch-overlay {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none;
             display: none;
             background: white;
@@ -59,55 +79,60 @@
             z-index: 999;
         }
 
-        .inverted {
-            filter: invert(1);
-        }
+        .inverted { filter: invert(1); }
     </style>
 </head>
 <body>
     <canvas id="simCanvas"></canvas>
     <div id="ui-sidebar">
-        <div class="telemetry-row">
-            <span class="label">VEL</span>
-            <span class="value" id="val-vel">0.0 m/s</span>
-        </div>
-        <div class="telemetry-row">
-            <span class="label">ALT</span>
-            <span class="value" id="val-alt">0.0 km</span>
-        </div>
-        <div class="telemetry-row">
-            <span class="label">G-LOAD</span>
-            <span class="value" id="val-g">0.00 G</span>
-        </div>
-        <div class="telemetry-row">
-            <span class="label">STATE</span>
-            <span class="value" id="val-state">IDLE</span>
-        </div>
-        <div class="telemetry-row">
-            <span class="label">TARGET</span>
-            <span class="value" id="val-target">NONE</span>
-        </div>
+        <div class="telemetry-row"><span class="label">REL VELOCITY</span><span class="value" id="val-vel">0.0 m/s</span></div>
+        <div class="telemetry-row"><span class="label">ALTITUDE</span><span class="value" id="val-alt">0.0 km</span></div>
+        <div class="telemetry-row"><span class="label">ESCAPE VEL</span><span class="value" id="val-esc">0.0 m/s</span></div>
+        <div class="telemetry-row"><span class="label">G-LOAD</span><span class="value" id="val-g">0.0 G</span></div>
+        <div class="telemetry-row"><span class="label">THRUST</span><span class="value" id="val-thrust">0%</span></div>
+        <div class="telemetry-row"><span class="label">AI STATE</span><span class="value" id="val-state">IDLE</span></div>
+        <div class="telemetry-row"><span class="label">PHASE TIMER</span><span class="value" id="val-phase">0.0s</span></div>
+        <div class="telemetry-row"><span class="label">TARGET</span><span class="value" id="val-target">NONE</span></div>
+        <div class="telemetry-row"><span class="label">DOMINANT</span><span class="value" id="val-dominant">-</span></div>
+        <div class="telemetry-row"><span class="label">FLAGS</span><span class="value" id="val-flags">0</span></div>
     </div>
+    <div id="autopilot-log"></div>
     <div id="glitch-overlay"></div>
 
     <script>
-        // --- Constants & Config ---
-        const G = 1000; // Gravitational constant (tuned for gameplay feel)
-        const SUB_STEPS = 10;
+        // --- CONSTANTS & CONFIG ---
+        const G = 1200; 
         const PHYSICS_HZ = 600;
+        const SUB_STEPS = 10;
         const DT = 1 / PHYSICS_HZ;
-        const RENDER_DT = 1 / 60;
         
-        // Colors
         const COL_BG = '#000000';
         const COL_PRIMARY = '#FFFFFF';
         const COL_SECONDARY = '#444444';
         
-        // Ship Specs
-        const SHIP_THRUST = 300; // Pixels/s^2 acceleration
-        const SHIP_ROT_SPEED = 3.0; // Radians/s
+        // SCALING FACTOR - 5x environment size
+        const SCALE_FACTOR = 5.0;
         
-        // --- Vector Math ---
+        // Ship Constants - UNCHANGED (to emphasize vastness)
+        const SHIP_THRUST_MAX = 12000;
+        const SHIP_MASS = 10;
+        const SHIP_ROT_TORQUE = 1.8; // Reduced rotational torque
+        const SHIP_ROT_DAMPING = 0.92; // Rotational damping
+        const SHIP_LINEAR_ACCEL = 800; // Reduced linear acceleration constant
+        const SHIP_ACCEL_RAMP = 0.08; // Throttle ramp-up rate
+        
+        const LANDING_MAX_SPEED = 60; 
+        const COLLISION_RESET_THRESHOLD = 120;
+        
+        // AI Navigation Constants
+        const MIN_LANDING_MASS = 1500; 
+        const ORBIT_DURATION_MIN = 10.0;
+        const SURFACE_PAUSE_MIN = 5.0;
+        const SURFACE_PAUSE_MAX = 10.0;
+        const PREDICTION_TIME = 10.0;
+        const PREDICTION_STEPS = 100;
+
+        // --- MATH HELPERS ---
         class Vec2 {
             constructor(x, y) { this.x = x; this.y = y; }
             add(v) { return new Vec2(this.x + v.x, this.y + v.y); }
@@ -119,325 +144,813 @@
             norm() { const m = this.mag(); return m === 0 ? new Vec2(0, 0) : this.div(m); }
             dist(v) { return this.sub(v).mag(); }
             dot(v) { return this.x * v.x + this.y * v.y; }
-            cross(v) { return this.x * v.y - this.y * v.x; }
+            cross(v) { return this.x * v.y - this.y * v.x; } 
+            perp() { return new Vec2(-this.y, this.x); } 
             copy() { return new Vec2(this.x, this.y); }
-            rotate(angle) {
-                const c = Math.cos(angle);
-                const s = Math.sin(angle);
-                return new Vec2(this.x * c - this.y * s, this.x * s + this.y * c);
+            angle() { return Math.atan2(this.y, this.x); }
+            rotate(a) { 
+                const c = Math.cos(a), s = Math.sin(a); 
+                return new Vec2(this.x * c - this.y * s, this.x * s + this.y * c); 
             }
         }
 
-        // --- Game State ---
+        function normalizeAngle(a) {
+            a = a % (2 * Math.PI);
+            if (a > Math.PI) a -= 2 * Math.PI;
+            if (a < -Math.PI) a += 2 * Math.PI;
+            return a;
+        }
+
+        // --- GLOBALS ---
         const canvas = document.getElementById('simCanvas');
         const ctx = canvas.getContext('2d', { alpha: false });
         let width, height;
         
-        let bodies = [];
-        let particles = [];
+        let bodies = [], particles = [], debris = [], asteroids = [];
         let ship;
-        let targetBody = null;
-        let cameraOffset = new Vec2(0, 0);
+        let camScale = 0.1, zoomBias = 0.5;
+        let logBuffer = [];
         let glitchTimer = 0;
-        let gameTime = 0;
+        let simTime = 0;
+        let worldCamPos = new Vec2(0, 0);
 
-        // --- Classes ---
-
+        // --- CLASSES ---
         class Body {
             constructor(x, y, mass, radius, isStatic = false, name = "Body") {
                 this.pos = new Vec2(x, y);
-                this.oldPos = new Vec2(x, y); // For Verlet initialization
                 this.vel = new Vec2(0, 0);
                 this.acc = new Vec2(0, 0);
                 this.mass = mass;
                 this.radius = radius;
                 this.isStatic = isStatic;
                 this.name = name;
-                this.path = []; // Trail
+                this.path = [];
+                this.angle = 0;
+                this.parent = null;
                 this.color = COL_PRIMARY;
+                this.isAsteroid = false;
                 
-                // Procedural polygon shape
+                // Procedural Terrain
                 this.vertices = [];
-                if (!isStatic && mass > 1) { // Only for planets
-                    const sides = 8 + Math.floor(Math.random() * 8);
-                    for (let i = 0; i < sides; i++) {
-                        const angle = (i / sides) * Math.PI * 2;
-                        const r = radius * (0.9 + Math.random() * 0.2); // Jagginess
-                        this.vertices.push(new Vec2(Math.cos(angle) * r, Math.sin(angle) * r));
+                if (!isStatic && mass > 50 && !this.isAsteroid) {
+                    const steps = radius > 150 ? 180 : 60;
+                    const seed = Math.random() * 100;
+                    for (let i = 0; i < steps; i++) {
+                        const a = (i / steps) * Math.PI * 2;
+                        let r = radius;
+                        r += Math.sin(a * (5 + Math.random()*5) + seed) * (radius * 0.02);
+                        r += Math.sin(a * (10 + Math.random()*10) + seed*2) * (radius * 0.01);
+                        if (Math.sin(a * 3 + seed) > 0.8) r += (Math.random()) * (radius * 0.05);
+                        r += (Math.random()-0.5) * (radius * 0.005); 
+                        this.vertices.push(new Vec2(Math.cos(a) * r, Math.sin(a) * r));
                     }
                 }
             }
 
             updatePhysics(dt) {
                 if (this.isStatic) return;
-
-                // Verlet Integration Step 1: Position
-                // r(t+dt) = r(t) + v(t)dt + 0.5*a(t)dt^2
-                // But we maintain velocity for FSM logic explicitly, so let's use Velocity Verlet
+                this.vel = this.vel.add(this.acc.mult(dt));
+                this.pos = this.pos.add(this.vel.mult(dt));
+                this.acc = new Vec2(0, 0);
                 
-                // Update position
-                this.pos = this.pos.add(this.vel.mult(dt)).add(this.acc.mult(0.5 * dt * dt));
-                
-                // Store acceleration for next step
-                this.oldAcc = this.acc.copy();
-                this.acc = new Vec2(0, 0); // Reset for accumulation
-                
-                // Trail
-                if (gameTime % 0.5 < dt) {
+                if (simTime % 1.0 < dt) {
                     this.path.push(this.pos.copy());
-                    if (this.path.length > 500) this.path.shift();
+                    if (this.path.length > 800) this.path.shift();
                 }
             }
-            
-            updateVelocity(dt) {
-                if (this.isStatic) return;
-                // Velocity Verlet Step 2
-                // v(t+dt) = v(t) + 0.5 * (a(t) + a(t+dt)) * dt
-                this.vel = this.vel.add(this.oldAcc.add(this.acc).mult(0.5 * dt));
-            }
 
-            draw(ctx) {
+            draw(ctx, zoom) {
+                // Draw Orbit Trail
+                if (this.path.length > 2 && zoom < 0.5 && !this.isAsteroid) {
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#222222';
+                    ctx.lineWidth = 1 / zoom;
+                    ctx.moveTo(this.path[0].x, this.path[0].y);
+                    for (let i = 2; i < this.path.length; i+=2) ctx.lineTo(this.path[i].x, this.path[i].y);
+                    ctx.stroke();
+                }
+
                 ctx.save();
                 ctx.translate(this.pos.x, this.pos.y);
-                
-                // Draw Body
-                ctx.fillStyle = COL_BG;
-                ctx.strokeStyle = this.color;
-                ctx.lineWidth = 1.5;
+                ctx.rotate(this.angle);
 
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = this.isAsteroid ? 0.5 / zoom : 1.5 / zoom;
+                ctx.fillStyle = COL_BG;
+                
                 ctx.beginPath();
                 if (this.vertices.length > 0) {
                     ctx.moveTo(this.vertices[0].x, this.vertices[0].y);
-                    for (let i = 1; i < this.vertices.length; i++) {
-                        ctx.lineTo(this.vertices[i].x, this.vertices[i].y);
-                    }
+                    for (let i = 1; i < this.vertices.length; i++) ctx.lineTo(this.vertices[i].x, this.vertices[i].y);
                     ctx.closePath();
                 } else {
                     ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
                 }
                 ctx.fill();
                 ctx.stroke();
-
-                // Dithered Atmosphere (simple dot pattern)
-                if (this.mass > 100) {
+                
+                // Name
+                if (this.mass > 200 && !this.isAsteroid) {
                     ctx.fillStyle = COL_SECONDARY;
-                    for(let i=0; i<8; i++) {
-                        const angle = Math.random() * Math.PI * 2;
-                        const dist = this.radius + Math.random() * this.radius * 0.5;
-                        ctx.fillRect(Math.cos(angle)*dist, Math.sin(angle)*dist, 1, 1);
-                    }
+                    ctx.font = `${Math.max(10, 14/zoom)}px monospace`;
+                    ctx.fillText(this.name, this.radius * 1.2, 0);
                 }
 
                 ctx.restore();
-            }
-            
-            drawTrail(ctx) {
-                if (this.path.length < 2) return;
-                ctx.beginPath();
-                ctx.strokeStyle = COL_SECONDARY;
-                ctx.lineWidth = 1;
-                // Move to first point relative to current render origin
-                ctx.moveTo(this.path[0].x, this.path[0].y);
-                for (let i = 1; i < this.path.length; i++) {
-                    ctx.lineTo(this.path[i].x, this.path[i].y);
-                }
-                ctx.stroke();
             }
         }
 
         class Ship extends Body {
             constructor(x, y) {
-                super(x, y, 10, 10, false, "DSN-1");
+                super(x, y, SHIP_MASS, 10, false, "SENTIENT-X");
                 this.angle = -Math.PI / 2;
-                this.fsmState = "IDLE";
+                this.angularVel = 0; // Add angular velocity for smooth rotation
+                this.mode = "IDLE";
                 this.target = null;
-                this.vertices = [
-                    new Vec2(10, 0),
-                    new Vec2(-8, 6),
-                    new Vec2(-5, 0),
-                    new Vec2(-8, -6)
-                ];
-                this.pid = {
-                    kp: 5.0, ki: 0.0, kd: 20.0,
-                    integral: 0, lastError: 0
-                };
+                this.landingWhitelist = null; // Whitelist target planet during landing
+                this.pid = { kp: 6.0, kd: 15.0, prevErr: 0 };
+                this.trail = [];
+                this.decisionTimer = 0;
+                this.orbitTimer = 0;
+                this.surfacePauseDuration = 0;
+                this.currentG = 0;
+                this.throttle = 0;
+                this.targetThrottle = 0; // For smooth throttle ramping
+                this.gravVector = new Vec2(0, 0);
+                this.aiCmdVector = new Vec2(0, 0);
+                this.predictedPath = [];
+                this.dominantBody = null;
+                this.deployedFlags = [];
+                this.gravityAssistBody = null;
+                this.visitedBodies = new Set();
+                this.safeCorridor = null;
+                this.obstructionDetected = false;
+                this.brakePoint = null; // Point of no return for braking
             }
 
-            updateControl(dt) {
-                if (this.fsmState === "IDLE" && this.target) {
-                    this.fsmState = "PHASE_1_INTERCEPT";
-                }
+            log(msg) {
+                logBuffer.unshift(`[${this.mode}] ${msg}`);
+                if (logBuffer.length > 12) logBuffer.pop();
+                const logEl = document.getElementById('autopilot-log');
+                logEl.innerHTML = logBuffer.map(l => `<div class="log-entry">${l}</div>`).join('');
+            }
 
-                if (!this.target) return;
+            calculateLeadPoint(target) {
+                const toTarget = target.pos.sub(this.pos);
+                const dist = toTarget.mag();
+                const relVel = this.vel.sub(target.vel);
+                const closingSpeed = Math.max(100, relVel.mag());
+                const eta = dist / closingSpeed;
+                const leadPoint = target.pos.add(target.vel.mult(eta * 0.5));
+                return leadPoint;
+            }
 
-                const relPos = this.target.pos.sub(this.pos);
-                const relVel = this.target.vel.sub(this.vel);
-                const dist = relPos.mag();
-                const velMag = this.vel.mag(); // Absolute velocity for orbit calculations? Or relative?
-                                               // Brachistochrone usually implies relative to destination rest frame.
-                const relSpeed = relVel.mag();
-
-                // FSM Logic
-                let desiredHeading = this.angle;
-                let thrusting = false;
-
-                switch (this.fsmState) {
-                    case "PHASE_1_INTERCEPT":
-                        // Predict lead point. Simple: Aim at current pos
-                        // Better: Iterative solution for impact time.
-                        // Approx time to intercept: dist / (avg_speed approx). 
-                        // Let's just aim at target for now, PID corrects.
-                        // Brachistochrone: Accelerate halfway.
-                        
-                        // Calculate stopping distance: d = v^2 / 2a
-                        // v is closing speed (scalar projection of relVel onto relPos direction)
-                        // Actually, we want to match velocity vector eventually.
-                        
-                        // Simplified 1D logic for prompt compliance:
-                        // 1. Aim at target. 2. Burn.
-                        
-                        const closingSpeed = -relVel.dot(relPos.norm());
-                        const stopDist = (closingSpeed * closingSpeed) / (2 * SHIP_THRUST);
-                        
-                        // Transition to Flip
-                        if (closingSpeed > 0 && dist <= stopDist * 1.1) { // 1.1 buffer
-                             this.fsmState = "PHASE_3_FLIP";
-                        } else {
-                             this.fsmState = "PHASE_2_BURN";
-                        }
-                        break;
-
-                    case "PHASE_2_BURN":
-                        // Aim at target
-                        desiredHeading = Math.atan2(relPos.y, relPos.x);
-                        // Check flip condition
-                        {
-                            const closingSpeed = -relVel.dot(relPos.norm());
-                            const stopDist = (closingSpeed * closingSpeed) / (2 * SHIP_THRUST);
-                            if (closingSpeed > 0 && dist <= stopDist) {
-                                this.fsmState = "PHASE_3_FLIP";
-                            } else {
-                                thrusting = true; // Burn towards target
-                            }
-                        }
-                        break;
-
-                    case "PHASE_3_FLIP":
-                        // Aim opposite to current velocity vector relative to target
-                        // Ideally: Aim against the relative velocity vector to kill it.
-                        // Retrograde burn.
-                        desiredHeading = Math.atan2(relVel.y, relVel.x) + Math.PI; // Opposite direction
-                        
-                        // Wait for alignment before burning? 
-                        // Prompt says: "Rotate 180 ... and burn"
-                        const angleDiff = Math.abs(normalizeAngle(desiredHeading - this.angle));
-                        if (angleDiff < 0.1) {
-                            // If aligned, check if we need to burn
-                            // Burn until relative velocity is near zero
-                            if (relSpeed > 5) {
-                                thrusting = true;
-                            } else {
-                                this.fsmState = "PHASE_4_CAPTURE";
-                            }
-                        }
-                        break;
-
-                    case "PHASE_4_CAPTURE":
-                        // Match target orbital velocity
-                        // Target velocity for circular orbit: v = sqrt(GM/r)
-                        // Direction: Perpendicular to radius vector.
-                        const orbitSpeed = Math.sqrt(G * this.target.mass / dist);
-                        // Desired velocity vector (tangent)
-                        // Tangent: (-y, x) of normal
-                        const normal = relPos.norm();
-                        const tangent = new Vec2(-normal.y, normal.x);
-                        
-                        // We want our velocity relative to planet to be tangent * orbitSpeed
-                        const desiredVel = tangent.mult(orbitSpeed);
-                        const errorVel = desiredVel.sub(relVel); // relVel is (target.vel - ship.vel)? No, ship.vel - target.vel (usually)
-                        // My relVel def above is target - ship. So ship velocity relative to target is -relVel.
-                        // Let's redefine relVel for clarity: Ship - Target
-                        const vRel = this.vel.sub(this.target.vel);
-                        const vDiff = desiredVel.sub(vRel);
-                        
-                        if (vDiff.mag() > 10) {
-                            // Point along error vector
-                            desiredHeading = Math.atan2(vDiff.y, vDiff.x);
-                            if (Math.abs(normalizeAngle(desiredHeading - this.angle)) < 0.2) {
-                                thrusting = true;
-                            }
-                        } else {
-                             // Close enough?
-                             if (dist < this.target.radius * 2.0) {
-                                 this.fsmState = "PHASE_5_LANDING";
-                             }
-                        }
-                        break;
-                        
-                    case "PHASE_5_LANDING":
-                        // Kill horizontal, descend vertically.
-                        // Orient away from planet center (engines down)
-                        // Planet center direction from ship: target.pos - ship.pos
-                        // We want to point AWAY: ship.pos - target.pos
-                        const radial = this.pos.sub(this.target.pos);
-                        desiredHeading = Math.atan2(radial.y, radial.x); // Tail down
-                        
-                        // Simple hover logic
-                        const vRadial = this.vel.sub(this.target.vel).dot(radial.norm());
-                        const vTan = this.vel.sub(this.target.vel).sub(radial.norm().mult(vRadial));
-                        
-                        // Kill tangent first
-                        if (vTan.mag() > 5) {
-                            desiredHeading = Math.atan2(-vTan.y, -vTan.x); // Retrograde horizontal
-                             if (Math.abs(normalizeAngle(desiredHeading - this.angle)) < 0.1) {
-                                thrusting = true;
-                            }
-                        } else {
-                             desiredHeading = Math.atan2(radial.y, radial.x);
-                             // Descent speed control
-                             if (vRadial < -20) { // Falling too fast
-                                 thrusting = true;
-                             }
-                        }
-                        
-                        if (dist < this.target.radius + this.radius + 2) {
-                            this.fsmState = "LANDED";
-                        }
-                        break;
-                    
-                    case "LANDED":
-                         this.vel = this.target.vel.copy();
-                         // Stick to surface
-                         const surfDir = this.pos.sub(this.target.pos).norm();
-                         this.pos = this.target.pos.add(surfDir.mult(this.target.radius + this.radius));
-                         this.angle = Math.atan2(surfDir.y, surfDir.x);
-                         break;
-                }
-
-                // PID Rotation
-                const currentError = normalizeAngle(desiredHeading - this.angle);
-                this.pid.integral += currentError * dt;
-                const derivative = (currentError - this.pid.lastError) / dt;
-                const torque = this.pid.kp * currentError + this.pid.ki * this.pid.integral + this.pid.kd * derivative;
-                this.pid.lastError = currentError;
+            // Calculate Point of No Return for braking
+            calculateBrakePoint(target) {
+                const mu = G * target.mass;
+                const r = this.pos.sub(target.pos);
+                const v = this.vel.sub(target.vel);
+                const dist = r.mag();
+                const speed = v.mag();
                 
-                // Apply torque (clamped)
-                const maxRot = SHIP_ROT_SPEED * dt;
-                const rotChange = Math.max(-maxRot, Math.min(maxRot, torque * dt));
-                this.angle += rotChange;
+                // Account for gravity during braking
+                const gravity = mu / (dist * dist);
+                const maxDecel = (SHIP_THRUST_MAX / SHIP_MASS) - gravity;
+                
+                if (maxDecel <= 0) return null;
+                
+                // Distance needed to brake to safe landing speed
+                const targetSpeed = LANDING_MAX_SPEED * 0.5;
+                const speedDiff = Math.max(0, speed - targetSpeed);
+                const brakeDistance = (speedDiff * speedDiff) / (2 * maxDecel);
+                
+                return brakeDistance;
+            }
 
-                // Thrust
-                if (thrusting) {
-                    const thrustDir = new Vec2(Math.cos(this.angle), Math.sin(this.angle));
-                    this.acc = this.acc.add(thrustDir.mult(SHIP_THRUST));
+            findDominantBody() {
+                let maxInfluence = 0;
+                let dominant = bodies[0];
+                
+                for (let b of bodies) {
+                    if (b === this || b.isStatic || b.isAsteroid) continue;
+                    const dist = this.pos.dist(b.pos);
+                    const influence = b.mass / (dist * dist);
+                    if (influence > maxInfluence) {
+                        maxInfluence = influence;
+                        dominant = b;
+                    }
+                }
+                
+                const sunDist = this.pos.dist(bodies[0].pos);
+                const sunInfluence = bodies[0].mass / (sunDist * sunDist);
+                if (sunInfluence > maxInfluence * 0.5) dominant = bodies[0];
+                
+                return dominant;
+            }
+
+            calculateSOI(body) {
+                if (!body.parent) return body.mass * 5.0;
+                const parentDist = body.pos.dist(body.parent.pos);
+                return parentDist * Math.pow(body.mass / body.parent.mass, 0.4);
+            }
+
+            findGravityAssist() {
+                let bestAssist = null;
+                let bestScore = 0;
+                
+                for (let b of bodies) {
+                    if (b === this || b === this.target || b === bodies[0] || b.isAsteroid) continue;
+                    if (b.mass < 100) continue;
                     
-                    // Particles
-                    for(let i=0; i<3; i++) {
-                         const pVel = this.vel.add(thrustDir.mult(-100 - Math.random() * 50));
-                         pVel.x += (Math.random()-0.5)*20;
-                         pVel.y += (Math.random()-0.5)*20;
-                         const pPos = this.pos.sub(thrustDir.mult(10)); // From stern
-                         particles.push(new Particle(pPos, pVel));
+                    const toBody = b.pos.sub(this.pos);
+                    const dist = toBody.mag();
+                    const soi = this.calculateSOI(b);
+                    
+                    const velDir = this.vel.norm();
+                    const toBodyDir = toBody.norm();
+                    const alignment = velDir.dot(toBodyDir);
+                    
+                    if (alignment > 0.3 && dist < soi * 3) {
+                        const score = (alignment * b.mass) / dist;
+                        if (score > bestScore) {
+                            bestScore = score;
+                            bestAssist = b;
+                        }
+                    }
+                }
+                
+                return bestAssist;
+            }
+
+            predictPath() {
+                this.predictedPath = [];
+                
+                let simPos = this.pos.copy();
+                let simVel = this.vel.copy();
+                const dt = PREDICTION_TIME / PREDICTION_STEPS;
+                
+                for (let i = 0; i < PREDICTION_STEPS; i++) {
+                    let acc = new Vec2(0, 0);
+                    for (let b of bodies) {
+                        if (b === this || b.isAsteroid) continue;
+                        const r = b.pos.sub(simPos);
+                        const dSq = r.magSq();
+                        if (dSq > 1) {
+                            acc = acc.add(r.norm().mult(G * b.mass / dSq));
+                        }
+                    }
+                    
+                    simVel = simVel.add(acc.mult(dt));
+                    simPos = simPos.add(simVel.mult(dt));
+                    this.predictedPath.push(simPos.copy());
+                }
+            }
+
+            scanForObstacles() {
+                this.obstructionDetected = false;
+                this.safeCorridor = null;
+                
+                for (let pathPoint of this.predictedPath) {
+                    for (let b of bodies) {
+                        // WHITELIST FIX: Ignore target planet during descent/landing
+                        if (b === this || b === this.landingWhitelist) continue;
+                        if (b.isAsteroid) continue;
+                        
+                        const dist = pathPoint.dist(b.pos);
+                        const dangerZone = b.radius + 500;
+                        
+                        if (dist < dangerZone) {
+                            this.obstructionDetected = true;
+                            const toObs = b.pos.sub(this.pos);
+                            const perpDir = toObs.perp().norm();
+                            const align1 = perpDir.dot(this.vel.norm());
+                            const align2 = perpDir.mult(-1).dot(this.vel.norm());
+                            this.safeCorridor = align1 > align2 ? perpDir : perpDir.mult(-1);
+                            return b;
+                        }
+                    }
+                    
+                    // Check asteroids
+                    for (let ast of asteroids) {
+                        const dist = pathPoint.dist(ast.pos);
+                        const dangerZone = ast.radius + 200;
+                        
+                        if (dist < dangerZone) {
+                            this.obstructionDetected = true;
+                            const toObs = ast.pos.sub(this.pos);
+                            const perpDir = toObs.perp().norm();
+                            const align1 = perpDir.dot(this.vel.norm());
+                            const align2 = perpDir.mult(-1).dot(this.vel.norm());
+                            this.safeCorridor = align1 > align2 ? perpDir : perpDir.mult(-1);
+                            return ast;
+                        }
+                    }
+                }
+                return null;
+            }
+
+            updateLogic(dt) {
+                this.decisionTimer += dt;
+                this.dominantBody = this.findDominantBody();
+                
+                if (Math.floor(simTime * 10) % 5 === 0) {
+                    this.predictPath();
+                }
+                
+                let sunDist = Infinity;
+                if(bodies[0]) sunDist = this.pos.dist(bodies[0].pos);
+                
+                if (sunDist < 2000 * SCALE_FACTOR) {
+                    this.mode = "PANIC";
+                    this.landingWhitelist = null;
+                } else if (sunDist > 150000 * SCALE_FACTOR) {
+                    this.mode = "RETURN";
+                    this.landingWhitelist = null;
+                } else if (this.mode === "PANIC" && sunDist > 3000 * SCALE_FACTOR) {
+                    this.mode = "IDLE";
+                    this.landingWhitelist = null;
+                    this.pickNewTarget();
+                }
+
+                if (!this.target && this.mode === "IDLE" && this.decisionTimer > 2.0) {
+                    this.pickNewTarget();
+                }
+
+                if (!this.target && this.mode !== "PANIC" && this.mode !== "RETURN") return;
+
+                let vectorCmd = new Vec2(0, 0); 
+                const target = this.mode === "PANIC" ? bodies[0] : this.target;
+                const rVec = this.pos.sub(target.pos); 
+                const vVec = this.vel.sub(target.vel); 
+                const dist = rVec.mag();
+                const speed = vVec.mag();
+                const mu = G * target.mass;
+                
+                const h = rVec.cross(vVec);
+                const en = (speed*speed)/2 - mu/dist;
+                const a = -mu / (2*en);
+                const eVec = rVec.mult(speed*speed - mu/dist).sub(vVec.mult(rVec.dot(vVec))).div(mu);
+                const ecc = eVec.mag();
+                const peDist = a * (1 - ecc); 
+                const SOI = this.calculateSOI(target);
+                
+                const escapeVel = Math.sqrt(2 * mu / dist);
+                const isEscaping = speed > escapeVel;
+
+                // Obstacle Avoidance
+                const obstacle = this.scanForObstacles();
+                if (this.obstructionDetected && this.safeCorridor && this.mode !== "SURFACE" && this.mode !== "LANDING") {
+                    const evasionStrength = SHIP_THRUST_MAX * 0.8;
+                    vectorCmd = vectorCmd.add(this.safeCorridor.mult(evasionStrength));
+                    if (this.decisionTimer > 1.0 && obstacle) {
+                        this.log(`Avoiding ${obstacle.name || 'asteroid'}`);
+                        this.decisionTimer = 0;
+                    }
+                }
+
+                if (this.mode === "TRANSFER" && !this.gravityAssistBody) {
+                    const assist = this.findGravityAssist();
+                    if (assist && assist !== this.target) {
+                        this.gravityAssistBody = assist;
+                        this.log(`Gravity assist: ${assist.name}`);
+                    }
+                }
+
+                if (this.gravityAssistBody) {
+                    const assistDist = this.pos.dist(this.gravityAssistBody.pos);
+                    const assistSOI = this.calculateSOI(this.gravityAssistBody);
+                    
+                    if (assistDist < assistSOI) {
+                        const assistRVec = this.pos.sub(this.gravityAssistBody.pos);
+                        const periDist = this.gravityAssistBody.radius * 1.5;
+                        
+                        if (assistDist < periDist + 200) {
+                            vectorCmd = vectorCmd.add(assistRVec.norm().mult(SHIP_THRUST_MAX * 0.3));
+                        }
+                    } else if (assistDist > assistSOI * 1.5) {
+                        this.log(`Completed assist from ${this.gravityAssistBody.name}`);
+                        this.gravityAssistBody = null;
+                    }
+                }
+
+                switch (this.mode) {
+                    case "IDLE":
+                        this.landingWhitelist = null;
+                        if (!this.target) this.pickNewTarget();
+                        else {
+                            this.mode = "TRANSFER";
+                            this.decisionTimer = 0;
+                        }
+                        break;
+                        
+                    case "PANIC":
+                        vectorCmd = rVec.norm().mult(SHIP_THRUST_MAX);
+                        this.log("SOLAR PROXIMITY ALERT");
+                        break;
+                        
+                    case "RETURN":
+                        const toSun = bodies[0].pos.sub(this.pos);
+                        vectorCmd = toSun.norm().mult(SHIP_THRUST_MAX);
+                        this.log("RETURNING TO SYSTEM");
+                        if (toSun.mag() < 80000 * SCALE_FACTOR) {
+                            this.mode = "IDLE";
+                            this.pickNewTarget();
+                        }
+                        break;
+
+                    case "TRANSFER":
+                        this.landingWhitelist = null;
+                        const leadPoint = this.calculateLeadPoint(target);
+                        const toLeadPoint = leadPoint.sub(this.pos);
+                        
+                        if (dist < SOI) {
+                            this.mode = "INSERTION";
+                            this.decisionTimer = 0;
+                            this.log(`Entering SOI of ${target.name}`);
+                            break;
+                        }
+                        
+                        const desiredPeAlt = target.radius * 2.0;
+                        const desPeDist = target.radius + desiredPeAlt;
+                        
+                        const angleToPlanet = Math.atan2(toLeadPoint.y, toLeadPoint.x);
+                        const offsetAngle = Math.asin(Math.min(0.9, desPeDist / dist));
+                        const targetHeading = angleToPlanet + offsetAngle * (h > 0 ? 1 : -1);
+                        
+                        const interceptSpeed = Math.min(2500, dist * 0.05 + 500);
+                        const desiredVel = new Vec2(Math.cos(targetHeading), Math.sin(targetHeading)).mult(interceptSpeed);
+                        vectorCmd = vectorCmd.add(desiredVel.sub(vVec).mult(3.0));
+                        
+                        if (ecc > 1.0 && peDist < target.radius + 300) {
+                            vectorCmd = vectorCmd.add(rVec.norm().mult(SHIP_THRUST_MAX * 0.5));
+                        }
+                        break;
+
+                    case "INSERTION":
+                        this.landingWhitelist = null;
+                        const rDotV = rVec.dot(vVec);
+                        
+                        if ((rDotV >= 0 && dist < peDist + 300) || dist < peDist + 150) {
+                            if (isEscaping || ecc > 0.8) {
+                                vectorCmd = vectorCmd.add(vVec.norm().mult(-SHIP_THRUST_MAX));
+                                if (this.decisionTimer > 0.5) {
+                                    this.log("Insertion burn - capturing");
+                                    this.decisionTimer = 0;
+                                }
+                            } else if (ecc > 0.1) {
+                                vectorCmd = vectorCmd.add(vVec.norm().mult(-SHIP_THRUST_MAX * 0.6));
+                            } else {
+                                this.mode = "ORBIT";
+                                this.orbitTimer = 0;
+                                this.log("Stable Orbit Achieved");
+                            }
+                        } else {
+                            if (peDist < target.radius + 100) {
+                                vectorCmd = vectorCmd.add(rVec.norm().mult(SHIP_THRUST_MAX * 0.5));
+                            }
+                        }
+                        
+                        if (dist > SOI && rDotV > 0) {
+                            this.mode = "TRANSFER";
+                            this.log("Escaped SOI - retrying");
+                        }
+                        break;
+
+                    case "ORBIT":
+                        this.landingWhitelist = null;
+                        this.orbitTimer += dt;
+                        
+                        const vCircular = Math.sqrt(mu / dist);
+                        const orbitalDir = (h >= 0) ? 1 : -1;
+                        const tangentDir = rVec.perp().norm().mult(orbitalDir);
+                        const desiredOrbVel = tangentDir.mult(vCircular);
+                        
+                        vectorCmd = vectorCmd.add(desiredOrbVel.sub(vVec).mult(2.0));
+                        
+                        if (this.orbitTimer > ORBIT_DURATION_MIN) {
+                            if (target.mass >= MIN_LANDING_MASS) {
+                                this.mode = "DESCENT";
+                                this.landingWhitelist = target; // WHITELIST TARGET
+                                this.decisionTimer = 0;
+                                this.log("Initiating descent");
+                            } else {
+                                this.log(`${target.name} too small - new target`);
+                                this.visitedBodies.add(target.name);
+                                this.pickNewTarget();
+                            }
+                        }
+                        break;
+
+                    case "DESCENT":
+                        // WHITELIST remains active - ignore target in collision detection
+                        const altitude = dist - target.radius - this.radius;
+                        const gravity = mu / (dist * dist);
+                        const maxDecel = (SHIP_THRUST_MAX / SHIP_MASS) - gravity;
+                        
+                        const radialVel = vVec.dot(rVec.norm());
+                        const tangentialVelVec = vVec.sub(rVec.norm().mult(radialVel));
+                        
+                        // Calculate brake point using Lead Point logic
+                        const brakeDistance = this.calculateBrakePoint(target);
+                        this.brakePoint = brakeDistance;
+                        
+                        if (tangentialVelVec.mag() > 3.0) {
+                            vectorCmd = vectorCmd.add(tangentialVelVec.mult(-10.0));
+                        }
+                        
+                        if (altitude < 800) {
+                            const targetSinkRate = -Math.max(3.0, altitude * 0.08);
+                            const sinkError = targetSinkRate - radialVel;
+                            const hoverThrust = gravity * SHIP_MASS;
+                            const verticalCmd = rVec.norm().mult(hoverThrust + sinkError * 150);
+                            vectorCmd = vectorCmd.add(verticalCmd);
+                        } else {
+                            if (radialVel > -50) {
+                                vectorCmd = vectorCmd.add(rVec.norm().mult(-SHIP_THRUST_MAX * 0.3));
+                            }
+                            
+                            // Predictive braking based on momentum
+                            if (radialVel < 0 && brakeDistance) {
+                                if (altitude < brakeDistance * 1.3) {
+                                    const brakeStrength = Math.min(1.0, (brakeDistance * 1.3) / altitude);
+                                    vectorCmd = vectorCmd.add(rVec.norm().mult(SHIP_THRUST_MAX * brakeStrength));
+                                    
+                                    if (this.decisionTimer > 1.0) {
+                                        this.log(`Brake point reached - decelerating`);
+                                        this.decisionTimer = 0;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        if (altitude < 8.0 && vVec.mag() < LANDING_MAX_SPEED) {
+                            this.mode = "SURFACE";
+                            this.landingWhitelist = null; // Clear whitelist on landing
+                            this.decisionTimer = 0;
+                            this.surfacePauseDuration = SURFACE_PAUSE_MIN + Math.random() * (SURFACE_PAUSE_MAX - SURFACE_PAUSE_MIN);
+                            this.log("Touchdown");
+                            
+                            this.deployedFlags.push({
+                                pos: this.pos.copy(),
+                                body: target,
+                                time: simTime
+                            });
+                        }
+                        break;
+                        
+                    case "SURFACE":
+                        this.landingWhitelist = null;
+                        vectorCmd = new Vec2(0, 0);
+                        this.targetThrottle = 0;
+                        this.visitedBodies.add(target.name);
+                        
+                        if (this.decisionTimer > this.surfacePauseDuration) {
+                            this.mode = "TAKEOFF";
+                            this.log("Launching");
+                        }
+                        break;
+                        
+                    case "TAKEOFF":
+                        this.landingWhitelist = null;
+                        vectorCmd = rVec.norm().mult(SHIP_THRUST_MAX);
+                        if (dist > target.radius * 2.5) {
+                            this.pickNewTarget();
+                            this.mode = "TRANSFER";
+                        }
+                        break;
+                }
+
+                // --- SMOOTH CONTROLS ---
+                this.aiCmdVector = vectorCmd.copy();
+                const cmdMag = vectorCmd.mag();
+                const cmdDir = cmdMag > 0.1 ? vectorCmd.norm() : new Vec2(Math.cos(this.angle), Math.sin(this.angle));
+                
+                let desiredAngle = cmdDir.angle();
+                
+                // Smooth PD Rotation with angular velocity
+                const angleErr = normalizeAngle(desiredAngle - this.angle);
+                const angleDeriv = angleErr - this.pid.prevErr;
+                this.pid.prevErr = angleErr;
+                
+                const rotTorque = angleErr * this.pid.kp + angleDeriv * this.pid.kd;
+                this.angularVel += rotTorque * SHIP_ROT_TORQUE * dt;
+                this.angularVel *= SHIP_ROT_DAMPING; // Damping
+                this.angle += this.angularVel * dt;
+                
+                const facing = new Vec2(Math.cos(this.angle), Math.sin(this.angle));
+                const alignment = facing.dot(cmdDir);
+                
+                let thrustPct = 0;
+                if ((alignment > 0.6 || (this.mode === "DESCENT" && alignment > 0.3)) && cmdMag > 1.0) {
+                    if (!this.obstructionDetected || (this.safeCorridor && facing.dot(this.safeCorridor) > 0.5)) {
+                        thrustPct = Math.min(1.0, cmdMag / SHIP_THRUST_MAX);
+                    }
+                } else if (this.mode === "DESCENT" && this.decisionTimer > 6.0) {
+                    thrustPct = 0.4;
+                }
+                
+                // GRADUAL THROTTLE RAMP
+                this.targetThrottle = thrustPct;
+                const throttleDiff = this.targetThrottle - this.throttle;
+                this.throttle += throttleDiff * SHIP_ACCEL_RAMP;
+                
+                if (this.throttle > 0.01) {
+                    // REDUCED LINEAR ACCELERATION
+                    const actualThrust = this.throttle * SHIP_THRUST_MAX;
+                    const thrustAccel = Math.min(actualThrust, SHIP_LINEAR_ACCEL * this.throttle);
+                    this.acc = this.acc.add(facing.mult(thrustAccel));
+                    this.currentG = thrustAccel / 9.81;
+                    
+                    for (let i = 0; i < 3; i++) {
+                        const spread = (Math.random() - 0.5) * 0.5;
+                        const pVel = this.vel.add(facing.mult(-700 * this.throttle)).add(facing.perp().mult(spread * 180));
+                        const pPos = this.pos.add(facing.mult(-20));
+                        particles.push(new Particle(pPos, pVel));
+                    }
+                }
+                
+                // EXTENDED TRAIL LIFETIME (mimics orbital lines)
+                if (simTime % 0.03 < dt) {
+                    this.trail.push(this.pos.copy());
+                    if (this.trail.length > 8000) this.trail.shift(); // Much longer trail
+                }
+            }
+            
+            pickNewTarget() {
+                const landingCandidates = bodies.filter(b => 
+                    b.mass >= MIN_LANDING_MASS && 
+                    b.name !== "SOL" && 
+                    b !== this.target &&
+                    !this.visitedBodies.has(b.name) &&
+                    !b.isAsteroid
+                );
+                
+                if (landingCandidates.length === 0) {
+                    this.visitedBodies.clear();
+                    this.log("All bodies visited - resetting");
+                }
+                
+                const candidates = landingCandidates.length > 0 ? landingCandidates : 
+                    bodies.filter(b => b.mass >= MIN_LANDING_MASS && b.name !== "SOL" && !b.isAsteroid);
+                
+                if (candidates.length > 0) {
+                    candidates.sort((a, b) => this.pos.dist(a.pos) - this.pos.dist(b.pos));
+                    const idx = Math.min(Math.floor(Math.random() * 3), candidates.length - 1);
+                    this.target = candidates[idx];
+                    this.mode = "TRANSFER";
+                    this.decisionTimer = 0;
+                    this.log(`Target: ${this.target.name}`);
+                }
+            }
+            
+            draw(ctx, zoom) {
+                // Flags
+                for (let flag of this.deployedFlags) {
+                    const flagWorldPos = flag.body.pos.add(flag.pos.sub(flag.body.pos));
+                    ctx.save();
+                    ctx.translate(flagWorldPos.x, flagWorldPos.y);
+                    ctx.strokeStyle = '#FFFFFF';
+                    ctx.lineWidth = 1 / zoom;
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(0, -30 / zoom);
+                    ctx.stroke();
+                    ctx.fillStyle = '#00FF00';
+                    ctx.beginPath();
+                    ctx.moveTo(0, -30 / zoom);
+                    ctx.lineTo(15 / zoom, -25 / zoom);
+                    ctx.lineTo(0, -20 / zoom);
+                    ctx.fill();
+                    ctx.restore();
+                }
+                
+                // Predicted path
+                if (this.predictedPath.length > 1 && this.mode !== "SURFACE") {
+                    ctx.save();
+                    ctx.strokeStyle = '#FFFF00';
+                    ctx.lineWidth = 1.5 / zoom;
+                    ctx.setLineDash([8 / zoom, 8 / zoom]);
+                    ctx.beginPath();
+                    ctx.moveTo(this.pos.x, this.pos.y);
+                    for (let i = 0; i < this.predictedPath.length; i += 3) {
+                        ctx.lineTo(this.predictedPath[i].x, this.predictedPath[i].y);
+                    }
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.restore();
+                }
+                
+                // PERSISTENT SHIP TRAIL (slower decay)
+                if (this.trail.length > 1) {
+                    ctx.save();
+                    ctx.lineWidth = 2 / zoom;
+                    
+                    // Draw trail with very gradual fade
+                    for (let i = 0; i < this.trail.length - 1; i++) {
+                        // Much slower alpha decay
+                        const alpha = 0.15 + (i / this.trail.length) * 0.85;
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+                        ctx.beginPath();
+                        ctx.moveTo(this.trail[i].x, this.trail[i].y);
+                        ctx.lineTo(this.trail[i + 1].x, this.trail[i + 1].y);
+                        ctx.stroke();
+                    }
+                    ctx.restore();
+                }
+
+                // Ship Arrow
+                ctx.save();
+                ctx.translate(this.pos.x, this.pos.y);
+                ctx.rotate(this.angle);
+                
+                ctx.fillStyle = '#000000';
+                ctx.strokeStyle = '#FFFFFF';
+                ctx.lineWidth = 2 / zoom;
+                
+                ctx.beginPath();
+                const s = 1.0;
+                ctx.moveTo(15 * s, 0);
+                ctx.lineTo(-10 * s, 10 * s);
+                ctx.lineTo(-5 * s, 0);
+                ctx.lineTo(-10 * s, -10 * s);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+                
+                // Engine Glow
+                if (this.throttle > 0) {
+                    ctx.fillStyle = `rgba(255, 255, 255, ${this.throttle})`;
+                    ctx.beginPath();
+                    ctx.moveTo(-5 * s, 0);
+                    ctx.lineTo(-15 * s - Math.random() * 10 * this.throttle, 5 * s);
+                    ctx.lineTo(-15 * s - Math.random() * 10 * this.throttle, -5 * s);
+                    ctx.fill();
+                }
+                
+                ctx.restore();
+                
+                // Debug vectors
+                if (zoom > 0.05) {
+                    const drawVector = (v, color, label, scale = 1.0) => {
+                        if (v.mag() < 0.1) return;
+                        ctx.save();
+                        ctx.translate(this.pos.x, this.pos.y);
+                        ctx.strokeStyle = color;
+                        ctx.lineWidth = 1.5 / zoom;
+                        ctx.beginPath();
+                        ctx.moveTo(0, 0);
+                        const end = v.mult(scale);
+                        ctx.lineTo(end.x, end.y);
+                        ctx.stroke();
+                        
+                        const angle = end.angle();
+                        ctx.rotate(angle);
+                        ctx.translate(end.mag(), 0);
+                        ctx.fillStyle = color;
+                        const head = 4 / zoom;
+                        ctx.beginPath();
+                        ctx.moveTo(0, 0);
+                        ctx.lineTo(-head, head / 2);
+                        ctx.lineTo(-head, -head / 2);
+                        ctx.fill();
+                        
+                        if (label) {
+                            ctx.fillStyle = color;
+                            ctx.font = `${10 / zoom}px monospace`;
+                            ctx.fillText(label, 2 / zoom, 0);
+                        }
+                        ctx.restore();
+                    };
+
+                    drawVector(this.vel, '#00FFFF', 'VEL', 0.5);
+                    drawVector(this.gravVector, '#FF00FF', 'GRAV', 50.0);
+                    drawVector(this.aiCmdVector, '#00FF00', 'CMD', 0.5);
+                    
+                    const thrustVec = new Vec2(Math.cos(this.angle), Math.sin(this.angle)).mult(this.throttle * SHIP_THRUST_MAX);
+                    drawVector(thrustVec, '#FFAA00', 'THRUST', 0.5);
+                    
+                    if (this.safeCorridor && this.obstructionDetected) {
+                        drawVector(this.safeCorridor.mult(500), '#FF0000', 'SAFE', 1.0);
+                    }
+                    
+                    if (this.target) {
+                        const leadPt = this.calculateLeadPoint(this.target);
+                        ctx.save();
+                        ctx.strokeStyle = '#FFFF00';
+                        ctx.lineWidth = 1 / zoom;
+                        ctx.setLineDash([5 / zoom, 5 / zoom]);
+                        ctx.beginPath();
+                        ctx.moveTo(this.pos.x, this.pos.y);
+                        ctx.lineTo(leadPt.x, leadPt.y);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                        
+                        ctx.fillStyle = '#FFFF00';
+                        const markerSize = 4 / zoom;
+                        ctx.beginPath();
+                        ctx.arc(leadPt.x, leadPt.y, markerSize, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.restore();
                     }
                 }
             }
@@ -447,369 +960,579 @@
             constructor(pos, vel) {
                 this.pos = pos;
                 this.vel = vel;
-                this.life = 1.0; // Seconds
+                this.life = 0.5 + Math.random() * 0.5;
             }
             update(dt) {
                 this.pos = this.pos.add(this.vel.mult(dt));
                 this.life -= dt;
             }
-            draw(ctx) {
-                ctx.fillStyle = COL_PRIMARY;
-                ctx.fillRect(this.pos.x, this.pos.y, 2, 2);
+            draw(ctx, zoom) {
+                ctx.fillStyle = `rgba(255, 255, 255, ${this.life})`;
+                const s = Math.max(1, 3 / zoom);
+                ctx.fillRect(this.pos.x, this.pos.y, s, s);
             }
         }
 
-        // --- Helpers ---
-        function normalizeAngle(a) {
-            while (a > Math.PI) a -= Math.PI * 2;
-            while (a < -Math.PI) a += Math.PI * 2;
-            return a;
+        class Debris {
+            constructor(pos, vel, color, parent) {
+                this.pos = pos;
+                this.vel = vel;
+                this.color = color;
+                this.parent = parent;
+            }
+            updatePhysics(dt) {
+                if (this.parent) {
+                     const r = this.parent.pos.sub(this.pos);
+                     const dSq = r.magSq();
+                     if (dSq > 1) {
+                         const acc = r.norm().mult((G * this.parent.mass) / dSq);
+                         this.vel = this.vel.add(acc.mult(dt));
+                     }
+                }
+                
+                const sun = bodies[0];
+                if (sun && sun !== this.parent) {
+                    const rS = sun.pos.sub(this.pos);
+                    const dS = rS.magSq();
+                     if (dS > 1) {
+                         this.vel = this.vel.add(rS.norm().mult((G * sun.mass / dS) * dt));
+                     }
+                }
+                
+                this.pos = this.pos.add(this.vel.mult(dt));
+            }
+            draw(ctx, zoom) {
+                if (Math.random() > 0.5) return;
+                ctx.fillStyle = this.color;
+                const s = 1.5 / zoom;
+                ctx.fillRect(this.pos.x, this.pos.y, s, s);
+            }
+        }
+
+        // --- GENERATION ---
+        function initGame() {
+            bodies = []; particles = []; debris = []; asteroids = [];
+            
+            // 1. Sol - SOLID WHITE CORE
+            const sun = new Body(0, 0, 10000000, 1200 * SCALE_FACTOR, true, "SOL");
+            sun.color = '#FFFFFF';
+            bodies.push(sun);
+            
+            let dist = 12000 * SCALE_FACTOR;
+            const names = ["VULKAN", "AERIS", "TERRA", "CRONOS", "ZEUS", "HADES", "POSEIDON", "CHAOS"];
+            
+            // 2. Planets - 5X LARGER DISTANCES AND RADII
+            const numPlanets = 6 + Math.floor(Math.random() * 3);
+            for (let i = 0; i < numPlanets; i++) {
+                dist += (12000 + Math.random() * 8000) * SCALE_FACTOR;
+                const angle = Math.random() * Math.PI * 2;
+                const mass = 200000 + Math.random() * 300000;
+                const radius = (400 + Math.sqrt(mass) * 0.5) * SCALE_FACTOR;
+                const ecc = Math.random() * 0.2;
+                
+                const rPeri = dist;
+                const sma = rPeri / (1 - ecc);
+                const vMag = Math.sqrt(G * sun.mass * (1+ecc) / (sma * (1-ecc)));
+                
+                const planet = new Body(
+                    Math.cos(angle) * dist, Math.sin(angle) * dist,
+                    mass, radius, false, names[i] || `P-${i}`
+                );
+                planet.vel = new Vec2(-Math.sin(angle), Math.cos(angle)).mult(vMag);
+                planet.parent = sun;
+                bodies.push(planet);
+                
+                // Moonlets (rings replacement)
+                if (Math.random() > 0.3) {
+                    const moonlets = 3 + Math.floor(Math.random() * 5);
+                    for(let r=0; r<moonlets; r++) {
+                        const rAng = Math.random() * Math.PI * 2;
+                        const rDist = (radius + 800 + Math.random() * 1000);
+                        const rMass = 50 + Math.random() * 100;
+                        const rRad = (15 + Math.random() * 10);
+                        
+                        const moonlet = new Body(
+                            planet.pos.x + Math.cos(rAng)*rDist, planet.pos.y + Math.sin(rAng)*rDist,
+                            rMass, rRad, false, `${planet.name}-m${r}`
+                        );
+                        const vOrb = Math.sqrt(G * planet.mass / rDist);
+                        moonlet.vel = planet.vel.add(new Vec2(-Math.sin(rAng), Math.cos(rAng)).mult(vOrb));
+                        moonlet.parent = planet;
+                        bodies.push(moonlet);
+                    }
+                }
+                
+                // Moons
+                const numMoons = Math.random() > 0.6 ? Math.floor(Math.random() * 3) : 0;
+                for(let m=0; m<numMoons; m++) {
+                    const mDist = (radius + 250 + m * 200 + Math.random() * 50);
+                    const mAng = Math.random() * Math.PI * 2;
+                    const mMass = 500 + Math.random() * 1500;
+                    const mRad = (30 + Math.sqrt(mMass) * 0.4) * SCALE_FACTOR;
+                    const moon = new Body(
+                        planet.pos.x + Math.cos(mAng)*mDist, planet.pos.y + Math.sin(mAng)*mDist,
+                        mMass, mRad, false, `${planet.name}-${m+1}`
+                    );
+                    const vOrb = Math.sqrt(G * planet.mass / mDist);
+                    moon.vel = planet.vel.add(
+                        new Vec2(-Math.sin(mAng), Math.cos(mAng)).mult(vOrb)
+                    );
+                    moon.parent = planet;
+                    bodies.push(moon);
+                }
+            }
+            
+            // 3. ASTEROID BELT - Ring-shaped debris field
+            const beltInnerRadius = dist * 0.7;
+            const beltOuterRadius = dist * 1.3;
+            const numAsteroids = 150;
+            
+            for (let i = 0; i < numAsteroids; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const radius = beltInnerRadius + Math.random() * (beltOuterRadius - beltInnerRadius);
+                const asteroid = new Body(
+                    Math.cos(angle) * radius,
+                    Math.sin(angle) * radius,
+                    10 + Math.random() * 40,
+                    8 + Math.random() * 15,
+                    false,
+                    `AST-${i}`
+                );
+                
+                // Orbital velocity around sun
+                const vOrb = Math.sqrt(G * sun.mass / radius) * (0.9 + Math.random() * 0.2);
+                asteroid.vel = new Vec2(-Math.sin(angle), Math.cos(angle)).mult(vOrb);
+                asteroid.parent = sun;
+                asteroid.isAsteroid = true;
+                asteroid.color = '#666666';
+                
+                bodies.push(asteroid);
+                asteroids.push(asteroid);
+            }
+            
+            // Spawn Ship at 2nd planet
+            const startBody = bodies[1];
+            const startDist = startBody.radius + 400;
+            ship = new Ship(startBody.pos.x + startDist, startBody.pos.y);
+            const vShipOrb = Math.sqrt(G * startBody.mass / startDist);
+            ship.vel = startBody.vel.add(new Vec2(0, vShipOrb));
+            ship.target = null;
+            bodies.push(ship);
         }
 
         function triggerGlitch() {
             if (glitchTimer > 0) return;
-            glitchTimer = 0.5; // 500ms
-            document.body.classList.add("inverted");
+            glitchTimer = 0.5;
+            document.body.classList.add('inverted');
+            document.getElementById('glitch-overlay').style.display = 'block';
             setTimeout(() => {
-                resetSimulation();
+                document.body.classList.remove('inverted');
+                document.getElementById('glitch-overlay').style.display = 'none';
+                initGame();
             }, 500);
         }
-        
-        function resetSimulation() {
-             glitchTimer = 0;
-             document.body.classList.remove("inverted");
-             document.getElementById('simCanvas').style.transform = "none";
-             initGame();
-        }
 
-        // --- Initialization ---
-        function initGame() {
-            bodies = [];
-            particles = [];
-            
-            // Sun
-            const sun = new Body(0, 0, 50000, 60, true, "SOL");
-            bodies.push(sun);
-            
-            // Planets
-            const p1 = new Body(600, 0, 2000, 30, false, "AERIS");
-            p1.vel = new Vec2(0, Math.sqrt(G * sun.mass / 600)); // Circular orbit
-            p1.color = COL_PRIMARY;
-            bodies.push(p1);
-            
-            const p2 = new Body(-1200, 500, 4000, 45, false, "TERRA");
-            const r2 = Math.sqrt(1200*1200 + 500*500);
-            const v2 = Math.sqrt(G * sun.mass / r2);
-            // Tangent vector
-            const p2Angle = Math.atan2(500, -1200);
-            p2.vel = new Vec2(Math.cos(p2Angle + Math.PI/2) * v2, Math.sin(p2Angle + Math.PI/2) * v2);
-            bodies.push(p2);
-
-            // Ship
-            ship = new Ship(500, 100);
-            ship.vel = new Vec2(0, 40); // Initial drift
-            bodies.push(ship);
-            
-            targetBody = null;
-        }
-
-        // --- Core Loop ---
-        function physicsLoop() {
-            // Run sub-steps
+        function physicsStep() {
             const dt = DT;
             
-            for (let step = 0; step < SUB_STEPS; step++) {
-                // Gravity N-Body
-                for (let i = 0; i < bodies.length; i++) {
-                    const b1 = bodies[i];
-                    if (b1.isStatic) continue;
-
-                    for (let j = 0; j < bodies.length; j++) {
-                        if (i === j) continue;
-                        const b2 = bodies[j];
-                        
-                        const rVec = b2.pos.sub(b1.pos);
-                        const distSq = rVec.magSq();
-                        const dist = Math.sqrt(distSq);
-                        
-                        // Collision
-                        let collision = false;
-                        const dist = rVec.mag();
-                        
-                        // Rough circle check first
-                        if (dist < b1.radius + b2.radius + 10) { 
-                             // Detailed Vertex Check for Planets
-                             if (b1.vertices.length > 0 && b2 === ship) {
-                                 for (let v of b1.vertices) {
-                                     // Vertex in world space: b1.pos + v
-                                     const vWorld = b1.pos.add(v);
-                                     if (vWorld.dist(ship.pos) <= ship.radius) collision = true;
-                                 }
-                             } else if (b2.vertices.length > 0 && b1 === ship) {
-                                 for (let v of b2.vertices) {
-                                     const vWorld = b2.pos.add(v);
-                                     if (vWorld.dist(ship.pos) <= ship.radius) collision = true;
-                                 }
-                             } else {
-                                 // Simple circle collision
-                                 if (dist < b1.radius + b2.radius) collision = true;
-                             }
-                        }
-
-                        if (collision) {
-                            if (b1 === ship || b2 === ship) {
-                                triggerGlitch();
+            for (let i = 0; i < bodies.length; i++) {
+                const b1 = bodies[i];
+                if (b1.isStatic) continue;
+                
+                for (let j = 0; j < bodies.length; j++) {
+                    if (i === j) continue;
+                    const b2 = bodies[j];
+                    const rVec = b2.pos.sub(b1.pos);
+                    const dSq = rVec.magSq();
+                    
+                    if (dSq < 1) continue;
+                    const dist = Math.sqrt(dSq);
+                    
+                    // Gravity
+                    if (dist > 10) {
+                        const f = (G * b2.mass) / dSq;
+                        const gForce = rVec.norm().mult(f);
+                        b1.acc = b1.acc.add(gForce);
+                        if (b1 === ship) ship.gravVector = ship.gravVector.add(gForce);
+                    }
+                    
+                    // Collision - WHITELIST CHECK
+                    if (dist < b1.radius + b2.radius) {
+                        if (b1 === ship || b2 === ship) {
+                            const theShip = b1 === ship ? b1 : b2;
+                            const theBody = b1 === ship ? b2 : b1;
+                            
+                            // SKIP if whitelisted during landing
+                            if (theBody === ship.landingWhitelist) continue;
+                            
+                            const vRel = theShip.vel.sub(theBody.vel).mag();
+                            const normal = theShip.pos.sub(theBody.pos).norm();
+                            const canLand = theBody.mass >= MIN_LANDING_MASS;
+                            
+                            if (vRel > COLLISION_RESET_THRESHOLD && ship.mode !== "SURFACE") {
+                                if (canLand && !theBody.isAsteroid) {
+                                    triggerGlitch();
+                                    return;
+                                } else {
+                                    const bounceVel = normal.mult(vRel * 0.3);
+                                    theShip.vel = theBody.vel.add(bounceVel);
+                                    theShip.pos = theBody.pos.add(normal.mult(theShip.radius + theBody.radius + 5));
+                                    ship.log(`Contact: ${theBody.name || 'asteroid'}`);
+                                }
+                            } else {
+                                theShip.pos = theBody.pos.add(normal.mult(theShip.radius + theBody.radius + 0.1));
+                                
+                                if (canLand && !theBody.isAsteroid) {
+                                    theShip.vel = theBody.vel.copy();
+                                    
+                                    if (ship.mode === "DESCENT" || ship.mode === "TRANSFER" || ship.mode === "INSERTION") {
+                                        ship.mode = "SURFACE";
+                                        ship.landingWhitelist = null;
+                                        ship.decisionTimer = 0;
+                                        ship.surfacePauseDuration = SURFACE_PAUSE_MIN + Math.random() * (SURFACE_PAUSE_MAX - SURFACE_PAUSE_MIN);
+                                        ship.target = theBody;
+                                        
+                                        ship.deployedFlags.push({
+                                            pos: ship.pos.copy(),
+                                            body: theBody,
+                                            time: simTime
+                                        });
+                                        ship.visitedBodies.add(theBody.name);
+                                        ship.log(`Landed: ${theBody.name}`);
+                                    }
+                                } else {
+                                    const bounceVel = normal.mult(vRel * 0.5);
+                                    theShip.vel = theBody.vel.add(bounceVel);
+                                }
                             }
-                        }
-                        
-                        if (dist > 5) { // Min dist to avoid singularity
-                            const f = (G * b2.mass) / distSq; // a = F/m, here computing 'a' directly contributed by body
-                            const accDir = rVec.norm();
-                            b1.acc = b1.acc.add(accDir.mult(f));
                         }
                     }
                 }
-                
-                // Ship Control
-                ship.updateControl(dt);
-                
-                // Integrate
-                for (let b of bodies) {
-                    b.updatePhysics(dt);
-                    b.updateVelocity(dt);
-                }
             }
             
-            // Particles
+            for (let d of debris) {
+                const rSun = bodies[0].pos.sub(d.pos);
+                const dSun = rSun.magSq();
+                d.vel = d.vel.add(rSun.norm().mult((G * bodies[0].mass / dSun) * dt));
+                d.pos = d.pos.add(d.vel.mult(dt));
+            }
+            
+            if (ship) ship.updateLogic(dt);
+            for (let b of bodies) b.updatePhysics(dt);
             for (let i = particles.length - 1; i >= 0; i--) {
-                particles[i].update(DT * SUB_STEPS);
+                particles[i].update(dt);
                 if (particles[i].life <= 0) particles.splice(i, 1);
+            }
+            
+            // FLOATING ORIGIN
+            if (ship) {
+                const shift = ship.pos.copy();
+                worldCamPos = worldCamPos.add(shift);
+                
+                for (let b of bodies) b.pos = b.pos.sub(shift);
+                for (let p of particles) p.pos = p.pos.sub(shift);
+                for (let d of debris) d.pos = d.pos.sub(shift);
+                for (let b of bodies) {
+                     for(let t=0; t<b.path.length; t++) b.path[t] = b.path[t].sub(shift);
+                }
+                if(ship.trail) for(let t=0; t<ship.trail.length; t++) ship.trail[t] = ship.trail[t].sub(shift);
+                
+                ship.gravVector = new Vec2(0, 0);
             }
         }
 
-        function drawLoop() {
-            // Resize logic
+        function draw() {
             if (width !== window.innerWidth || height !== window.innerHeight) {
                 width = window.innerWidth;
                 height = window.innerHeight;
                 canvas.width = width;
                 canvas.height = height;
-                ctx.imageSmoothingEnabled = false;
             }
-
-            // Glitch Jitter
-            if (glitchTimer > 0) {
-                glitchTimer -= RENDER_DT;
-                const ox = (Math.random() - 0.5) * 20;
-                const oy = (Math.random() - 0.5) * 20;
-                canvas.style.transform = `translate(${ox}px, ${oy}px)`;
-            } else {
-                 canvas.style.transform = "none";
-            }
-
-            // Clear
+            
             ctx.fillStyle = COL_BG;
             ctx.fillRect(0, 0, width, height);
 
-            // Floating Origin Transform
             ctx.save();
-            ctx.translate(width / 2, height / 2);
-            ctx.translate(-ship.pos.x, -ship.pos.y);
-
-            // Draw Grid/Orbits (World space)
-            // Permanent Orbits (Faint)
-            for (let b of bodies) {
-                if (b.isStatic) continue;
-                // Assume orbiting Sun (0,0) for visualization simplicity, though physics is N-body.
-                // Draw circle based on current distance to sun
-                const dist = b.pos.mag();
+            ctx.translate(width/2, height/2);
+            ctx.scale(camScale, camScale);
+            
+            const viewW = width / camScale;
+            const viewH = height / camScale;
+            
+            // Grid with 5X scaling
+            const gridLevels = [
+                { size: 100 * SCALE_FACTOR, minZoom: 1.0, maxZoom: 50, color: '#2A2A2A' },
+                { size: 500 * SCALE_FACTOR, minZoom: 0.3, maxZoom: 2.0, color: '#222222' },
+                { size: 1000 * SCALE_FACTOR, minZoom: 0.1, maxZoom: 0.8, color: '#1A1A1A' },
+                { size: 5000 * SCALE_FACTOR, minZoom: 0.03, maxZoom: 0.3, color: '#181818' },
+                { size: 20000 * SCALE_FACTOR, minZoom: 0.01, maxZoom: 0.1, color: '#151515' },
+                { size: 100000 * SCALE_FACTOR, minZoom: 0.001, maxZoom: 0.05, color: '#121212' }
+            ];
+            
+            for (const level of gridLevels) {
+                if (camScale < level.minZoom || camScale > level.maxZoom) continue;
+                
+                const zoomRange = level.maxZoom - level.minZoom;
+                const zoomPos = (camScale - level.minZoom) / zoomRange;
+                let alpha = 1.0;
+                if (zoomPos < 0.2) alpha = zoomPos / 0.2;
+                if (zoomPos > 0.8) alpha = (1.0 - zoomPos) / 0.2;
+                alpha = Math.max(0.1, Math.min(1.0, alpha));
+                
+                const gridSize = level.size;
+                const startX = Math.floor((worldCamPos.x - viewW/2) / gridSize) * gridSize;
+                const endX = Math.floor((worldCamPos.x + viewW/2) / gridSize) * gridSize;
+                const startY = Math.floor((worldCamPos.y - viewH/2) / gridSize) * gridSize;
+                const endY = Math.floor((worldCamPos.y + viewH/2) / gridSize) * gridSize;
+                
+                const r = parseInt(level.color.slice(1, 3), 16);
+                const g = parseInt(level.color.slice(3, 5), 16);
+                const b = parseInt(level.color.slice(5, 7), 16);
+                ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+                ctx.lineWidth = (gridSize > 5000 ? 1.5 : 1.0) / camScale;
+                
                 ctx.beginPath();
-                ctx.strokeStyle = COL_SECONDARY;
-                ctx.lineWidth = 1;
-                ctx.arc(0, 0, dist, 0, Math.PI*2);
-                ctx.stroke();
-            }
-
-            // Draw Trails
-            for (let b of bodies) {
-                b.drawTrail(ctx);
-            }
-            
-            // Draw Bodies
-            for (let b of bodies) {
-                b.draw(ctx);
-            }
-            
-            // Draw Particles
-            for (let p of particles) {
-                p.draw(ctx);
-            }
-
-            // Ship Projected Orbit (Conic)
-            // Calculate orbit parameters relative to nearest massive body
-            let nearest = null;
-            let minDist = Infinity;
-            for(let b of bodies) {
-                if(b === ship) continue;
-                const d = ship.pos.dist(b.pos);
-                if(d < minDist) { minDist = d; nearest = b; }
-            }
-            
-            if(nearest && nearest.mass > 100) {
-                // Visualize approximate keplerian orbit
-                // Need r (pos relative to body) and v (vel relative to body)
-                // Draw projected path for next N seconds using current physics integration
-                // Doing true conic drawing is hard to get right with N-body perturbations.
-                // Let's forward simulate a "ghost" trajectory for visualization
-                ctx.beginPath();
-                ctx.strokeStyle = COL_PRIMARY;
-                ctx.lineWidth = 1.5;
-                
-                let ghostPos = ship.pos.copy();
-                let ghostVel = ship.vel.copy();
-                let drawn = false;
-                
-                ctx.moveTo(ghostPos.x, ghostPos.y);
-                
-                // Simulate 500 steps ahead for visualization
-                for(let i=0; i<500; i++) {
-                     const ghostDt = 0.1;
-                     const rVec = nearest.pos.sub(ghostPos);
-                     const dSq = rVec.magSq();
-                     const d = Math.sqrt(dSq);
-                     const a = rVec.norm().mult((G * nearest.mass)/dSq);
-                     
-                     ghostVel = ghostVel.add(a.mult(ghostDt));
-                     ghostPos = ghostPos.add(ghostVel.mult(ghostDt));
-                     
-                     if (i % 5 === 0) ctx.lineTo(ghostPos.x, ghostPos.y);
-                     
-                     // Apoapsis/Periapsis marking is complex in N-body forward sim without analytic solution.
-                     // Analytic approach:
-                     // r = p / (1 + e cos(theta))
-                     // Calculate specific energy and angular momentum to find a and e.
+                for (let gx = startX; gx <= endX; gx += gridSize) {
+                    const dx = gx - worldCamPos.x;
+                    ctx.moveTo(dx, -viewH);
+                    ctx.lineTo(dx, viewH);
+                }
+                for (let gy = startY; gy <= endY; gy += gridSize) {
+                    const dy = gy - worldCamPos.y;
+                    ctx.moveTo(-viewW, dy);
+                    ctx.lineTo(viewW, dy);
                 }
                 ctx.stroke();
-                
-                // Draw analytic apoapsis/periapsis for closest body
-                // h = r x v
-                const rVec = ship.pos.sub(nearest.pos);
-                const vVec = ship.vel.sub(nearest.vel);
-                const h = rVec.cross(vVec); // scalar in 2D
-                const mu = G * nearest.mass;
-                const eVec = rVec.mult(vVec.magSq() - mu/rVec.mag()).sub(vVec.mult(rVec.dot(vVec))).div(mu); // eccentricity vector
-                const e = eVec.mag(); // eccentricity
-                
-                // Semi-major axis a = -mu / 2E
-                const specificEnergy = vVec.magSq()/2 - mu/rVec.mag();
-                const a = -mu / (2 * specificEnergy);
-                
-                // Periapsis distance: a(1-e)
-                // Apoapsis distance: a(1+e)
-                // These are distances from focus (nearest body).
-                // Location? Along eVec (periapsis) and -eVec (apoapsis).
-                
-                if (e < 1 && a > 0) { // Elliptical
-                    const periDist = a * (1 - e);
-                    const apoDist = a * (1 + e);
-                    
-                    const periPos = nearest.pos.add(eVec.norm().mult(periDist));
-                    const apoPos = nearest.pos.add(eVec.norm().mult(-apoDist)); // Opposite to e-vector
-                    
-                    drawOrbitLabel(ctx, periPos, "Pe", periDist);
-                    drawOrbitLabel(ctx, apoPos, "Ap", apoDist);
-                }
             }
-            
             ctx.restore();
-
-            // UI Updates
-            updateUI(nearest);
             
-            requestAnimationFrame(drawLoop);
-        }
-
-        function drawOrbitLabel(ctx, pos, label, dist) {
-             ctx.save();
-             ctx.translate(pos.x, pos.y);
-             ctx.fillStyle = COL_PRIMARY;
-             ctx.strokeStyle = COL_PRIMARY;
-             
-             // Draw "T" tick
-             ctx.beginPath();
-             ctx.moveTo(-5, 0); ctx.lineTo(5, 0);
-             ctx.moveTo(0, -5); ctx.lineTo(0, 5);
-             ctx.stroke();
-             
-             ctx.font = "12px 'Courier Prime'";
-             ctx.fillText(`${label} ${Math.round(dist/100)}km`, 8, -8);
-             ctx.restore();
-        }
-
-        function updateUI(nearest) {
-            document.getElementById('val-vel').textContent = ship.vel.mag().toFixed(1) + " m/s";
-            
-            if (nearest) {
-                const alt = ship.pos.dist(nearest.pos) - nearest.radius;
-                document.getElementById('val-alt').textContent = (alt/100).toFixed(2) + " km"; // Scale down
-            } else {
-                 document.getElementById('val-alt').textContent = "---";
+            if (glitchTimer > 0) {
+                glitchTimer -= 1/60;
+                ctx.save();
+                ctx.translate((Math.random()-0.5)*20, (Math.random()-0.5)*20);
             }
             
-            const gLoad = ship.acc.mag() / 9.81; // Using earth g for display reference or just arbitrary
-            // Actually our thrust is 300px/s^2.
-            // Let's just show thrust acceleration or total force?
-            // "G-LOAD" usually means perceived acceleration (thrust).
-            // ship.acc is reset every frame. We need to capture thrust acc.
-            // But ship.acc accumulates gravity too.
-            // Let's estimate from FSM state or just calculate thrust applied.
-            // If thrusting, it's SHIP_THRUST.
-            // Let's just use the current frame's accumulated non-gravity acceleration? 
-            // We don't store that separately.
-            // Approximation: if FSM is burning, 1G (relative to game constants).
-            // Let's map SHIP_THRUST to "3G" or something. 300 px/s^2. 
-            document.getElementById('val-g').textContent = ((ship.fsmState.includes("BURN") || ship.fsmState.includes("LANDING") || ship.fsmState.includes("FLIP") || ship.fsmState.includes("CAPTURE")) ? "1.00 G" : "0.00 G");
+            let targetZoom = 0.5;
+            if (ship && ship.target) {
+                const d = ship.pos.dist(ship.target.pos);
+                if (d < ship.target.radius + 300) targetZoom = 2.5; 
+                else if (d < 8000 * SCALE_FACTOR) targetZoom = 0.3; 
+                else targetZoom = 0.05; 
+            }
+            camScale += (targetZoom * zoomBias - camScale) * 0.05;
             
-            document.getElementById('val-state').textContent = ship.fsmState;
-            document.getElementById('val-target').textContent = ship.target ? ship.target.name : "NONE";
-        }
-
-        // --- Interaction ---
-        canvas.addEventListener('mousedown', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const clickX = e.clientX - rect.left;
-            const clickY = e.clientY - rect.top;
+            ctx.save();
+            ctx.translate(width/2, height/2);
+            ctx.scale(camScale, camScale);
             
-            // Transform click to world space
-            // Screen (cx, cy) -> World (wx, wy)
-            // World to Screen: screen = world + center - ship
-            // World = screen - center + ship
-            const wx = clickX - width/2 + ship.pos.x;
-            const wy = clickY - height/2 + ship.pos.y;
-            const mousePos = new Vec2(wx, wy);
+            // Draw Bodies with Orbits
+            for (let b of bodies) {
+                if (b.parent && !b.isStatic && !b.isAsteroid) {
+                    const r = b.pos.sub(b.parent.pos);
+                    const v = b.vel.sub(b.parent.vel);
+                    const mu = G * b.parent.mass;
+                    const en = v.magSq()/2 - mu/r.mag();
+                    const a = -mu / (2*en);
+                    const eVec = r.mult(v.magSq() - mu/r.mag()).sub(v.mult(r.dot(v))).div(mu);
+                    const ecc = eVec.mag();
+                    
+                    if (ecc < 1 && a > 0) {
+                        ctx.save();
+                        ctx.translate(b.parent.pos.x, b.parent.pos.y);
+                        const angle = Math.atan2(eVec.y, eVec.x);
+                        ctx.rotate(angle);
+                        
+                        ctx.beginPath();
+                        ctx.strokeStyle = '#333333';
+                        ctx.lineWidth = 1/camScale;
+                        ctx.ellipse(-a*ecc, 0, a, a * Math.sqrt(1 - ecc*ecc), 0, 0, 2*Math.PI);
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+                }
+                b.draw(ctx, camScale);
+            }
+            for (let d of debris) d.draw(ctx, camScale);
+            for (let p of particles) p.draw(ctx, camScale);
             
-            // Check clicks
-            let clicked = null;
-            for(let b of bodies) {
-                if(b === ship) continue;
-                if(b.pos.dist(mousePos) < b.radius + 50) { // Hitbox padding
-                    clicked = b;
-                    break;
+            // PERSISTENT ORBITAL VISUALIZATION
+            if (ship && ship.mode !== "SURFACE") {
+                const dominantBody = ship.dominantBody || (ship.target ? ship.target : bodies[0]);
+                
+                const r = ship.pos.sub(dominantBody.pos);
+                const v = ship.vel.sub(dominantBody.vel);
+                const dist = r.mag();
+                const speed = v.mag();
+                const mu = G * dominantBody.mass;
+                const en = speed * speed / 2 - mu / dist;
+                const a = -mu / (2 * en);
+                const eVec = r.mult(speed * speed - mu / dist).sub(v.mult(r.dot(v))).div(mu);
+                const e = eVec.mag();
+                
+                const escapeVelocity = Math.sqrt(2 * mu / dist);
+                const isEscaping = speed > escapeVelocity;
+                
+                ctx.save();
+                ctx.translate(dominantBody.pos.x, dominantBody.pos.y);
+                ctx.beginPath();
+                ctx.strokeStyle = '#00FFFF';
+                ctx.lineWidth = Math.max(1.0, 2.0 / camScale);
+                
+                if (!isEscaping && e < 1 && a > 0) {
+                    ctx.rotate(eVec.angle());
+                    ctx.ellipse(-a * e, 0, a, a * Math.sqrt(1 - e * e), 0, 0, 2 * Math.PI);
+                    ctx.stroke();
+                    
+                    const peDist = a * (1 - e);
+                    const apDist = a * (1 + e);
+                    ctx.restore();
+                    
+                    const pePos = dominantBody.pos.add(eVec.norm().mult(peDist));
+                    const apPos = dominantBody.pos.add(eVec.norm().mult(-apDist));
+                    
+                    ctx.save();
+                    ctx.fillStyle = "#00FFFF";
+                    const fontSize = Math.max(10, 12 / camScale);
+                    ctx.font = `${fontSize}px monospace`;
+                    ctx.fillText("Pe", pePos.x + 8, pePos.y);
+                    ctx.fillText("Ap", apPos.x + 8, apPos.y);
+                    const markerSize = Math.max(3, 4 / camScale);
+                    ctx.fillRect(pePos.x - markerSize / 2, pePos.y - markerSize / 2, markerSize, markerSize);
+                    ctx.fillRect(apPos.x - markerSize / 2, apPos.y - markerSize / 2, markerSize, markerSize);
+                    
+                    ctx.fillStyle = "#666666";
+                    ctx.font = `${Math.max(8, 10 / camScale)}px monospace`;
+                    ctx.fillText(`REF: ${dominantBody.name}`, dominantBody.pos.x + dominantBody.radius * 1.5, dominantBody.pos.y - 10 / camScale);
+                    ctx.restore();
+                } else if (isEscaping && e >= 1) {
+                    ctx.strokeStyle = '#FF4444';
+                    ctx.lineWidth = Math.max(1.5, 2.5 / camScale);
+                    const angle = eVec.angle();
+                    ctx.rotate(angle);
+                    
+                    const p = Math.abs(a * (1 - e * e));
+                    const limit = Math.min(Math.acos(-1 / e) - 0.1, Math.PI * 0.9);
+                    
+                    ctx.beginPath();
+                    for (let th = -limit; th <= limit; th += 0.05) {
+                        const rDist = p / (1 + e * Math.cos(th));
+                        if (rDist > 0 && rDist < 500000) {
+                            const px = rDist * Math.cos(th);
+                            const py = rDist * Math.sin(th);
+                            if (th === -limit) ctx.moveTo(px, py);
+                            else ctx.lineTo(px, py);
+                        }
+                    }
+                    ctx.stroke();
+                    ctx.restore();
+                    
+                    ctx.save();
+                    ctx.fillStyle = "#FF4444";
+                    const fontSize = Math.max(12, 14 / camScale);
+                    ctx.font = `bold ${fontSize}px monospace`;
+                    const escapePos = ship.pos.add(ship.vel.norm().mult(200 / camScale));
+                    ctx.fillText("ESCAPE", escapePos.x, escapePos.y);
+                    ctx.restore();
+                } else {
+                    ctx.restore();
+                }
+                
+                // Desired orbit
+                const t = ship.target;
+                if (t && (ship.mode === "TRANSFER" || ship.mode === "INSERTION" || ship.mode === "ORBIT")) {
+                    const rTarget = ship.pos.sub(t.pos);
+                    
+                    ctx.save();
+                    ctx.translate(t.pos.x, t.pos.y);
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#00FF00';
+                    ctx.lineWidth = Math.max(0.5, 1.0 / camScale);
+                    ctx.setLineDash([5 / camScale, 5 / camScale]);
+                    
+                    let desA, desE, desEVec;
+                    
+                    if (ship.mode === "ORBIT") {
+                        desA = rTarget.mag();
+                        desE = 0;
+                        desEVec = rTarget.norm();
+                    } else {
+                        const desiredPe = t.radius * 2.0;
+                        const currentDist = rTarget.mag();
+                        desA = (currentDist + desiredPe) / 2;
+                        desE = Math.abs((currentDist - desiredPe) / (currentDist + desiredPe));
+                        desEVec = rTarget.norm();
+                    }
+                    
+                    if (desE < 1 && desA > 0) {
+                        ctx.rotate(desEVec.angle());
+                        ctx.ellipse(-desA * desE, 0, desA, desA * Math.sqrt(1 - desE * desE), 0, 0, 2 * Math.PI);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                        ctx.restore();
+                    } else {
+                        ctx.setLineDash([]);
+                        ctx.restore();
+                    }
                 }
             }
-            
-            if(clicked) {
-                ship.target = clicked;
-                // ship.fsmState = "PHASE_1_INTERCEPT"; // Reset FSM
-            }
-        });
 
-        // --- Start ---
+            ctx.restore();
+            if (glitchTimer > 0) ctx.restore();
+            
+            // UI
+            if (ship) {
+                 const t = ship.target;
+                 const dominant = ship.dominantBody || bodies[0];
+                 const relVel = t ? ship.vel.sub(t.vel).mag() : ship.vel.mag();
+                 const alt = t ? ship.pos.dist(t.pos) - t.radius : ship.pos.dist(dominant.pos) - dominant.radius;
+                 
+                 const domDist = ship.pos.dist(dominant.pos);
+                 const escapeVel = Math.sqrt(2 * G * dominant.mass / domDist);
+                 const currentSpeed = ship.vel.sub(dominant.vel).mag();
+                 
+                 document.getElementById('val-vel').textContent = relVel.toFixed(1) + " m/s";
+                 document.getElementById('val-alt').textContent = (alt / 1000).toFixed(2) + " km";
+                 
+                 const escEl = document.getElementById('val-esc');
+                 escEl.textContent = escapeVel.toFixed(1) + " m/s";
+                 escEl.style.color = currentSpeed > escapeVel ? '#FF4444' : '#FFFFFF';
+                 
+                 document.getElementById('val-g').textContent = ship.currentG.toFixed(2) + " G";
+                 document.getElementById('val-state').textContent = ship.mode;
+                 
+                 let phaseTime = 0;
+                 if (ship.mode === "ORBIT") {
+                     phaseTime = ship.orbitTimer;
+                 } else if (ship.mode === "SURFACE") {
+                     phaseTime = ship.surfacePauseDuration - ship.decisionTimer;
+                 } else {
+                     phaseTime = ship.decisionTimer;
+                 }
+                 document.getElementById('val-phase').textContent = phaseTime.toFixed(1) + "s";
+                 
+                 document.getElementById('val-target').textContent = t ? t.name : "NONE";
+                 document.getElementById('val-dominant').textContent = dominant ? dominant.name : "-";
+                 document.getElementById('val-flags').textContent = ship.deployedFlags.length;
+                 
+                 const pct = Math.round(ship.throttle * 100);
+                 document.getElementById('val-thrust').textContent = pct + "%";
+            }
+            
+            requestAnimationFrame(draw);
+        }
+
         initGame();
         
-        // Timer for physics
-        setInterval(physicsLoop, 1000 / 60); // Call loop at 60Hz, but loop performs SUB_STEPS physics steps
-        requestAnimationFrame(drawLoop);
+        setInterval(() => {
+            simTime += DT * SUB_STEPS;
+            for(let i=0; i<SUB_STEPS; i++) physicsStep();
+        }, 1000 / 60);
+        
+        requestAnimationFrame(draw);
+        
+        window.addEventListener('wheel', e => {
+            zoomBias = Math.max(0.01, Math.min(50.0, zoomBias + Math.sign(e.deltaY) * -0.2));
+        });
 
     </script>
 </body>

@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AUTONOMOUS LANDY SIMULATION</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #050505;
+            overflow: hidden;
+            font-family: 'Courier New', Courier, monospace;
+            color: #aaaaaa;
+            user-select: none;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+<canvas id="simCanvas"></canvas>
+
+<script>
+/**
+ * LANDY-STYLE AUTONOMOUS SIMULATOR
+ * Strict Grayscale. Procedural Physics. 
+ */
+
+const canvas = document.getElementById('simCanvas');
+const ctx = canvas.getContext('2d');
+
+let width, height;
+let cx, cy; // Center coordinates
+
+// Configuration
+const GRAVITY_CONST = 800;
+const PLANET_BASE_RADIUS = 150;
+const TIME_STEP = 1/60;
+const TRAIL_MAX_LENGTH = 100;
+
+// State Management
+let frames = 0;
+let shakeFrames = 0;
+let flags = []; // persistent flags [x, y, rotation]
+
+// --- VECTOR MATH ---
+class Vec2 {
+    constructor(x, y) { this.x = x; this.y = y; }
+    add(v) { this.x += v.x; this.y += v.y; return this; }
+    sub(v) { this.x -= v.x; this.y -= v.y; return this; }
+    mult(s) { this.x *= s; this.y *= s; return this; }
+    mag() { return Math.sqrt(this.x*this.x + this.y*this.y); }
+    dist(v) { return Math.sqrt(Math.pow(this.x - v.x, 2) + Math.pow(this.y - v.y, 2)); }
+    norm() {
+        let m = this.mag();
+        if(m > 0) { this.x /= m; this.y /= m; }
+        return this;
+    }
+    copy() { return new Vec2(this.x, this.y); }
+    static sub(v1, v2) { return new Vec2(v1.x - v2.x, v1.y - v2.y); }
+}
+
+// --- GAME ENTITIES ---
+
+class Planet {
+    constructor() {
+        this.radius = PLANET_BASE_RADIUS;
+        this.terrainSeed = Math.random() * 1000;
+        this.roughness = 10 + Math.random() * 25; 
+        this.terrainData = [];
+        this.generateTerrain();
+    }
+
+    generateTerrain() {
+        // Simple radial noise
+        for(let a=0; a<360; a++) {
+            let rad = a * (Math.PI / 180);
+            let noise = Math.sin(rad * (10 + Math.random()*5) + this.terrainSeed) * Math.cos(rad * 20) * this.roughness;
+            // Add a "landing pad" flat area occasionally
+            if (a > 260 && a < 280) noise = 0; 
+            this.terrainData[a] = this.radius + noise;
+        }
+    }
+
+    getRadiusAtAngle(angleRad) {
+        // Map angle -PI to PI -> 0 to 360
+        let deg = (angleRad * 180 / Math.PI + 360) % 360;
+        let idx = Math.floor(deg);
+        return this.terrainData[idx] || this.radius;
+    }
+
+    draw() {
+        ctx.strokeStyle = '#666';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        for(let a=0; a<=360; a++) {
+            let rad = a * (Math.PI / 180);
+            let r = this.terrainData[a % 360];
+            let px = cx + Math.cos(rad) * r;
+            let py = cy + Math.sin(rad) * r;
+            if(a===0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+        
+        // Fill core
+        ctx.fillStyle = '#0a0a0a';
+        ctx.fill();
+    }
+}
+
+class Ship {
+    constructor() {
+        this.reset();
+    }
+
+    reset() {
+        // Start in high orbit
+        let angle = Math.random() * Math.PI * 2;
+        let dist = 400; 
+        this.pos = new Vec2(cx + Math.cos(angle)*dist, cy + Math.sin(angle)*dist);
+        
+        // Calculate orbital velocity for circular orbit
+        let r = new Vec2(this.pos.x - cx, this.pos.y - cy);
+        let velMag = Math.sqrt(GRAVITY_CONST * 250 / r.mag()); // Rough approximation
+        // Perpendicular vector
+        this.vel = new Vec2(-r.y, r.x).norm().mult(1.8); 
+
+        this.angle = Math.atan2(this.vel.y, this.vel.x);
+        this.state = 'ORBIT'; // ORBIT, DEORBIT, APPROACH, LANDING, GROUNDED, CRASHED
+        this.thrusting = false;
+        this.path = [];
+        this.timer = 0;
+        this.fuel = 1000;
+    }
+
+    update(planet) {
+        if (this.state === 'GROUNDED' || this.state === 'CRASHED') return;
+
+        // 1. Physics
+        let toPlanet = new Vec2(cx - this.pos.x, cy - this.pos.y);
+        let dist = toPlanet.mag();
+        let gravityDir = toPlanet.copy().norm();
+        
+        // Gravity
+        let gForce = gravityDir.copy().mult(GRAVITY_CONST / (dist * 0.05)); // Tweaked G
+        this.vel.add(gForce.mult(TIME_STEP));
+
+        // Drag (thin atmosphere)
+        if (dist < planet.radius + 100) {
+            this.vel.mult(0.999);
+        }
+
+        // AI Logic
+        this.runAI(toPlanet, dist);
+
+        // Apply Thrust
+        if (this.thrusting) {
+            let thrustVec = new Vec2(Math.cos(this.angle), Math.sin(this.angle));
+            this.vel.add(thrustVec.mult(4 * TIME_STEP));
+            // Visual flicker
+            if(Math.random() > 0.5) this.drawThrust();
+        }
+
+        // Move
+        this.pos.add(new Vec2(this.vel.x, this.vel.y));
+
+        // Orientation follows velocity usually, unless landing
+        if (this.state !== 'LANDING') {
+            let targetAngle = Math.atan2(this.vel.y, this.vel.x);
+            // Smooth rotation
+            this.angle = targetAngle; 
+        }
+
+        // 2. Collision Detection
+        let angleToPlanet = Math.atan2(this.pos.y - cy, this.pos.x - cx);
+        let terrainHeight = planet.getRadiusAtAngle(angleToPlanet);
+        
+        if (dist <= terrainHeight) {
+            this.resolveCollision(dist, terrainHeight);
+        }
+
+        // 3. Trail Logic
+        if (frames % 5 === 0) {
+            // Only add point if moved enough, creating dynamic spacing
+            if (this.path.length === 0 || this.pos.dist(this.path[this.path.length-1]) > (this.vel.mag() * 2)) {
+                this.path.push(this.pos.copy());
+                if (this.path.length > TRAIL_MAX_LENGTH) this.path.shift();
+            }
+        }
+    }
+
+    runAI(vecToCenter, dist) {
+        this.thrusting = false;
+        this.timer++;
+
+        let speed = this.vel.mag();
+
+        switch (this.state) {
+            case 'ORBIT':
+                if (this.timer > 200) {
+                    this.state = 'DEORBIT';
+                    this.timer = 0;
+                }
+                break;
+
+            case 'DEORBIT':
+                // Turn retrograde (opposite velocity)
+                this.angle = Math.atan2(this.vel.y, this.vel.x) + Math.PI;
+                // Burn to reduce periapsis
+                if (speed > 1.0) {
+                    this.thrusting = true;
+                } else {
+                    this.state = 'APPROACH';
+                }
+                break;
+
+            case 'APPROACH':
+                // Point away from planet (engines down)
+                this.angle = Math.atan2(vecToCenter.y, vecToCenter.x); // Point at planet
+                this.angle += Math.PI; // Point away
+
+                if (dist < planet.radius + 120) {
+                    this.state = 'LANDING';
+                }
+                break;
+
+            case 'LANDING':
+                // Strict retrograde landing logic
+                // Calculate vector pointing EXACTLY away from planet center
+                let upVecAngle = Math.atan2(this.pos.y - cy, this.pos.x - cx);
+                this.angle = upVecAngle;
+
+                // Radar Altimeter
+                let surfaceH = planet.getRadiusAtAngle(upVecAngle);
+                let alt = dist - surfaceH;
+                
+                // Descent Logic
+                let radialSpeed = -1 * (this.vel.x * Math.cos(upVecAngle) + this.vel.y * Math.sin(upVecAngle)); // speed towards center
+                
+                // Correct Horizontal Drift (simplified)
+                // In a real sim we'd use RCS, here we just cheat rotation slightly or accept drift
+                
+                // Suicide burn logic
+                if (radialSpeed > 1.0 || (alt < 50 && radialSpeed > 0.5)) {
+                    this.thrusting = true;
+                }
+                break;
+        }
+    }
+
+    resolveCollision(dist, terrainR) {
+        let speed = this.vel.mag();
+        
+        // Correct position to surface
+        let angle = Math.atan2(this.pos.y - cy, this.pos.x - cx);
+        this.pos.x = cx + Math.cos(angle) * terrainR;
+        this.pos.y = cy + Math.sin(angle) * terrainR;
+
+        if (speed > 1.5) {
+            // CRASH
+            this.state = 'CRASHED';
+            shakeFrames = 20;
+            setTimeout(() => resetSim(), 3000);
+        } else {
+            // LANDED
+            this.state = 'GROUNDED';
+            flags.push({x: this.pos.x, y: this.pos.y, r: angle});
+            setTimeout(() => resetSim(), 3000);
+        }
+        this.vel.mult(0);
+    }
+
+    draw() {
+        if (this.state === 'CRASHED') return; // Don't draw ship if exploded
+
+        ctx.save();
+        ctx.translate(this.pos.x, this.pos.y);
+        ctx.rotate(this.angle);
+
+        // Android 16 Style Triangle
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(10, 0);
+        ctx.lineTo(-8, 6);
+        ctx.lineTo(-4, 0);
+        ctx.lineTo(-8, -6);
+        ctx.closePath();
+        ctx.stroke();
+
+        ctx.restore();
+
+        // Draw Path
+        ctx.fillStyle = '#444';
+        this.path.forEach(p => {
+            ctx.fillRect(p.x, p.y, 2, 2);
+        });
+    }
+
+    drawThrust() {
+        ctx.save();
+        ctx.translate(this.pos.x, this.pos.y);
+        ctx.rotate(this.angle);
+        ctx.beginPath();
+        ctx.moveTo(-6, 0);
+        ctx.lineTo(-15, 0);
+        ctx.strokeStyle = '#fff';
+        ctx.stroke();
+        ctx.restore();
+    }
+}
+
+// --- MAIN LOOP & UTILS ---
+
+let planet = new Planet();
+let ship = new Ship();
+
+function resetSim() {
+    planet = new Planet();
+    ship = new Ship();
+    flags = []; // Clear flags on new planet
+}
+
+function resize() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
+    cx = width / 2;
+    cy = height / 2;
+}
+window.addEventListener('resize', resize);
+resize();
+
+function drawTelemetry() {
+    let speed = ship.vel.mag().toFixed(2);
+    let dist = ship.pos.dist(new Vec2(cx, cy));
+    let alt = (dist - planet.getRadiusAtAngle(Math.atan2(ship.pos.y-cy, ship.pos.x-cx))).toFixed(0);
+    
+    // Orbital mechanics are approximate, so we fake Ap/Pe for aesthetics based on altitude
+    let Pe = (alt * 0.8).toFixed(0);
+    let Ap = (alt * 1.5).toFixed(0);
+
+    ctx.fillStyle = '#fff';
+    ctx.font = '12px Courier New';
+    ctx.textAlign = 'left';
+    
+    let x = 20;
+    let y = 30;
+    let lh = 16;
+
+    ctx.fillText(`SYS: AUTOPILOT [ON]`, x, y);
+    ctx.fillText(`-------------------`, x, y + lh);
+    ctx.fillText(`VEL: ${speed} m/s`, x, y + lh*2);
+    ctx.fillText(`ALT: ${alt} m`, x, y + lh*3);
+    ctx.fillText(`STA: ${ship.state}`, x, y + lh*4);
+    
+    if (ship.state === 'ORBIT' || ship.state === 'DEORBIT') {
+         ctx.fillText(`AP : ${Ap} km`, x, y + lh*6);
+         ctx.fillText(`PE : ${Pe} km`, x, y + lh*7);
+    }
+    
+    if (ship.state === 'CRASHED') {
+        ctx.fillStyle = '#fff'; 
+        ctx.fillText(`!! CRITICAL FAILURE !!`, x, y + lh*9);
+    } else if (ship.state === 'GROUNDED') {
+        ctx.fillText(`>> TOUCHDOWN CONFIRMED`, x, y + lh*9);
+    }
+}
+
+function drawFlags() {
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1;
+    flags.forEach(f => {
+        ctx.save();
+        ctx.translate(f.x, f.y);
+        ctx.rotate(f.r);
+        // Draw flag pole
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(0, 20); // Pointing out from planet
+        // Draw flag banner
+        ctx.lineTo(10, 15);
+        ctx.lineTo(0, 10);
+        ctx.stroke();
+        ctx.restore();
+    });
+}
+
+function drawStars() {
+    // Static noise background
+    ctx.fillStyle = '#222';
+    for(let i=0; i<50; i++) {
+        // Pseudo-random based on coord to keep static
+        let sx = (Math.sin(i * 123.1) * width + width) % width;
+        let sy = (Math.cos(i * 452.4) * height + height) % height;
+        ctx.fillRect(sx, sy, 1, 1);
+    }
+}
+
+function loop() {
+    requestAnimationFrame(loop);
+    frames++;
+
+    // Shake Effect
+    let tx = 0, ty = 0;
+    if (shakeFrames > 0) {
+        tx = (Math.random() - 0.5) * 10;
+        ty = (Math.random() - 0.5) * 10;
+        shakeFrames--;
+    }
+
+    ctx.save();
+    ctx.translate(tx, ty);
+
+    // Clear
+    ctx.fillStyle = '#050505';
+    ctx.fillRect(0, 0, width, height);
+
+    drawStars();
+    
+    // Updates
+    ship.update(planet);
+
+    // Draw
+    planet.draw();
+    drawFlags();
+    ship.draw();
+    
+    // UI
+    ctx.restore(); // Restore before drawing fixed UI
+    drawTelemetry();
+}
+
+// Start
+ship.reset();
+loop();
+
+</script>
+</body>
+</html>

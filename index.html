@@ -1,688 +1,641 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Deep Space Navigator</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deep Space Navigator V2.0</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
-    #c { display: block; background: #000000; }
+    :root {
+      --bg: #000000;
+      --fg: #ffffff;
+      --mid: #888888;
+      --dim: #444444;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: ui-monospace, Menlo, Consolas, monospace;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+      background: var(--bg);
+    }
   </style>
 </head>
 <body>
   <canvas id="c"></canvas>
   <script>
-(function() {
-  'use strict';
+    const canvas = document.getElementById("c");
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
 
-  // ============ GLOBAL REGISTRY (Celestial Bodies) ============
-  const CELESTIAL_REGISTRY = [];
-  function registerBody(body) { CELESTIAL_REGISTRY.push(body); }
-  function getNearestBody(x, y) {
-    let best = null, bestD2 = Infinity;
-    for (const b of CELESTIAL_REGISTRY) {
-      const dx = b.x - x, dy = b.y - y;
-      const d2 = dx*dx + dy*dy;
-      if (d2 < bestD2) { bestD2 = d2; best = b; }
+    const WORLD_W = 1600;
+    const WORLD_H = 900;
+    let scale = 1;
+    let offsetX = 0;
+    let offsetY = 0;
+
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const sx = canvas.width / WORLD_W;
+      const sy = canvas.height / WORLD_H;
+      scale = Math.min(sx, sy);
+      offsetX = (canvas.width - WORLD_W * scale) * 0.5;
+      offsetY = (canvas.height - WORLD_H * scale) * 0.5;
     }
-    return best;
-  }
-  function getTargetBody() { return CELESTIAL_REGISTRY.find(b => b.id === window.ACTIVE_TARGET_ID) || CELESTIAL_REGISTRY[1]; }
+    window.addEventListener("resize", resize);
+    resize();
 
-  // ============ CONSTANTS ============
-  const G = 1.2e4; // scaled for pixel-space N-body
-  const ONE_G = 9.81 * 0.08;
-  const PHYSICS_SUBSTEPS = 5;
-  const PHYSICS_DT = 1/60 / PHYSICS_SUBSTEPS;
-  const TRAIL_LENGTH = 120;
-  const DEADZONE_ANGLE = 0.03;
-  const PID_KP = 2.5, PID_KI = 0.1, PID_KD = 0.8;
-  const LANDING_VERTICAL_PIXELS = 50;
-  const ORBIT_MULTIPLIER = 1.5;
+    const G = 0.08;
+    const SUBSTEPS = 5;
+    const PHYSICS_HZ = 300;
+    const PHYSICS_DT = 1 / PHYSICS_HZ;
+    const REGISTRY = [];
 
-  // ============ LETTERBOX 16:9 ============
-  const DESIGN_W = 1600, DESIGN_H = 900;
-  let c, ctx, canvasW, canvasH, scale, offsetX, offsetY;
-  function letterbox() {
-    const r = window.innerWidth / window.innerHeight;
-    const designR = DESIGN_W / DESIGN_H;
-    if (r > designR) {
-      scale = window.innerHeight / DESIGN_H;
-      canvasW = Math.round(DESIGN_W * scale);
-      canvasH = window.innerHeight;
-      offsetX = (window.innerWidth - canvasW) / 2;
-      offsetY = 0;
-    } else {
-      scale = window.innerWidth / DESIGN_W;
-      canvasW = window.innerWidth;
-      canvasH = Math.round(DESIGN_H * scale);
-      offsetX = 0;
-      offsetY = (window.innerHeight - canvasH) / 2;
-    }
-    c.width = canvasW; c.height = canvasH;
-    c.style.width = canvasW + 'px';
-    c.style.height = canvasH + 'px';
-    c.style.position = 'fixed';
-    c.style.left = offsetX + 'px';
-    c.style.top = offsetY + 'px';
-  }
-  function toDesign(x, y) {
-    return { x: (x - offsetX) / scale, y: (y - offsetY) / scale };
-  }
+    const ship = {
+      pos: { x: 0, y: 0 },
+      vel: { x: 0, y: 0 },
+      acc: { x: 0, y: 0 },
+      angle: 0,
+      angVel: 0,
+      mass: 1,
+      thrustG: 1.0,
+      maxAngAccel: 4.0,
+      state: "TLI",
+      target: null,
+      trail: [],
+      landed: false
+    };
 
-  // ============ PERLIN NOISE (procedural surfaces) ============
-  const PERM = new Uint8Array(512);
-  (function() {
-    const p = new Uint8Array(256);
-    for (let i = 0; i < 256; i++) p[i] = i;
-    for (let i = 255; i > 0; i--) {
-      const j = (Math.random() * (i + 1)) | 0;
-      [p[i], p[j]] = [p[j], p[i]];
-    }
-    for (let i = 0; i < 512; i++) PERM[i] = p[i & 255];
-  })();
-  function grad2(h, x, y) {
-    const g = [(h & 1) ? 1 : -1, (h & 2) ? 1 : -1];
-    return g[0]*x + g[1]*y;
-  }
-  function perlin2(x, y) {
-    const X = Math.floor(x) & 255, Y = Math.floor(y) & 255;
-    x -= Math.floor(x); y -= Math.floor(y);
-    const u = x*x*(3-2*x), v = y*y*(3-2*y);
-    const A = PERM[X]+Y, B = PERM[X+1]+Y;
-    return (1-u)*(1-v)*grad2(PERM[PERM[A]]&3, x, y) +
-           u*(1-v)*grad2(PERM[PERM[B]]&3, x-1, y) +
-           (1-u)*v*grad2(PERM[PERM[A+1]]&3, x, y-1) +
-           u*v*grad2(PERM[PERM[B+1]]&3, x-1, y-1);
-  }
-  function fractalNoise(x, y, octaves, zoom) {
-    let v = 0, f = 1, a = 1, sum = 0;
-    const sx = x * 0.001 * zoom, sy = y * 0.001 * zoom;
-    for (let i = 0; i < octaves; i++) {
-      v += a * (perlin2(sx * f, sy * f) * 0.5 + 0.5);
-      sum += a; a *= 0.5; f *= 2;
-    }
-    return v / sum;
-  }
+    const sun = {
+      id: "Sol",
+      mass: 80000,
+      radius: 80,
+      pos: { x: -800, y: 0 },
+      vel: { x: 0, y: 0 },
+      color: "#888888",
+      noiseSeed: 12.34
+    };
+    const planetA = {
+      id: "Aster",
+      mass: 1200,
+      radius: 55,
+      pos: { x: 300, y: -260 },
+      vel: { x: 0.2, y: 0.52 },
+      color: "#444444",
+      noiseSeed: 45.67
+    };
+    const planetB = {
+      id: "Vanta",
+      mass: 2600,
+      radius: 70,
+      pos: { x: 900, y: 120 },
+      vel: { x: -0.18, y: 0.36 },
+      color: "#888888",
+      noiseSeed: 78.9
+    };
+    REGISTRY.push(sun, planetA, planetB);
+    ship.target = planetB;
 
-  // ============ SHIP STATE ============
-  const ship = {
-    x: 0, y: 0, vx: 0, vy: 0,
-    prevX: 0, prevY: 0,
-    angle: 0, prevAngle: 0, targetAngle: 0,
-    throttle: 0,
-    trail: [],
-    phase: 'TLI',
-    phaseStartTime: 0,
-    landed: false,
-    crashed: false,
-    pidIntegral: 0, pidPrevError: 0
-  };
+    let lastTime = performance.now();
+    let accumulator = 0;
+    let glitchTimer = 0;
 
-  // ============ FSM: Phase Logic ============
-  function getDistanceToTarget() {
-    const t = getTargetBody();
-    if (!t) return Infinity;
-    const dx = t.x - ship.x, dy = t.y - ship.y;
-    return Math.sqrt(dx*dx + dy*dy);
-  }
-  function getTimeToHalfway() {
-    const v = Math.sqrt(ship.vx*ship.vx + ship.vy*ship.vy);
-    if (v < 1e-6) return Infinity;
-    const a = ONE_G;
-    const d = getDistanceToTarget();
-    const t_brake = v / a;
-    const d_brake = 0.5 * a * t_brake * t_brake;
-    const t_half = (d - d_brake) / v;
-    return Math.max(0, Math.min(t_half, t_brake * 0.5));
-  }
-  function updateFSM() {
-    const t = getTargetBody();
-    if (!t || ship.landed || ship.crashed) return;
-    const dx = t.x - ship.x, dy = t.y - ship.y;
-    const dist = Math.sqrt(dx*dx + dy*dy);
-    const r = t.radius;
-    const surfY = t.y + r;
-    const alt = Math.sqrt((ship.x-t.x)**2 + (ship.y-t.y)**2) - r;
-    const vx_rel = ship.vx - t.vx, vy_rel = ship.vy - t.vy;
-    const v_rel = Math.sqrt(vx_rel*vx_rel + vy_rel*vy_rel);
-    const tangent = Math.atan2(-(ship.x - t.x), ship.y - t.y);
-    const orbit_r = r * ORBIT_MULTIPLIER;
-    const orbit_speed = Math.sqrt(G * t.mass / orbit_r);
-
-    if (ship.phase === 'TLI') {
-      const lead = 80 + v_rel * 0.5;
-      const tx = t.x + t.vx * lead * 0.016, ty = t.y + t.vy * lead * 0.016;
-      ship.targetAngle = Math.atan2(ty - ship.y, tx - ship.x);
-      ship.throttle = 1;
-      const tHalf = getTimeToHalfway();
-      if (tHalf <= 0.5 && dist < r * 8) ship.phase = 'FLIP';
-    } else if (ship.phase === 'FLIP') {
-      const tx = t.x, ty = t.y;
-      ship.targetAngle = Math.atan2(ship.y - ty, ship.x - tx);
-      const angleErr = Math.atan2(Math.sin(ship.targetAngle - ship.angle), Math.cos(ship.targetAngle - ship.angle));
-      if (Math.abs(angleErr) < 0.1) ship.throttle = 1; else ship.throttle = 0;
-      if (v_rel < orbit_speed * 1.2 && dist < orbit_r * 2) ship.phase = 'INSERTION';
-    } else if (ship.phase === 'INSERTION') {
-      const toCenter = Math.atan2(t.y - ship.y, t.x - ship.x);
-      ship.targetAngle = toCenter + Math.PI/2;
-      const current_r = dist;
-      if (current_r > orbit_r * 1.1) ship.throttle = 0.3;
-      else if (current_r < orbit_r * 0.9) ship.throttle = 0;
-      else ship.throttle = 0.1;
-      if (Math.abs(current_r - orbit_r) < r * 0.2 && Math.abs(v_rel - orbit_speed) < 50) ship.phase = 'DESCENT';
-    } else if (ship.phase === 'DESCENT') {
-      const surfaceAngle = Math.atan2(ship.x - t.x, ship.y - t.y);
-      ship.targetAngle = surfaceAngle;
-      if (alt > LANDING_VERTICAL_PIXELS) ship.throttle = alt < r ? 0.4 : 0.2;
-      else {
-        ship.throttle = 0.15;
-        if (alt < 2 && v_rel < 30) { ship.landed = true; ship.throttle = 0; playTouchdown(); }
+    const particles = [];
+    function spawnDust() {
+      const count = 6;
+      for (let i = 0; i < count; i++) {
+        const spread = (Math.random() - 0.5) * 0.35;
+        const dir = ship.angle + Math.PI + spread;
+        const speed = 1.2 + Math.random() * 0.6;
+        particles.push({
+          x: 0,
+          y: 0,
+          vx: Math.cos(dir) * speed + ship.vel.x * 0.3,
+          vy: Math.sin(dir) * speed + ship.vel.y * 0.3,
+          life: 1.0
+        });
       }
     }
-  }
 
-  // ============ PID with deadzone ============
-  function applyRotation(dt) {
-    let err = Math.atan2(Math.sin(ship.targetAngle - ship.angle), Math.cos(ship.targetAngle - ship.angle));
-    if (Math.abs(err) < DEADZONE_ANGLE) { ship.pidIntegral *= 0.5; return; }
-    ship.pidIntegral += err * dt;
-    ship.pidIntegral = Math.max(-1, Math.min(1, ship.pidIntegral));
-    const deriv = (err - ship.pidPrevError) / dt;
-    const torque = PID_KP * err + PID_KI * ship.pidIntegral + PID_KD * deriv;
-    ship.pidPrevError = err;
-    const maxOmega = 1.2;
-    ship.prevAngle = ship.angle;
-    ship.angle += Math.max(-maxOmega*dt, Math.min(maxOmega*dt, torque * dt));
-  }
-
-  // ============ N-BODY GRAVITY ============
-  function gravityOnShip() {
-    let ax = 0, ay = 0;
-    for (const b of CELESTIAL_REGISTRY) {
-      const dx = b.x - ship.x, dy = b.y - ship.y;
-      const d2 = dx*dx + dy*dy;
-      const d = Math.sqrt(d2) + 1e-6;
-      const F = (G * b.mass) / (d * d);
-      ax += (dx / d) * F; ay += (dy / d) * F;
+    function noise1D(x, seed) {
+      const s = Math.sin(x * 12.9898 + seed * 78.233) * 43758.5453;
+      return s - Math.floor(s);
     }
-    return { ax, ay };
-  }
-
-  // ============ VERLET INTEGRATION (sub-stepped) ============
-  function stepPhysics(dt) {
-    const subDt = dt / PHYSICS_SUBSTEPS;
-    for (let s = 0; s < PHYSICS_SUBSTEPS; s++) {
-      const g = gravityOnShip();
-      let ax = g.ax, ay = g.ay;
-      if (ship.throttle > 0 && !ship.landed) {
-        ax += Math.cos(ship.angle) * ONE_G * ship.throttle;
-        ay += Math.sin(ship.angle) * ONE_G * ship.throttle;
+    function fractalNoise(x, seed, octaves) {
+      let amp = 1;
+      let freq = 1;
+      let sum = 0;
+      let max = 0;
+      for (let i = 0; i < octaves; i++) {
+        sum += (noise1D(x * freq, seed + i * 3.7) - 0.5) * amp;
+        max += amp;
+        amp *= 0.55;
+        freq *= 2.2;
       }
-      const nx = 2*ship.x - ship.prevX + ax * subDt * subDt;
-      const ny = 2*ship.y - ship.prevY + ay * subDt * subDt;
-      ship.prevX = ship.x; ship.prevY = ship.y;
-      ship.x = nx; ship.y = ny;
-      ship.vx = (ship.x - ship.prevX) / subDt;
-      ship.vy = (ship.y - ship.prevY) / subDt;
-      applyRotation(subDt);
+      return sum / max;
     }
-  }
 
-  // ============ CELESTIAL BODY MOTION (N-body) ============
-  function stepBodies(dt) {
-    const subDt = dt / PHYSICS_SUBSTEPS;
-    for (let s = 0; s < PHYSICS_SUBSTEPS; s++) {
-      const acc = [];
-      for (let i = 0; i < CELESTIAL_REGISTRY.length; i++) {
-        const b = CELESTIAL_REGISTRY[i];
-        let ax = 0, ay = 0;
-        for (let j = 0; j < CELESTIAL_REGISTRY.length; j++) {
-          if (i === j) continue;
-          const o = CELESTIAL_REGISTRY[j];
-          const dx = o.x - b.x, dy = o.y - b.y;
-          const d2 = dx*dx + dy*dy;
-          const d = Math.sqrt(d2) + 1e-6;
-          const F = (G * o.mass) / (d * d);
-          ax += (dx / d) * F; ay += (dy / d) * F;
+    function toScreen(x, y) {
+      return {
+        x: offsetX + (x + WORLD_W / 2) * scale,
+        y: offsetY + (y + WORLD_H / 2) * scale
+      };
+    }
+
+    function fromScreen(x, y) {
+      return {
+        x: (x - offsetX) / scale - WORLD_W / 2,
+        y: (y - offsetY) / scale - WORLD_H / 2
+      };
+    }
+
+    function length(vx, vy) {
+      return Math.hypot(vx, vy);
+    }
+
+    function normalize(vx, vy) {
+      const l = Math.hypot(vx, vy) || 1;
+      return { x: vx / l, y: vy / l };
+    }
+
+    function angleTo(vx, vy) {
+      return Math.atan2(vy, vx);
+    }
+
+    function clamp(val, min, max) {
+      return Math.max(min, Math.min(max, val));
+    }
+
+    function wrapAngle(a) {
+      while (a > Math.PI) a -= Math.PI * 2;
+      while (a < -Math.PI) a += Math.PI * 2;
+      return a;
+    }
+
+    function nearestBody() {
+      let best = null;
+      let bestD = Infinity;
+      for (const body of REGISTRY) {
+        const dx = body.pos.x - ship.pos.x;
+        const dy = body.pos.y - ship.pos.y;
+        const d = Math.hypot(dx, dy) - body.radius;
+        if (d < bestD) {
+          bestD = d;
+          best = body;
         }
-        acc.push({ ax, ay });
       }
-      for (let i = 0; i < CELESTIAL_REGISTRY.length; i++) {
-        const b = CELESTIAL_REGISTRY[i];
-        if (b.id === 'sun') continue;
-        const a = acc[i];
-        b.vx = (b.vx || 0) + a.ax * subDt;
-        b.vy = (b.vy || 0) + a.ay * subDt;
-        b.x += (b.vx || 0) * subDt;
-        b.y += (b.vy || 0) * subDt;
+      return { body: best, distance: bestD };
+    }
+
+    function gravityAt(x, y) {
+      let ax = 0;
+      let ay = 0;
+      for (const body of REGISTRY) {
+        const dx = body.pos.x - x;
+        const dy = body.pos.y - y;
+        const r2 = dx * dx + dy * dy + 0.01;
+        const r = Math.sqrt(r2);
+        const f = (G * body.mass) / r2;
+        ax += (dx / r) * f;
+        ay += (dy / r) * f;
+      }
+      return { x: ax, y: ay };
+    }
+
+    function applyPID(targetAngle, dt) {
+      const deadzone = 0.01;
+      let error = wrapAngle(targetAngle - ship.angle);
+      if (Math.abs(error) < deadzone) {
+        error = 0;
+      }
+      const kp = 8.0;
+      const kd = 3.4;
+      const desired = kp * error - kd * ship.angVel;
+      const angAccel = clamp(desired, -ship.maxAngAccel, ship.maxAngAccel);
+      ship.angVel += angAccel * dt;
+      ship.angle = wrapAngle(ship.angle + ship.angVel * dt);
+    }
+
+    function phaseLogic(dt) {
+      if (!ship.target) return { thrust: 0 };
+      const target = ship.target;
+      const dx = target.pos.x - ship.pos.x;
+      const dy = target.pos.y - ship.pos.y;
+      const dist = Math.hypot(dx, dy);
+      const speed = length(ship.vel.x, ship.vel.y);
+      const maxAccel = ship.thrustG * 1.0;
+
+      if (ship.state === "TLI") {
+        const leadTime = clamp(dist / (speed + 0.5), 3, 20);
+        const leadX = target.pos.x + target.vel.x * leadTime;
+        const leadY = target.pos.y + target.vel.y * leadTime;
+        const desiredAngle = angleTo(leadX - ship.pos.x, leadY - ship.pos.y);
+        applyPID(desiredAngle, dt);
+        const stoppingDist = (speed * speed) / (2 * maxAccel + 0.001);
+        if (dist <= stoppingDist * 1.1) {
+          ship.state = "FLIP";
+        }
+        return { thrust: 1.0 };
+      }
+
+      if (ship.state === "FLIP") {
+        const desiredAngle = angleTo(-ship.vel.x, -ship.vel.y);
+        applyPID(desiredAngle, dt);
+        if (dist < target.radius * 6) {
+          ship.state = "ORBIT";
+        }
+        return { thrust: 1.0 };
+      }
+
+      if (ship.state === "ORBIT") {
+        const relVelX = ship.vel.x - target.vel.x;
+        const relVelY = ship.vel.y - target.vel.y;
+        const relPosX = ship.pos.x - target.pos.x;
+        const relPosY = ship.pos.y - target.pos.y;
+        const relDist = Math.hypot(relPosX, relPosY);
+        const desiredRadius = target.radius * 1.5;
+        const tangential = normalize(-relPosY, relPosX);
+        const desiredSpeed = Math.sqrt((G * target.mass) / Math.max(desiredRadius, 1));
+        const desiredVelX = target.vel.x + tangential.x * desiredSpeed;
+        const desiredVelY = target.vel.y + tangential.y * desiredSpeed;
+        const dvx = desiredVelX - ship.vel.x;
+        const dvy = desiredVelY - ship.vel.y;
+        const desiredAngle = angleTo(dvx, dvy);
+        applyPID(desiredAngle, dt);
+        const align = length(dvx, dvy);
+        const thrust = clamp(align / 2.2, 0, 1);
+        if (Math.abs(relDist - desiredRadius) < 6 && align < 0.4) {
+          ship.state = "DESCENT";
+        }
+        return { thrust };
+      }
+
+      if (ship.state === "DESCENT") {
+        const relVelX = ship.vel.x - target.vel.x;
+        const relVelY = ship.vel.y - target.vel.y;
+        const relPosX = ship.pos.x - target.pos.x;
+        const relPosY = ship.pos.y - target.pos.y;
+        const relDist = Math.hypot(relPosX, relPosY);
+        const surfaceDist = relDist - target.radius;
+        const normal = normalize(relPosX, relPosY);
+        let desiredAngle = angleTo(-relVelX, -relVelY);
+        if (surfaceDist < 50) {
+          desiredAngle = angleTo(normal.x, normal.y);
+        }
+        applyPID(desiredAngle, dt);
+        const slow = clamp(length(relVelX, relVelY) / 3.5, 0.2, 1);
+        return { thrust: slow };
+      }
+
+      return { thrust: 0 };
+    }
+
+    function physicsStep(dt) {
+      const control = phaseLogic(dt);
+      const grav = gravityAt(ship.pos.x, ship.pos.y);
+      const thrust = control.thrust || 0;
+      const thrustAx = Math.cos(ship.angle) * ship.thrustG * thrust;
+      const thrustAy = Math.sin(ship.angle) * ship.thrustG * thrust;
+      ship.acc.x = grav.x + thrustAx;
+      ship.acc.y = grav.y + thrustAy;
+
+      if (thrust > 0.2) spawnDust();
+
+      ship.vel.x += ship.acc.x * dt;
+      ship.vel.y += ship.acc.y * dt;
+      ship.pos.x += ship.vel.x * dt;
+      ship.pos.y += ship.vel.y * dt;
+
+      for (const body of REGISTRY) {
+        let ax = 0;
+        let ay = 0;
+        for (const other of REGISTRY) {
+          if (other === body) continue;
+          const dx = other.pos.x - body.pos.x;
+          const dy = other.pos.y - body.pos.y;
+          const r2 = dx * dx + dy * dy + 0.01;
+          const r = Math.sqrt(r2);
+          const f = (G * other.mass) / r2;
+          ax += (dx / r) * f;
+          ay += (dy / r) * f;
+        }
+        body.vel.x += ax * dt;
+        body.vel.y += ay * dt;
+        body.pos.x += body.vel.x * dt;
+        body.pos.y += body.vel.y * dt;
+      }
+
+      for (const p of particles) {
+        p.x += p.vx * dt * 60;
+        p.y += p.vy * dt * 60;
+        p.life -= dt * 0.35;
+      }
+      for (let i = particles.length - 1; i >= 0; i--) {
+        if (particles[i].life <= 0) particles.splice(i, 1);
+      }
+
+      ship.trail.push({ x: ship.pos.x, y: ship.pos.y });
+      if (ship.trail.length > 140) ship.trail.shift();
+
+      const { body: near, distance } = nearestBody();
+      if (!ship.landed && distance < 2) {
+        const relVx = ship.vel.x - near.vel.x;
+        const relVy = ship.vel.y - near.vel.y;
+        const relSpeed = Math.hypot(relVx, relVy);
+        if (relSpeed < 0.6 && ship.state === "DESCENT") {
+          ship.landed = true;
+          playPing();
+        } else {
+          triggerGlitch();
+        }
+      }
+
+      if (!ship.landed) {
+        const driftX = ship.pos.x;
+        const driftY = ship.pos.y;
+        ship.pos.x = 0;
+        ship.pos.y = 0;
+        for (const body of REGISTRY) {
+          body.pos.x -= driftX;
+          body.pos.y -= driftY;
+        }
+        for (const p of particles) {
+          p.x -= driftX;
+          p.y -= driftY;
+        }
+        for (const t of ship.trail) {
+          t.x -= driftX;
+          t.y -= driftY;
+        }
       }
     }
-  }
 
-  // ============ FLOATING ORIGIN ============
-  function applyFloatingOrigin() {
-    const vx = ship.vx, vy = ship.vy;
-    ship.x -= vx * (1/60); ship.y -= vy * (1/60);
-    ship.prevX -= vx * (1/60); ship.prevY -= vy * (1/60);
-    for (const b of CELESTIAL_REGISTRY) {
-      b.x -= vx * (1/60); b.y -= vy * (1/60);
-    }
-    for (const p of exhaustParticles) {
-      p.x -= vx * (1/60); p.y -= vy * (1/60);
-    }
-    for (const tr of ship.trail) {
-      tr.x -= vx * (1/60); tr.y -= vy * (1/60);
-    }
-  }
-
-  // ============ TRAIL (gradient alpha comet tail) ============
-  function pushTrail() {
-    ship.trail.push({ x: ship.x, y: ship.y, t: 0 });
-    if (ship.trail.length > TRAIL_LENGTH) ship.trail.shift();
-    ship.trail.forEach(p => p.t++);
-  }
-
-  // ============ EXHAUST PARTICLES ============
-  const exhaustParticles = [];
-  function spawnExhaust() {
-    if (ship.throttle <= 0 || ship.landed) return;
-    for (let i = 0; i < 4; i++) {
-      const a = ship.angle + (Math.random() - 0.5) * 0.5;
-      const speed = 30 + Math.random() * 40;
-      exhaustParticles.push({
-        x: ship.x - Math.cos(ship.angle) * 12,
-        y: ship.y - Math.sin(ship.angle) * 12,
-        vx: -Math.cos(ship.angle) * speed + (Math.random()-0.5)*20,
-        vy: -Math.sin(ship.angle) * speed + (Math.random()-0.5)*20,
-        life: 1
-      });
-    }
-  }
-  function updateParticles(dt) {
-    for (const b of CELESTIAL_REGISTRY) {
-      for (const p of exhaustParticles) {
-        const dx = b.x - p.x, dy = b.y - p.y;
-        const d2 = dx*dx + dy*dy;
-        const d = Math.sqrt(d2) + 1e-6;
-        const F = (G * b.mass) / (d * d) * 0.02;
-        p.vx += (dx/d)*F; p.vy += (dy/d)*F;
-      }
-    }
-    for (let i = exhaustParticles.length - 1; i >= 0; i--) {
-      const p = exhaustParticles[i];
-      p.x += p.vx * dt; p.y += p.vy * dt;
-      p.life -= dt * 0.8;
-      if (p.life <= 0) exhaustParticles.splice(i, 1);
-    }
-  }
-
-  // ============ CELESTIAL BODIES ============
-  class CelestialBody {
-    constructor(id, x, y, vx, vy, radius, mass) {
-      this.id = id; this.x = x; this.y = y; this.vx = vx; this.vy = vy;
-      this.radius = radius; this.mass = mass;
-      registerBody(this);
-    }
-    draw(ctx, zoom) {
-      const octaves = Math.max(2, Math.min(6, Math.ceil(zoom * 0.5)));
-      const segments = Math.max(16, Math.min(64, Math.floor(this.radius * 0.3)));
-      ctx.strokeStyle = '#444444';
-      ctx.lineWidth = 1;
+    function drawPlanet(body) {
+      const screen = toScreen(body.pos.x, body.pos.y);
+      const r = body.radius * scale;
+      const zoom = clamp(240 / (Math.abs(body.pos.x) + Math.abs(body.pos.y) + 200), 0.5, 4.0);
+      const octaves = zoom > 1.2 ? 5 : 3;
       ctx.beginPath();
-      for (let i = 0; i <= segments; i++) {
-        const angle = (i / segments) * Math.PI * 2;
-        const nx = this.x + Math.cos(angle) * this.radius;
-        const ny = this.y + Math.sin(angle) * this.radius;
-        const elev = fractalNoise(nx, ny, octaves, 1 + zoom * 0.5) * 0.15 * this.radius;
-        const rx = this.x + Math.cos(angle) * (this.radius + elev);
-        const ry = this.y + Math.sin(angle) * (this.radius + elev);
-        if (i === 0) ctx.moveTo(rx, ry); else ctx.lineTo(rx, ry);
+      ctx.arc(screen.x, screen.y, r, 0, Math.PI * 2);
+      ctx.strokeStyle = "#888888";
+      ctx.stroke();
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(screen.x, screen.y, r, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.strokeStyle = body.color;
+      ctx.lineWidth = 1;
+      for (let a = 0; a < Math.PI * 2; a += Math.PI / 64) {
+        const n = fractalNoise(a * 1.8, body.noiseSeed, octaves);
+        const rr = r + n * r * 0.1;
+        ctx.beginPath();
+        ctx.moveTo(screen.x, screen.y);
+        ctx.lineTo(screen.x + Math.cos(a) * rr, screen.y + Math.sin(a) * rr);
+        ctx.stroke();
       }
+      ctx.restore();
+    }
+
+    function drawShip(x, y, angle, color) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+      ctx.strokeStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(12, 0);
+      ctx.lineTo(-8, -6);
+      ctx.lineTo(-4, 0);
+      ctx.lineTo(-8, 6);
       ctx.closePath();
       ctx.stroke();
-      const isTarget = window.ACTIVE_TARGET_ID === this.id;
-      ctx.strokeStyle = isTarget ? '#FFFFFF' : '#888888';
-      ctx.lineWidth = isTarget ? 2 : 1;
+      ctx.restore();
+    }
+
+    function drawHUD() {
+      const pad = 16;
+      const navR = 60;
+      ctx.save();
+      ctx.translate(offsetX + pad + navR, offsetY + pad + navR);
+      ctx.strokeStyle = "#444444";
+      ctx.beginPath();
+      ctx.arc(0, 0, navR, 0, Math.PI * 2);
       ctx.stroke();
-    }
-  }
+      ctx.beginPath();
+      ctx.moveTo(-navR, 0);
+      ctx.lineTo(navR, 0);
+      ctx.moveTo(0, -navR);
+      ctx.lineTo(0, navR);
+      ctx.stroke();
+      ctx.strokeStyle = "#888888";
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(Math.cos(ship.angle) * navR, Math.sin(ship.angle) * navR);
+      ctx.stroke();
+      ctx.restore();
 
-  // ============ WEB AUDIO ============
-  let audioCtx, droneGain, engineOsc, engineGain, voidGain, lpf;
-  function initAudio() {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const master = audioCtx.createGain();
-    master.gain.value = 0.25;
-    master.connect(audioCtx.destination);
+      const gForce = Math.hypot(ship.acc.x, ship.acc.y);
+      const gHeight = clamp(gForce / 2.5, 0, 1) * 120;
+      const jitter = gForce > 2 ? (Math.random() - 0.5) * 6 : 0;
+      const barX = offsetX + pad + 10 + jitter;
+      const barY = offsetY + pad + 150;
+      ctx.strokeStyle = "#444444";
+      ctx.strokeRect(barX, barY - 120, 10, 120);
+      ctx.fillStyle = "#888888";
+      ctx.fillRect(barX, barY - gHeight, 10, gHeight);
 
-    const droneOsc = audioCtx.createOscillator();
-    droneOsc.type = 'sine';
-    droneOsc.frequency.value = 55;
-    droneGain = audioCtx.createGain();
-    droneGain.gain.value = 0.12;
-    droneOsc.connect(droneGain);
-    droneGain.connect(master);
-    droneOsc.start();
-
-    const engineOsc2 = audioCtx.createOscillator();
-    engineOsc2.type = 'sawtooth';
-    engineOsc2.frequency.value = 80;
-    lpf = audioCtx.createBiquadFilter();
-    lpf.type = 'lowpass';
-    lpf.frequency.value = 200;
-    engineGain = audioCtx.createGain();
-    engineGain.gain.value = 0;
-    engineOsc2.connect(lpf);
-    lpf.connect(engineGain);
-    engineGain.connect(master);
-    engineOsc2.start();
-
-    const noise = audioCtx.createBufferSource();
-    const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 2, audioCtx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1);
-    noise.buffer = buffer;
-    noise.loop = true;
-    const noiseFilter = audioCtx.createBiquadFilter();
-    noiseFilter.type = 'highpass';
-    noiseFilter.frequency.value = 2000;
-    voidGain = audioCtx.createGain();
-    voidGain.gain.value = 0;
-    noise.connect(noiseFilter);
-    noiseFilter.connect(voidGain);
-    voidGain.connect(master);
-    noise.start();
-  }
-  function updateAudio() {
-    if (!audioCtx || audioCtx.state === 'suspended') return;
-    const nearest = getNearestBody(ship.x, ship.y);
-    const distToNearest = nearest ? Math.sqrt((nearest.x-ship.x)**2 + (nearest.y-ship.y)**2) : 1e9;
-    voidGain.gain.linearRampToValueAtTime(Math.min(0.08, 5000 / (distToNearest + 1)), audioCtx.currentTime + 0.05);
-    const thrust = ship.throttle * (1 - (ship.landed ? 1 : 0));
-    lpf.frequency.linearRampToValueAtTime(150 + thrust * 150, audioCtx.currentTime + 0.05);
-    engineGain.gain.linearRampToValueAtTime(thrust * 0.15, audioCtx.currentTime + 0.05);
-  }
-  function playTouchdown() {
-    if (!audioCtx) return;
-    const osc = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    osc.type = 'sine';
-    osc.frequency.value = 880;
-    g.gain.setValueAtTime(0.2, audioCtx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-    osc.connect(g);
-    g.connect(audioCtx.destination);
-    osc.start(audioCtx.currentTime);
-    osc.stop(audioCtx.currentTime + 0.3);
-  }
-
-  // ============ CRASH & GLITCH ============
-  let glitchUntil = 0;
-  function triggerCrash() {
-    ship.crashed = true;
-    glitchUntil = performance.now() + 500;
-  }
-  function drawGlitch(ctx) {
-    if (performance.now() >= glitchUntil) {
-      glitchUntil = 0;
-      resetSimulation();
-      return;
-    }
-    const im = ctx.getImageData(0, 0, c.width, c.height);
-    const d = im.data;
-    const stride = c.width * 4;
-    const rows = Math.floor(Math.random() * 5) + 2;
-    for (let r = 0; r < rows; r++) {
-      const row = Math.floor(Math.random() * (c.height - 1)) + 1;
-      const swap = new Uint8ClampedArray(stride);
-      for (let i = 0; i < stride; i++) swap[i] = d[(row - 1) * stride + i];
-      for (let i = 0; i < stride; i++) d[(row - 1) * stride + i] = d[row * stride + i];
-      for (let i = 0; i < stride; i++) d[row * stride + i] = swap[i];
-    }
-    ctx.putImageData(im, 0, 0);
-  }
-  function resetSimulation() {
-    ship.x = 0; ship.y = 0; ship.vx = 0; ship.vy = 0;
-    ship.prevX = 0; ship.prevY = 0;
-    ship.angle = 0; ship.prevAngle = 0; ship.targetAngle = 0;
-    ship.throttle = 0; ship.trail = [];
-    ship.phase = 'TLI'; ship.landed = false; ship.crashed = false;
-    ship.pidIntegral = 0; ship.pidPrevError = 0;
-    exhaustParticles.length = 0;
-    const sun = CELESTIAL_REGISTRY[0];
-    const p0 = CELESTIAL_REGISTRY[1];
-    if (p0) {
-      ship.x = p0.x + p0.radius + 80;
-      ship.y = p0.y;
-    }
-  }
-
-  // ============ COLLISION (crash check) ============
-  function checkCollision() {
-    if (ship.landed || ship.crashed) return;
-    for (const b of CELESTIAL_REGISTRY) {
-      const dx = ship.x - b.x, dy = ship.y - b.y;
-      const d = Math.sqrt(dx*dx + dy*dy);
-      if (d < b.radius) {
-        const surfaceAngle = Math.atan2(dx, dy);
-        const approach = Math.abs(Math.atan2(Math.sin(ship.angle - surfaceAngle), Math.cos(ship.angle - surfaceAngle)));
-        const v = Math.sqrt(ship.vx*ship.vx + ship.vy*ship.vy);
-        if (v > 80 || approach > 0.4) triggerCrash();
+      ctx.fillStyle = "#888888";
+      ctx.fillText(`STATE: ${ship.state}`, offsetX + pad, offsetY + pad + 180);
+      if (ship.target) {
+        ctx.fillText(`TARGET: ${ship.target.id}`, offsetX + pad, offsetY + pad + 200);
       }
     }
-  }
 
-  // ============ HUD ============
-  function getGForce() {
-    const g = gravityOnShip();
-    let ax = g.ax, ay = g.ay;
-    if (ship.throttle > 0) {
-      ax += Math.cos(ship.angle) * ONE_G * ship.throttle;
-      ay += Math.sin(ship.angle) * ONE_G * ship.throttle;
-    }
-    return Math.sqrt(ax*ax + ay*ay) / (ONE_G * 0.1);
-  }
-  function drawHUD(ctx) {
-    const g = getGForce();
-    const shake = g > 2 ? (Math.random() - 0.5) * 4 : 0;
-    ctx.save();
-    ctx.translate(shake, shake);
-
-    ctx.strokeStyle = '#444444';
-    ctx.fillStyle = '#000000';
-    ctx.lineWidth = 1;
-
-    const cx = DESIGN_W - 120, cy = 120, r = 50;
-    for (let lat = -1; lat <= 1; lat += 0.5) {
-      ctx.beginPath();
-      for (let i = 0; i <= 32; i++) {
-        const lon = (i/32) * Math.PI * 2;
-        const x = cx + r * Math.cos(lat * Math.PI/2) * Math.cos(lon);
-        const y = cy + r * Math.sin(lon);
-        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    function drawTrail() {
+      ctx.save();
+      for (let i = 0; i < ship.trail.length; i++) {
+        const t = ship.trail[i];
+        const alpha = i / ship.trail.length;
+        const p = toScreen(t.x, t.y);
+        ctx.fillStyle = `rgba(255,255,255,${alpha * 0.4})`;
+        ctx.fillRect(p.x, p.y, 2, 2);
       }
-      ctx.stroke();
-    }
-    for (let i = 0; i < 8; i++) {
-      const lon = (i/8) * Math.PI * 2;
-      ctx.beginPath();
-      ctx.moveTo(cx + r * Math.cos(lon), cy + r * Math.sin(lon));
-      ctx.lineTo(cx - r * Math.cos(lon), cy - r * Math.sin(lon));
-      ctx.stroke();
-    }
-    const nbx = cx + Math.sin(ship.angle) * r * 0.8;
-    const nby = cy - Math.cos(ship.angle) * r * 0.8;
-    ctx.fillStyle = '#FFFFFF';
-    ctx.beginPath();
-    ctx.arc(nbx, nby, 4, 0, Math.PI*2);
-    ctx.fill();
-    ctx.strokeStyle = '#FFFFFF';
-    ctx.stroke();
-
-    const vv = 5;
-    const gx = ship.x + ship.vx * vv, gy = ship.y + ship.vy * vv;
-    const hudCx = DESIGN_W - 120, hudCy = 120;
-    ctx.setLineDash([4, 4]);
-    ctx.strokeStyle = '#888888';
-    ctx.beginPath();
-    const mag = Math.min(35, Math.sqrt(ship.vx*ship.vx + ship.vy*ship.vy) * 0.15);
-    const vang = Math.atan2(ship.vy, ship.vx);
-    ctx.moveTo(hudCx, hudCy);
-    ctx.lineTo(hudCx + Math.cos(vang)*mag, hudCy + Math.sin(vang)*mag);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    const gBarX = 40, gBarY = 200, gBarH = 120;
-    ctx.strokeStyle = '#444444';
-    ctx.strokeRect(gBarX - 2, gBarY - 2, 24, gBarH + 4);
-    const gNorm = Math.min(3, Math.max(0, g));
-    ctx.fillStyle = g > 2 ? '#FFFFFF' : '#888888';
-    ctx.fillRect(gBarX, gBarY + gBarH - (gNorm/3)*gBarH, 20, (gNorm/3)*gBarH);
-    ctx.strokeStyle = '#FFFFFF';
-    ctx.strokeRect(gBarX, gBarY + gBarH - (gNorm/3)*gBarH, 20, (gNorm/3)*gBarH);
-
-    ctx.fillStyle = '#888888';
-    ctx.font = '12px monospace';
-    ctx.fillText('PHASE: ' + ship.phase, 20, 380);
-    ctx.fillText('ALT: ' + (getDistanceToTarget() - (getTargetBody()?.radius || 0)).toFixed(0), 20, 400);
-    ctx.fillText('G: ' + g.toFixed(2), 20, 420);
-    ctx.restore();
-  }
-
-  // ============ RENDER ============
-  function getZoom() {
-    const t = getTargetBody();
-    if (!t) return 0.3;
-    const d = Math.sqrt((t.x-ship.x)**2 + (t.y-ship.y)**2);
-    return Math.max(0.2, Math.min(1.5, 800 / (d + 1)));
-  }
-  function draw() {
-    if (glitchUntil > 0) {
-      drawGlitch(ctx);
-      requestAnimationFrame(draw);
-      return;
-    }
-    const zoom = getZoom();
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(0, 0, c.width, c.height);
-    ctx.setTransform(scale, 0, 0, scale, 0, 0);
-    ctx.save();
-    ctx.translate(DESIGN_W/2, DESIGN_H/2);
-    ctx.scale(zoom, zoom);
-    ctx.translate(-ship.x, -ship.y);
-
-    for (let i = 0; i < ship.trail.length; i++) {
-      const p = ship.trail[i];
-      const alpha = 1 - (p.t / TRAIL_LENGTH);
-      ctx.fillStyle = `rgba(255,255,255,${alpha * 0.6})`;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, 2, 0, Math.PI*2);
-      ctx.fill();
+      ctx.restore();
     }
 
-    for (const b of CELESTIAL_REGISTRY) b.draw(ctx, zoom);
-    for (const p of exhaustParticles) {
-      ctx.fillStyle = `rgba(255,255,255,${p.life * 0.6})`;
-      const dither = (p.x + p.y) % 4 < 2 ? 1 : 0;
-      ctx.fillRect(p.x - 1 + dither, p.y - 1, 2, 2);
+    function draw() {
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.strokeStyle = "#444444";
+      ctx.strokeRect(offsetX, offsetY, WORLD_W * scale, WORLD_H * scale);
+
+      drawTrail();
+
+      for (const body of REGISTRY) {
+        drawPlanet(body);
+      }
+
+      for (const p of particles) {
+        const screen = toScreen(p.x, p.y);
+        ctx.fillStyle = `rgba(255,255,255,${p.life * 0.5})`;
+        ctx.fillRect(screen.x, screen.y, 2, 2);
+      }
+
+      const futureX = ship.vel.x * 5;
+      const futureY = ship.vel.y * 5;
+      const ghost = toScreen(futureX, futureY);
+      drawShip(ghost.x, ghost.y, ship.angle, "#444444");
+
+      const shipScreen = toScreen(0, 0);
+      drawShip(shipScreen.x, shipScreen.y, ship.angle, "#ffffff");
+
+      drawHUD();
+
+      if (glitchTimer > 0) {
+        const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        for (let y = 0; y < img.height; y += 4) {
+          const shift = (Math.random() - 0.5) * 12;
+          for (let x = 0; x < img.width; x++) {
+            const src = (y * img.width + x) * 4;
+            const nx = Math.max(0, Math.min(img.width - 1, x + shift));
+            const dst = (y * img.width + nx) * 4;
+            img.data[dst] = img.data[src];
+            img.data[dst + 1] = img.data[src + 1];
+            img.data[dst + 2] = img.data[src + 2];
+            img.data[dst + 3] = img.data[src + 3];
+          }
+        }
+        ctx.putImageData(img, 0, 0);
+      }
     }
 
-    const gx = ship.x + ship.vx * 5, gy = ship.y + ship.vy * 5;
-    ctx.strokeStyle = '#444444';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([3, 3]);
-    ctx.beginPath();
-    const gs = 10;
-    ctx.moveTo(gx + Math.cos(ship.angle)*gs, gy + Math.sin(ship.angle)*gs);
-    ctx.lineTo(gx - Math.cos(ship.angle)*gs - Math.sin(ship.angle)*6, gy - Math.sin(ship.angle)*gs + Math.cos(ship.angle)*6);
-    ctx.lineTo(gx - Math.cos(ship.angle)*gs + Math.sin(ship.angle)*6, gy - Math.sin(ship.angle)*gs - Math.cos(ship.angle)*6);
-    ctx.closePath();
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    ctx.strokeStyle = '#FFFFFF';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    const s = 15;
-    ctx.moveTo(ship.x + Math.cos(ship.angle)*s, ship.y + Math.sin(ship.angle)*s);
-    ctx.lineTo(ship.x - Math.cos(ship.angle)*s - Math.sin(ship.angle)*8, ship.y - Math.sin(ship.angle)*s + Math.cos(ship.angle)*8);
-    ctx.lineTo(ship.x - Math.cos(ship.angle)*s + Math.sin(ship.angle)*8, ship.y - Math.sin(ship.angle)*s - Math.cos(ship.angle)*8);
-    ctx.closePath();
-    ctx.stroke();
-
-    ctx.restore();
-    ctx.setTransform(scale, 0, 0, scale, 0, 0);
-    drawHUD(ctx);
-    requestAnimationFrame(draw);
-  }
-
-  // ============ GAMELOOP ============
-  let lastT = 0;
-  function loop(now) {
-    const dt = Math.min(0.1, (now - lastT) / 1000);
-    lastT = now;
-    if (glitchUntil > 0) { requestAnimationFrame(loop); return; }
-    stepBodies(dt);
-    updateFSM();
-    stepPhysics(dt);
-    applyFloatingOrigin();
-    pushTrail();
-    spawnExhaust();
-    updateParticles(dt);
-    updateAudio();
-    checkCollision();
-    requestAnimationFrame(loop);
-  }
-
-  // ============ MOUSE: Click to set target ============
-  function hitTestBody(designX, designY) {
-    let best = null, bestD = Infinity;
-    for (const b of CELESTIAL_REGISTRY) {
-      const dx = designX - b.x, dy = designY - b.y;
-      const d = Math.sqrt(dx*dx + dy*dy);
-      if (d < b.radius + 20 && d < bestD) { bestD = d; best = b; }
+    function triggerGlitch() {
+      if (glitchTimer > 0) return;
+      glitchTimer = 0.5;
     }
-    return best;
-  }
-  function onMouseDown(e) {
-    const rect = c.getBoundingClientRect();
-    const px = e.clientX - rect.left, py = e.clientY - rect.top;
-    const designX = (px / scale), designY = (py / scale);
-    const zoom = getZoom();
-    const wx = (designX - DESIGN_W/2) / zoom + ship.x;
-    const wy = (designY - DESIGN_H/2) / zoom + ship.y;
-    const body = hitTestBody(wx, wy);
-    if (body) window.ACTIVE_TARGET_ID = body.id;
-  }
 
-  // ============ INIT ============
-  function init() {
-    c = document.getElementById('c');
-    ctx = c.getContext('2d');
-    letterbox();
-    window.addEventListener('resize', letterbox);
-    c.addEventListener('mousedown', onMouseDown);
+    function resetSim() {
+      ship.pos = { x: 0, y: 0 };
+      ship.vel = { x: 0, y: 0 };
+      ship.angle = 0;
+      ship.angVel = 0;
+      ship.state = "TLI";
+      ship.landed = false;
+      ship.trail = [];
+      particles.length = 0;
+    }
 
-    const sun = new CelestialBody('sun', 0, 0, 0, 0, 120, 100);
-    const p1 = new CelestialBody('planet1', 2000, 0, 0, 24, 80, 1);
-    const p2 = new CelestialBody('planet2', -2500, 1500, -18, 12, 60, 0.8);
-    window.ACTIVE_TARGET_ID = 'planet1';
+    let audioCtx = null;
+    let engineOsc = null;
+    let engineFilter = null;
+    let noiseSource = null;
+    let noiseGain = null;
 
-    ship.x = p1.x + p1.radius + 100;
-    ship.y = p1.y;
-    ship.prevX = ship.x;
-    ship.prevY = ship.y;
+    function setupAudio() {
+      if (audioCtx) return;
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      engineOsc = audioCtx.createOscillator();
+      engineOsc.type = "sawtooth";
+      engineFilter = audioCtx.createBiquadFilter();
+      engineFilter.type = "lowpass";
+      engineFilter.frequency.value = 220;
+      const engineGain = audioCtx.createGain();
+      engineGain.gain.value = 0.08;
+      engineOsc.connect(engineFilter).connect(engineGain).connect(audioCtx.destination);
+      engineOsc.start();
 
-    initAudio();
-    document.body.addEventListener('click', () => { if (audioCtx?.state === 'suspended') audioCtx.resume(); });
-    draw();
-    requestAnimationFrame(loop);
-  }
-  init();
-})();
+      const bufferSize = 2 * audioCtx.sampleRate;
+      const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const data = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
+      noiseSource = audioCtx.createBufferSource();
+      noiseSource.buffer = noiseBuffer;
+      noiseSource.loop = true;
+      noiseGain = audioCtx.createGain();
+      noiseGain.gain.value = 0.03;
+      noiseSource.connect(noiseGain).connect(audioCtx.destination);
+      noiseSource.start();
+    }
+
+    function updateAudio(thrust, voidLevel) {
+      if (!audioCtx) return;
+      engineFilter.frequency.value = 140 + thrust * 480;
+      engineOsc.frequency.value = 80 + thrust * 120;
+      noiseGain.gain.value = 0.01 + voidLevel * 0.08;
+    }
+
+    function playPing() {
+      if (!audioCtx) return;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = 520;
+      gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.6);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.6);
+    }
+
+    function tick(now) {
+      const dt = (now - lastTime) / 1000;
+      lastTime = now;
+      accumulator += dt;
+      const maxStep = 0.06;
+      const step = Math.min(accumulator, maxStep);
+      const subDt = step / SUBSTEPS;
+      for (let i = 0; i < SUBSTEPS; i++) {
+        physicsStep(subDt);
+      }
+      accumulator -= step;
+
+      const thrustLevel = ship.landed ? 0 : Math.min(1, Math.hypot(ship.acc.x, ship.acc.y));
+      const { distance } = nearestBody();
+      const voidLevel = clamp(distance / 400, 0, 1);
+      updateAudio(thrustLevel, voidLevel);
+
+      if (glitchTimer > 0) {
+        glitchTimer -= dt;
+        if (glitchTimer <= 0) {
+          resetSim();
+          glitchTimer = 0;
+        }
+      }
+
+      draw();
+      requestAnimationFrame(tick);
+    }
+
+    canvas.addEventListener("click", (e) => {
+      setupAudio();
+      if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+      const pos = fromScreen(e.clientX, e.clientY);
+      let hit = null;
+      for (const body of REGISTRY) {
+        const dx = pos.x - body.pos.x;
+        const dy = pos.y - body.pos.y;
+        if (Math.hypot(dx, dy) < body.radius + 6) {
+          hit = body;
+          break;
+        }
+      }
+      if (hit) {
+        ship.target = hit;
+        ship.state = "TLI";
+        ship.landed = false;
+      }
+    });
+
+    requestAnimationFrame(tick);
   </script>
 </body>
 </html>

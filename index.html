@@ -10,9 +10,9 @@
         body {
             margin: 0;
             overflow: hidden;
-            background-color: #FFFFFF;
+            background-color: #000000;
             font-family: 'Courier Prime', 'Courier New', monospace;
-            color: #000000;
+            color: #FFFFFF;
         }
 
         canvas {
@@ -34,7 +34,7 @@
             justify-content: space-between;
             margin-bottom: 8px;
             font-size: 14px;
-            border-bottom: 1px solid #CCCCCC;
+            border-bottom: 1px solid #333333;
             padding-bottom: 2px;
         }
 
@@ -99,9 +99,9 @@
         const RENDER_DT = 1 / 60;
         
         // Colors
-        const COL_BG = '#FFFFFF';
-        const COL_PRIMARY = '#000000';
-        const COL_SECONDARY = '#CCCCCC';
+        const COL_BG = '#000000';
+        const COL_PRIMARY = '#FFFFFF';
+        const COL_SECONDARY = '#444444';
         
         // Ship Specs
         const SHIP_THRUST = 300; // Pixels/s^2 acceleration
@@ -506,8 +506,8 @@
             bodies.push(p2);
 
             // Ship
-            ship = new Ship(-800, -800);
-            ship.vel = new Vec2(50, 0); // Initial drift
+            ship = new Ship(500, 100);
+            ship.vel = new Vec2(0, 40); // Initial drift
             bodies.push(ship);
             
             targetBody = null;

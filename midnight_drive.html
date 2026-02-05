@@ -116,8 +116,9 @@
         S/↓ - Brake<br>
         A/← - Turn Left<br>
         D/→ - Turn Right<br>
-        SPACE - Drift<br>
-        H - High-Beams (drains battery)
+        SPACE - Drift (recharges battery)<br>
+        H - High-Beams (drains battery)<br>
+        R - Restart (when battery dead)
     </div>
     
     <div id="message"></div>
@@ -206,7 +207,7 @@
         const keys = {
             w: false, s: false, a: false, d: false,
             ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false,
-            space: false, h: false
+            space: false, h: false, r: false
         };
         
         // ===========================
@@ -215,6 +216,25 @@
         const scene = new THREE.Scene();
         scene.fog = new THREE.Fog(0x000000, 10, 100);
         scene.background = new THREE.Color(0x000000);
+        
+        // Add starfield
+        const starGeometry = new THREE.BufferGeometry();
+        const starVertices = [];
+        for (let i = 0; i < 1000; i++) {
+            const x = (Math.random() - 0.5) * 2000;
+            const y = Math.random() * 500 + 100;
+            const z = (Math.random() - 0.5) * 2000;
+            starVertices.push(x, y, z);
+        }
+        starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+        const starMaterial = new THREE.PointsMaterial({ 
+            color: 0xffffff, 
+            size: 2,
+            transparent: true,
+            opacity: 0.8
+        });
+        const stars = new THREE.Points(starGeometry, starMaterial);
+        scene.add(stars);
         
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -277,6 +297,39 @@
                 this.mesh.userData.segment = this;
                 
                 scene.add(this.mesh);
+                
+                // Add road markers
+                this.markers = [];
+                this.createRoadMarkers();
+            }
+            
+            createRoadMarkers() {
+                const markerGeometry = new THREE.BoxGeometry(0.3, 0.8, 1);
+                const markerMaterial = new THREE.MeshStandardMaterial({
+                    color: this.explored ? 0xff6600 : 0x000000,
+                    emissive: this.explored ? 0xff3300 : 0x000000,
+                    emissiveIntensity: 0.3
+                });
+                
+                // Left side markers
+                for (let i = 0; i < 2; i++) {
+                    const marker = new THREE.Mesh(markerGeometry, markerMaterial.clone());
+                    const z = this.position.z + (i - 0.5) * SEGMENT_LENGTH / 2;
+                    marker.position.set(this.position.x - SEGMENT_WIDTH / 2 - 1, 0.4, z);
+                    marker.castShadow = true;
+                    this.markers.push(marker);
+                    scene.add(marker);
+                }
+                
+                // Right side markers
+                for (let i = 0; i < 2; i++) {
+                    const marker = new THREE.Mesh(markerGeometry, markerMaterial.clone());
+                    const z = this.position.z + (i - 0.5) * SEGMENT_LENGTH / 2;
+                    marker.position.set(this.position.x + SEGMENT_WIDTH / 2 + 1, 0.4, z);
+                    marker.castShadow = true;
+                    this.markers.push(marker);
+                    scene.add(marker);
+                }
             }
             
             reveal() {
@@ -288,6 +341,14 @@
                     this.mesh.material.color.setHex(0x333333);
                     this.mesh.material.emissive.setHex(0x111111);
                     this.mesh.material.needsUpdate = true;
+                    
+                    // Reveal markers
+                    this.markers.forEach(marker => {
+                        marker.material.color.setHex(0xff6600);
+                        marker.material.emissive.setHex(0xff3300);
+                        marker.material.emissiveIntensity = 0.5;
+                        marker.material.needsUpdate = true;
+                    });
                 }
             }
             
@@ -297,6 +358,16 @@
                     this.mesh.geometry.dispose();
                     this.mesh.material.dispose();
                     this.mesh = null;
+                }
+                
+                // Clean up markers
+                if (this.markers) {
+                    this.markers.forEach(marker => {
+                        scene.remove(marker);
+                        marker.geometry.dispose();
+                        marker.material.dispose();
+                    });
+                    this.markers = [];
                 }
             }
         }
@@ -411,7 +482,7 @@
         scene.add(ambientLight);
         
         // Car headlights (spotlights)
-        const leftSpotlight = new THREE.SpotLight(0xffffdd, 0, 50, Math.PI / 6, 0.5, 2);
+        const leftSpotlight = new THREE.SpotLight(0xffffdd, 1.2, 50, Math.PI / 6, 0.5, 2);
         leftSpotlight.position.set(-0.7, 0.6, 2.5);
         leftSpotlight.castShadow = true;
         leftSpotlight.shadow.mapSize.width = 1024;
@@ -420,7 +491,7 @@
         car.add(leftSpotlight.target);
         leftSpotlight.target.position.set(-0.7, 0, 10);
         
-        const rightSpotlight = new THREE.SpotLight(0xffffdd, 0, 50, Math.PI / 6, 0.5, 2);
+        const rightSpotlight = new THREE.SpotLight(0xffffdd, 1.2, 50, Math.PI / 6, 0.5, 2);
         rightSpotlight.position.set(0.7, 0.6, 2.5);
         rightSpotlight.castShadow = true;
         rightSpotlight.shadow.mapSize.width = 1024;
@@ -449,6 +520,20 @@
         };
         
         // ===========================
+        // RESTART FUNCTION
+        // ===========================
+        function restartGame() {
+            gameState.battery = 100;
+            gameState.batteryDead = false;
+            gameState.distance = 0;
+            gameState.speed = 0;
+            car.position.set(0, 0.5, 0);
+            car.rotation.set(0, 0, 0);
+            carPhysics.velocity.set(0, 0, 0);
+            showMessage("RESTARTED");
+        }
+        
+        // ===========================
         // INPUT HANDLING
         // ===========================
         document.addEventListener('keydown', (e) => {
@@ -459,6 +544,11 @@
             if (e.key.toLowerCase() in keys) {
                 keys[e.key.toLowerCase()] = true;
                 e.preventDefault();
+            }
+            
+            // Handle restart
+            if (e.key.toLowerCase() === 'r' && gameState.batteryDead) {
+                restartGame();
             }
         });
         
@@ -492,15 +582,22 @@
                 carPhysics.drift += 0.05;
                 driftCharge += deltaTime * 0.02;
                 
+                // Visual feedback - tilt car
+                const tiltAmount = (left ? 0.15 : (right ? -0.15 : 0));
+                car.rotation.z = THREE.MathUtils.lerp(car.rotation.z, tiltAmount, 0.1);
+                
                 // Kinetic recharge from drifting
                 if (driftCharge > 1) {
-                    gameState.battery = Math.min(100, gameState.battery + 0.5);
+                    gameState.battery = Math.min(100, gameState.battery + 1);
                     driftCharge = 0;
                 }
             } else {
                 gameState.isDrifting = false;
                 carPhysics.drift *= carPhysics.driftDecay;
                 driftCharge = 0;
+                
+                // Reset car tilt
+                car.rotation.z = THREE.MathUtils.lerp(car.rotation.z, 0, 0.15);
             }
             
             // Acceleration
@@ -538,7 +635,7 @@
                 
                 // Kinetic recharge from high-speed turns
                 if (Math.abs(turnAmount) > 0.001 && speed > 0.6) {
-                    gameState.battery = Math.min(100, gameState.battery + Math.abs(turnAmount) * 5);
+                    gameState.battery = Math.min(100, gameState.battery + Math.abs(turnAmount) * 10);
                 }
             }
             
@@ -572,10 +669,10 @@
             } else if (keys.h && gameState.battery > 0) {
                 // High beams
                 gameState.highBeamsOn = true;
-                intensity = 2.5;
-                distance = 80;
+                intensity = 3.0;
+                distance = 90;
                 angle = Math.PI / 4;
-                gameState.battery = Math.max(0, gameState.battery - 0.1);
+                gameState.battery = Math.max(0, gameState.battery - 0.08);
                 
                 if (gameState.battery <= 0) {
                     gameState.batteryDead = true;
@@ -611,6 +708,8 @@
             });
         }
         
+        let lowBatteryWarningShown = false;
+        
         function updateHUD() {
             document.getElementById('battery-percent').textContent = Math.max(0, Math.floor(gameState.battery));
             document.getElementById('distance').textContent = Math.floor(gameState.distance);
@@ -622,10 +721,15 @@
             
             if (gameState.battery < 20) {
                 batteryFill.className = 'low';
+                if (!lowBatteryWarningShown && gameState.battery > 0) {
+                    showMessage("LOW BATTERY!");
+                    lowBatteryWarningShown = true;
+                }
             } else if (gameState.battery < 50) {
                 batteryFill.className = 'medium';
             } else {
                 batteryFill.className = '';
+                lowBatteryWarningShown = false;
             }
         }
         

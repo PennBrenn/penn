@@ -308,10 +308,38 @@
             background: #00ff00;
             border-radius: 50%;
         }
+
+        /* Screen shake container */
+        #game-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .screen-shake {
+            animation: screenShake 0.3s ease-out;
+        }
+
+        @keyframes screenShake {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            10% { transform: translate(-10px, -5px) rotate(-1deg); }
+            20% { transform: translate(10px, 5px) rotate(1deg); }
+            30% { transform: translate(-8px, 3px) rotate(-0.5deg); }
+            40% { transform: translate(8px, -3px) rotate(0.5deg); }
+            50% { transform: translate(-5px, 2px) rotate(-0.3deg); }
+            60% { transform: translate(5px, -2px) rotate(0.3deg); }
+            70% { transform: translate(-3px, 1px) rotate(-0.1deg); }
+            80% { transform: translate(3px, -1px) rotate(0.1deg); }
+            90% { transform: translate(-1px, 0px) rotate(0deg); }
+        }
     </style>
 </head>
 <body>
-    <div id="canvas-container"></div>
+    <div id="game-container">
+        <div id="canvas-container"></div>
+    </div>
     
     <!-- HUD Display -->
     <div id="hud">
@@ -336,7 +364,7 @@
     <!-- Controls Help -->
     <div id="controls-help">
         <h3>CONTROLS</h3>
-        <div><span>W/S</span> - Pitch Down/Up</div>
+        <div><span>W/S</span> - Pitch Up/Down (Inverted)</div>
         <div><span>A/D</span> - Roll Left/Right</div>
         <div><span>Q/E</span> - Yaw Left/Right</div>
         <div><span>SHIFT</span> - Increase Throttle</div>
@@ -375,19 +403,28 @@
         <div id="final-score">Final Score: 0</div>
     </div>
 
-    <!-- Three.js from CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Three.js and Post-Processing from CDN -->
+    <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/FilmPass.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/shaders/FilmShader.js"></script>
 
     <script>
         /**
          * =====================================================
-         * THREE.JS FLIGHT COMBAT SIMULATOR
+         * THREE.JS FLIGHT COMBAT SIMULATOR - ENHANCED VISUALS
          * =====================================================
          * Features:
-         * - Infinite procedural chunk-based terrain
-         * - Combat with guns and enemy AI drones
-         * - Health system with explosions
-         * - Collision detection
+         * - Post-processing (Bloom, Film grain)
+         * - Dynamic shadows
+         * - Exhaust particle system
+         * - Atmospheric effects with sun
+         * - Muzzle flash and screen shake
          * =====================================================
          */
 
@@ -396,11 +433,11 @@
         // =====================================================
         const CONFIG = {
             // Terrain settings
-            terrainSeed: 42,            // Seed for procedural generation
-            chunkSize: 500,             // Size of each terrain chunk
-            chunkSegments: 64,          // Resolution per chunk
-            terrainHeight: 250,         // Maximum terrain height
-            viewDistance: 3,            // Chunks visible in each direction
+            terrainSeed: 42,
+            chunkSize: 500,
+            chunkSegments: 64,
+            terrainHeight: 250,
+            viewDistance: 3,
             
             // Flight physics
             maxSpeed: 500,
@@ -427,7 +464,7 @@
             // Combat settings
             bulletSpeed: 800,
             bulletLifetime: 3,
-            fireRate: 0.1,              // Seconds between shots
+            fireRate: 0.1,
             bulletDamage: 25,
 
             // Player settings
@@ -436,15 +473,28 @@
             // Enemy settings
             enemyMaxHP: 50,
             enemySpeed: 150,
-            enemySpawnInterval: 5,      // Seconds between spawns
+            enemySpawnInterval: 5,
             maxEnemies: 8,
-            enemyFireRate: 2,           // Seconds between enemy shots
+            enemyFireRate: 2,
             enemyDamage: 10,
             enemySpawnDistance: 800,
 
             // Explosion settings
             explosionParticles: 50,
-            explosionDuration: 1.5
+            explosionDuration: 1.5,
+
+            // Visual settings
+            shadowMapSize: 1024,
+            bloomStrength: 1.5,
+            bloomRadius: 0.4,
+            bloomThreshold: 0.6,
+            filmNoiseIntensity: 0.35,
+            filmScanlineIntensity: 0.15,
+
+            // Exhaust settings
+            exhaustParticleCount: 100,
+            exhaustParticleLifetime: 1.5,
+            exhaustEmissionRate: 60
         };
 
         // =====================================================
@@ -523,23 +573,38 @@
         // =====================================================
         // GLOBAL VARIABLES
         // =====================================================
-        let scene, camera, renderer;
+        let scene, camera, renderer, composer;
         let plane, playerHP;
         let noise;
         let clock;
         let crashed = false;
         let score = 0;
 
+        // Post-processing passes
+        let bloomPass, filmPass;
+
+        // Lighting
+        let sunLight, sunMesh;
+        const sunPosition = new THREE.Vector3(1000, 800, -500);
+
         // Chunk management
-        const chunks = new Map();        // Map of "x,z" -> chunk mesh
+        const chunks = new Map();
         let currentChunkX = 0;
         let currentChunkZ = 0;
 
         // Combat arrays
-        const bullets = [];              // Player bullets
-        const enemyBullets = [];         // Enemy bullets
-        const enemies = [];              // Enemy planes
-        const explosions = [];           // Active explosions
+        const bullets = [];
+        const enemyBullets = [];
+        const enemies = [];
+        const explosions = [];
+
+        // Exhaust particle system
+        let exhaustParticles = [];
+        let exhaustEmissionTimer = 0;
+
+        // Muzzle flash
+        let muzzleFlashLeft, muzzleFlashRight;
+        let muzzleFlashTimer = 0;
 
         // Timers
         let lastFireTime = 0;
@@ -566,7 +631,7 @@
             r: false
         };
 
-        // Radar blips (DOM elements)
+        // Radar blips
         const radarBlips = [];
 
         // =====================================================
@@ -584,14 +649,24 @@
                 10000
             );
 
+            // Renderer with shadow support
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.0;
             document.getElementById('canvas-container').appendChild(renderer.domElement);
 
             clock = new THREE.Clock();
 
-            createSkybox();
+            // Setup post-processing
+            setupPostProcessing();
+
+            // Create scene elements
+            createSkyDome();
+            createSun();
             createLighting();
             createPlane();
             createWater();
@@ -605,38 +680,95 @@
         }
 
         // =====================================================
-        // SKYBOX
+        // POST-PROCESSING SETUP
         // =====================================================
-        function createSkybox() {
-            const skyGeometry = new THREE.SphereGeometry(5000, 32, 32);
+        function setupPostProcessing() {
+            composer = new THREE.EffectComposer(renderer);
+
+            // Render pass
+            const renderPass = new THREE.RenderPass(scene, camera);
+            composer.addPass(renderPass);
+
+            // Bloom pass for glowing effects
+            bloomPass = new THREE.UnrealBloomPass(
+                new THREE.Vector2(window.innerWidth, window.innerHeight),
+                CONFIG.bloomStrength,
+                CONFIG.bloomRadius,
+                CONFIG.bloomThreshold
+            );
+            composer.addPass(bloomPass);
+
+            // Film pass for military camera feel
+            filmPass = new THREE.FilmPass(
+                CONFIG.filmNoiseIntensity,    // Noise intensity
+                CONFIG.filmScanlineIntensity, // Scanline intensity
+                648,                          // Scanline count
+                false                         // Grayscale
+            );
+            composer.addPass(filmPass);
+        }
+
+        // =====================================================
+        // SKY DOME - Dawn/Dusk Gradient
+        // =====================================================
+        function createSkyDome() {
+            const skyGeometry = new THREE.SphereGeometry(4500, 64, 64);
             const skyColors = [];
             const positions = skyGeometry.attributes.position;
             
             for (let i = 0; i < positions.count; i++) {
                 const y = positions.getY(i);
-                const normalizedY = (y + 5000) / 10000;
+                const normalizedY = (y + 4500) / 9000;
                 
                 let color;
-                if (normalizedY < 0.5) {
-                    color = new THREE.Color(0x1a1a2e);
+                if (normalizedY < 0.45) {
+                    // Below horizon - dark ground reflection
+                    color = new THREE.Color(0x0a0a15);
+                } else if (normalizedY < 0.5) {
+                    // Near horizon - purple/pink dawn
+                    const t = (normalizedY - 0.45) / 0.05;
+                    color = new THREE.Color().lerpColors(
+                        new THREE.Color(0x0a0a15),
+                        new THREE.Color(0x4a2040),
+                        t
+                    );
                 } else if (normalizedY < 0.55) {
+                    // Horizon band - orange/pink
                     const t = (normalizedY - 0.5) / 0.05;
                     color = new THREE.Color().lerpColors(
-                        new THREE.Color(0x1a1a2e),
-                        new THREE.Color(0xff7b54),
+                        new THREE.Color(0x4a2040),
+                        new THREE.Color(0xff6b35),
+                        t
+                    );
+                } else if (normalizedY < 0.6) {
+                    // Lower sky - orange to yellow
+                    const t = (normalizedY - 0.55) / 0.05;
+                    color = new THREE.Color().lerpColors(
+                        new THREE.Color(0xff6b35),
+                        new THREE.Color(0xffb347),
                         t
                     );
                 } else if (normalizedY < 0.7) {
-                    const t = (normalizedY - 0.55) / 0.15;
+                    // Mid sky - yellow to light blue
+                    const t = (normalizedY - 0.6) / 0.1;
                     color = new THREE.Color().lerpColors(
-                        new THREE.Color(0xff7b54),
-                        new THREE.Color(0x4a90d9),
+                        new THREE.Color(0xffb347),
+                        new THREE.Color(0x87ceeb),
+                        t
+                    );
+                } else if (normalizedY < 0.85) {
+                    // Upper sky - light blue to darker blue
+                    const t = (normalizedY - 0.7) / 0.15;
+                    color = new THREE.Color().lerpColors(
+                        new THREE.Color(0x87ceeb),
+                        new THREE.Color(0x1e3a5f),
                         t
                     );
                 } else {
-                    const t = (normalizedY - 0.7) / 0.3;
+                    // Top - dark blue/purple
+                    const t = (normalizedY - 0.85) / 0.15;
                     color = new THREE.Color().lerpColors(
-                        new THREE.Color(0x4a90d9),
+                        new THREE.Color(0x1e3a5f),
                         new THREE.Color(0x0a0a20),
                         t
                     );
@@ -656,31 +788,100 @@
             sky.name = 'sky';
             scene.add(sky);
 
-            scene.fog = new THREE.Fog(0x87CEEB, 500, 2500);
+            // Atmospheric fog matching horizon colors
+            scene.fog = new THREE.FogExp2(0xff9966, 0.0003);
         }
 
         // =====================================================
-        // LIGHTING
+        // SUN - Glowing sphere with high bloom
+        // =====================================================
+        function createSun() {
+            // Sun glow sphere (will bloom heavily)
+            const sunGeometry = new THREE.SphereGeometry(80, 32, 32);
+            const sunMaterial = new THREE.MeshBasicMaterial({
+                color: 0xffffee,
+                transparent: true,
+                opacity: 1
+            });
+            sunMesh = new THREE.Mesh(sunGeometry, sunMaterial);
+            sunMesh.position.copy(sunPosition);
+            scene.add(sunMesh);
+
+            // Sun corona/glow layers
+            for (let i = 1; i <= 3; i++) {
+                const coronaGeometry = new THREE.SphereGeometry(80 + i * 30, 16, 16);
+                const coronaMaterial = new THREE.MeshBasicMaterial({
+                    color: new THREE.Color(0xffdd88).lerp(new THREE.Color(0xff6600), i * 0.2),
+                    transparent: true,
+                    opacity: 0.3 - i * 0.08,
+                    side: THREE.BackSide
+                });
+                const corona = new THREE.Mesh(coronaGeometry, coronaMaterial);
+                corona.position.copy(sunPosition);
+                scene.add(corona);
+            }
+
+            // Light rays (simple billboards)
+            const rayCount = 12;
+            for (let i = 0; i < rayCount; i++) {
+                const angle = (i / rayCount) * Math.PI * 2;
+                const rayGeometry = new THREE.PlaneGeometry(20, 400);
+                const rayMaterial = new THREE.MeshBasicMaterial({
+                    color: 0xffeeaa,
+                    transparent: true,
+                    opacity: 0.1,
+                    side: THREE.DoubleSide,
+                    blending: THREE.AdditiveBlending
+                });
+                const ray = new THREE.Mesh(rayGeometry, rayMaterial);
+                ray.position.copy(sunPosition);
+                ray.rotation.z = angle;
+                ray.lookAt(camera.position);
+                scene.add(ray);
+            }
+        }
+
+        // =====================================================
+        // LIGHTING WITH SHADOWS
         // =====================================================
         function createLighting() {
-            const ambientLight = new THREE.AmbientLight(0x404060, 0.5);
+            // Ambient light
+            const ambientLight = new THREE.AmbientLight(0x404060, 0.4);
             scene.add(ambientLight);
 
-            const sunLight = new THREE.DirectionalLight(0xffffcc, 1.2);
-            sunLight.position.set(500, 800, -500);
-            scene.add(sunLight);
+            // Directional sun light with shadows
+            sunLight = new THREE.DirectionalLight(0xffffcc, 1.5);
+            sunLight.position.copy(sunPosition).normalize().multiplyScalar(500);
+            sunLight.castShadow = true;
 
-            const hemiLight = new THREE.HemisphereLight(0x87CEEB, 0x3d5c3d, 0.6);
+            // Shadow map configuration
+            sunLight.shadow.mapSize.width = CONFIG.shadowMapSize;
+            sunLight.shadow.mapSize.height = CONFIG.shadowMapSize;
+            sunLight.shadow.camera.near = 0.5;
+            sunLight.shadow.camera.far = 2000;
+            sunLight.shadow.camera.left = -500;
+            sunLight.shadow.camera.right = 500;
+            sunLight.shadow.camera.top = 500;
+            sunLight.shadow.camera.bottom = -500;
+            sunLight.shadow.bias = -0.0005;
+            sunLight.shadow.normalBias = 0.02;
+
+            scene.add(sunLight);
+            scene.add(sunLight.target);
+
+            // Hemisphere light for sky/ground color
+            const hemiLight = new THREE.HemisphereLight(0xffb347, 0x3d5c3d, 0.5);
             scene.add(hemiLight);
+
+            // Subtle fill light from opposite direction
+            const fillLight = new THREE.DirectionalLight(0x8888ff, 0.3);
+            fillLight.position.set(-200, 100, 200);
+            scene.add(fillLight);
         }
 
         // =====================================================
         // INFINITE TERRAIN - CHUNK SYSTEM
         // =====================================================
-        
-        /**
-         * Get the chunk coordinates for a world position
-         */
         function getChunkCoords(worldX, worldZ) {
             return {
                 x: Math.floor(worldX / CONFIG.chunkSize),
@@ -688,9 +889,6 @@
             };
         }
 
-        /**
-         * Generate a terrain chunk at given chunk coordinates
-         */
         function createChunk(chunkX, chunkZ) {
             const key = `${chunkX},${chunkZ}`;
             if (chunks.has(key)) return;
@@ -707,15 +905,12 @@
             const positions = geometry.attributes.position;
             const colors = [];
 
-            // World offset for this chunk
             const offsetX = chunkX * CONFIG.chunkSize;
             const offsetZ = chunkZ * CONFIG.chunkSize;
 
             for (let i = 0; i < positions.count; i++) {
                 const localX = positions.getX(i);
                 const localZ = positions.getZ(i);
-
-                // Convert to world coordinates
                 const worldX = localX + offsetX;
                 const worldZ = localZ + offsetZ;
 
@@ -736,15 +931,13 @@
 
             const chunk = new THREE.Mesh(geometry, material);
             chunk.position.set(offsetX, 0, offsetZ);
+            chunk.receiveShadow = true;
             chunk.name = `chunk_${key}`;
 
             scene.add(chunk);
             chunks.set(key, chunk);
         }
 
-        /**
-         * Remove a terrain chunk
-         */
         function removeChunk(chunkX, chunkZ) {
             const key = `${chunkX},${chunkZ}`;
             const chunk = chunks.get(key);
@@ -756,19 +949,14 @@
             }
         }
 
-        /**
-         * Update visible chunks based on player position
-         */
         function updateChunks() {
             const playerChunk = getChunkCoords(plane.position.x, plane.position.z);
             
-            // Check if we moved to a new chunk
             if (playerChunk.x !== currentChunkX || playerChunk.z !== currentChunkZ) {
                 currentChunkX = playerChunk.x;
                 currentChunkZ = playerChunk.z;
             }
 
-            // Generate chunks within view distance
             const neededChunks = new Set();
             for (let dx = -CONFIG.viewDistance; dx <= CONFIG.viewDistance; dx++) {
                 for (let dz = -CONFIG.viewDistance; dz <= CONFIG.viewDistance; dz++) {
@@ -780,7 +968,6 @@
                 }
             }
 
-            // Remove chunks outside view distance
             for (const [key, chunk] of chunks) {
                 if (!neededChunks.has(key)) {
                     const [cx, cz] = key.split(',').map(Number);
@@ -789,9 +976,6 @@
             }
         }
 
-        /**
-         * Calculate terrain height at given world coordinates
-         */
         function getTerrainHeight(x, z) {
             const scale = 0.002;
             
@@ -806,9 +990,6 @@
             return Math.max(height - 50, -10);
         }
 
-        /**
-         * Get terrain color based on height
-         */
         function getTerrainColor(height) {
             const maxHeight = CONFIG.terrainHeight;
             const normalizedHeight = (height + 10) / (maxHeight + 10);
@@ -839,27 +1020,32 @@
         }
 
         // =====================================================
-        // WATER PLANE (follows player)
+        // WATER PLANE
         // =====================================================
         let water;
         function createWater() {
-            const waterGeometry = new THREE.PlaneGeometry(CONFIG.chunkSize * (CONFIG.viewDistance * 2 + 3), CONFIG.chunkSize * (CONFIG.viewDistance * 2 + 3));
+            const waterGeometry = new THREE.PlaneGeometry(
+                CONFIG.chunkSize * (CONFIG.viewDistance * 2 + 3),
+                CONFIG.chunkSize * (CONFIG.viewDistance * 2 + 3)
+            );
             const waterMaterial = new THREE.MeshPhongMaterial({
                 color: 0x0077be,
                 transparent: true,
                 opacity: 0.7,
                 shininess: 100,
-                side: THREE.DoubleSide
+                side: THREE.DoubleSide,
+                specular: 0xffffff
             });
 
             water = new THREE.Mesh(waterGeometry, waterMaterial);
             water.rotation.x = -Math.PI / 2;
             water.position.y = 0;
+            water.receiveShadow = true;
             scene.add(water);
         }
 
         // =====================================================
-        // AIRCRAFT MODEL - PLAYER
+        // PLAYER AIRCRAFT WITH SHADOWS
         // =====================================================
         function createPlane() {
             plane = new THREE.Group();
@@ -868,11 +1054,14 @@
             const accentMaterial = new THREE.MeshPhongMaterial({ color: 0x3182ce, flatShading: true });
             const glassMaterial = new THREE.MeshPhongMaterial({ color: 0x63b3ed, transparent: true, opacity: 0.6 });
             const darkMaterial = new THREE.MeshPhongMaterial({ color: 0x2d3748, flatShading: true });
+            const engineGlowMaterial = new THREE.MeshBasicMaterial({ color: 0xff6600 });
 
             // Fuselage
             const fuselageGeometry = new THREE.CylinderGeometry(0.8, 0.5, 8, 8);
             const fuselage = new THREE.Mesh(fuselageGeometry, bodyMaterial);
             fuselage.rotation.x = Math.PI / 2;
+            fuselage.castShadow = true;
+            fuselage.receiveShadow = true;
             plane.add(fuselage);
 
             // Nose
@@ -880,6 +1069,7 @@
             const nose = new THREE.Mesh(noseGeometry, accentMaterial);
             nose.rotation.x = -Math.PI / 2;
             nose.position.z = -5.5;
+            nose.castShadow = true;
             plane.add(nose);
 
             // Cockpit
@@ -892,16 +1082,20 @@
             // Wings
             const wingGeometry = new THREE.BoxGeometry(14, 0.2, 2);
             const wings = new THREE.Mesh(wingGeometry, bodyMaterial);
+            wings.castShadow = true;
+            wings.receiveShadow = true;
             plane.add(wings);
 
             // Wing tips
             const wingTipGeometry = new THREE.BoxGeometry(1, 0.25, 2);
             const leftWingTip = new THREE.Mesh(wingTipGeometry, accentMaterial);
             leftWingTip.position.set(-7, 0, 0);
+            leftWingTip.castShadow = true;
             plane.add(leftWingTip);
 
             const rightWingTip = new THREE.Mesh(wingTipGeometry, accentMaterial);
             rightWingTip.position.set(7, 0, 0);
+            rightWingTip.castShadow = true;
             plane.add(rightWingTip);
 
             // Tail
@@ -909,58 +1103,256 @@
             const tailFuselage = new THREE.Mesh(tailFuselageGeometry, bodyMaterial);
             tailFuselage.rotation.x = Math.PI / 2;
             tailFuselage.position.z = 5.5;
+            tailFuselage.castShadow = true;
             plane.add(tailFuselage);
 
             // Vertical stabilizer
             const vStabGeometry = new THREE.BoxGeometry(0.15, 2.5, 2);
             const vStab = new THREE.Mesh(vStabGeometry, bodyMaterial);
             vStab.position.set(0, 1.2, 6);
+            vStab.castShadow = true;
             plane.add(vStab);
 
             // Rudder
             const rudderGeometry = new THREE.BoxGeometry(0.1, 2, 1);
             const rudder = new THREE.Mesh(rudderGeometry, accentMaterial);
             rudder.position.set(0, 1.2, 6.8);
+            rudder.castShadow = true;
             plane.add(rudder);
 
             // Horizontal stabilizers
             const hStabGeometry = new THREE.BoxGeometry(5, 0.15, 1.5);
             const hStab = new THREE.Mesh(hStabGeometry, bodyMaterial);
             hStab.position.set(0, 0.3, 6);
+            hStab.castShadow = true;
             plane.add(hStab);
 
-            // Engines
+            // Engines with glow
             const engineGeometry = new THREE.CylinderGeometry(0.4, 0.5, 2, 8);
             
             const leftEngine = new THREE.Mesh(engineGeometry, darkMaterial);
             leftEngine.rotation.x = Math.PI / 2;
             leftEngine.position.set(-4, -0.5, 0.5);
+            leftEngine.castShadow = true;
             plane.add(leftEngine);
 
             const rightEngine = new THREE.Mesh(engineGeometry, darkMaterial);
             rightEngine.rotation.x = Math.PI / 2;
             rightEngine.position.set(4, -0.5, 0.5);
+            rightEngine.castShadow = true;
             plane.add(rightEngine);
 
-            // Gun barrels (visual)
+            // Engine glow (exhaust)
+            const exhaustGlowGeometry = new THREE.SphereGeometry(0.35, 8, 8);
+            const leftExhaustGlow = new THREE.Mesh(exhaustGlowGeometry, engineGlowMaterial);
+            leftExhaustGlow.position.set(-4, -0.5, 1.6);
+            leftExhaustGlow.name = 'leftExhaust';
+            plane.add(leftExhaustGlow);
+
+            const rightExhaustGlow = new THREE.Mesh(exhaustGlowGeometry, engineGlowMaterial);
+            rightExhaustGlow.position.set(4, -0.5, 1.6);
+            rightExhaustGlow.name = 'rightExhaust';
+            plane.add(rightExhaustGlow);
+
+            // Gun barrels
             const gunGeometry = new THREE.CylinderGeometry(0.1, 0.1, 2, 6);
             const gunMaterial = new THREE.MeshPhongMaterial({ color: 0x1a1a1a });
             
             const leftGun = new THREE.Mesh(gunGeometry, gunMaterial);
             leftGun.rotation.x = Math.PI / 2;
             leftGun.position.set(-2, -0.3, -5);
+            leftGun.castShadow = true;
             plane.add(leftGun);
 
             const rightGun = new THREE.Mesh(gunGeometry, gunMaterial);
             rightGun.rotation.x = Math.PI / 2;
             rightGun.position.set(2, -0.3, -5);
+            rightGun.castShadow = true;
             plane.add(rightGun);
+
+            // Muzzle flash meshes (initially invisible)
+            const muzzleGeometry = new THREE.SphereGeometry(0.5, 8, 8);
+            const muzzleMaterial = new THREE.MeshBasicMaterial({ 
+                color: 0xffff00, 
+                transparent: true, 
+                opacity: 0 
+            });
+
+            muzzleFlashLeft = new THREE.Mesh(muzzleGeometry, muzzleMaterial.clone());
+            muzzleFlashLeft.position.set(-2, -0.3, -6.5);
+            plane.add(muzzleFlashLeft);
+
+            muzzleFlashRight = new THREE.Mesh(muzzleGeometry, muzzleMaterial.clone());
+            muzzleFlashRight.position.set(2, -0.3, -6.5);
+            plane.add(muzzleFlashRight);
+
+            // Point lights for muzzle flash
+            const muzzleLightLeft = new THREE.PointLight(0xffaa00, 0, 20);
+            muzzleLightLeft.position.copy(muzzleFlashLeft.position);
+            muzzleLightLeft.name = 'muzzleLightLeft';
+            plane.add(muzzleLightLeft);
+
+            const muzzleLightRight = new THREE.PointLight(0xffaa00, 0, 20);
+            muzzleLightRight.position.copy(muzzleFlashRight.position);
+            muzzleLightRight.name = 'muzzleLightRight';
+            plane.add(muzzleLightRight);
 
             scene.add(plane);
         }
 
         // =====================================================
-        // ENEMY DRONE MODEL
+        // EXHAUST PARTICLE SYSTEM
+        // =====================================================
+        function createExhaustParticle(position, velocity) {
+            const size = 0.3 + Math.random() * 0.3;
+            const geometry = new THREE.SphereGeometry(size, 6, 6);
+            const material = new THREE.MeshBasicMaterial({
+                color: new THREE.Color().lerpColors(
+                    new THREE.Color(0xffffff),
+                    new THREE.Color(0x888888),
+                    Math.random()
+                ),
+                transparent: true,
+                opacity: 0.6
+            });
+
+            const particle = new THREE.Mesh(geometry, material);
+            particle.position.copy(position);
+
+            particle.userData = {
+                velocity: velocity.clone(),
+                lifetime: CONFIG.exhaustParticleLifetime,
+                maxLifetime: CONFIG.exhaustParticleLifetime,
+                initialScale: size
+            };
+
+            scene.add(particle);
+            exhaustParticles.push(particle);
+        }
+
+        function updateExhaustParticles(delta) {
+            if (crashed) return;
+
+            // Emit new particles
+            exhaustEmissionTimer += delta;
+            const emissionInterval = 1 / CONFIG.exhaustEmissionRate;
+
+            while (exhaustEmissionTimer >= emissionInterval) {
+                exhaustEmissionTimer -= emissionInterval;
+
+                // Get exhaust positions in world space
+                const leftExhaust = plane.getObjectByName('leftExhaust');
+                const rightExhaust = plane.getObjectByName('rightExhaust');
+
+                if (leftExhaust && rightExhaust) {
+                    const worldPosLeft = new THREE.Vector3();
+                    const worldPosRight = new THREE.Vector3();
+                    leftExhaust.getWorldPosition(worldPosLeft);
+                    rightExhaust.getWorldPosition(worldPosRight);
+
+                    // Particle velocity (backward from plane)
+                    const backward = new THREE.Vector3(0, 0, 1).applyQuaternion(plane.quaternion);
+                    const spread = 5;
+
+                    // Left engine
+                    const velLeft = backward.clone().multiplyScalar(50 + Math.random() * 20);
+                    velLeft.x += (Math.random() - 0.5) * spread;
+                    velLeft.y += (Math.random() - 0.5) * spread;
+                    velLeft.z += (Math.random() - 0.5) * spread;
+                    createExhaustParticle(worldPosLeft, velLeft);
+
+                    // Right engine
+                    const velRight = backward.clone().multiplyScalar(50 + Math.random() * 20);
+                    velRight.x += (Math.random() - 0.5) * spread;
+                    velRight.y += (Math.random() - 0.5) * spread;
+                    velRight.z += (Math.random() - 0.5) * spread;
+                    createExhaustParticle(worldPosRight, velRight);
+                }
+            }
+
+            // Update existing particles
+            for (let i = exhaustParticles.length - 1; i >= 0; i--) {
+                const particle = exhaustParticles[i];
+                particle.userData.lifetime -= delta;
+
+                if (particle.userData.lifetime <= 0) {
+                    scene.remove(particle);
+                    particle.geometry.dispose();
+                    particle.material.dispose();
+                    exhaustParticles.splice(i, 1);
+                    continue;
+                }
+
+                // Move particle
+                particle.position.add(particle.userData.velocity.clone().multiplyScalar(delta));
+
+                // Slow down
+                particle.userData.velocity.multiplyScalar(0.98);
+
+                // Rise slightly (hot air)
+                particle.userData.velocity.y += 2 * delta;
+
+                // Scale and fade based on lifetime
+                const lifeRatio = particle.userData.lifetime / particle.userData.maxLifetime;
+                const scale = particle.userData.initialScale * (1 + (1 - lifeRatio) * 2);
+                particle.scale.setScalar(scale);
+                particle.material.opacity = lifeRatio * 0.5;
+            }
+        }
+
+        // =====================================================
+        // MUZZLE FLASH SYSTEM
+        // =====================================================
+        function triggerMuzzleFlash() {
+            muzzleFlashTimer = 0.05;
+
+            // Scale up and show muzzle flash meshes
+            muzzleFlashLeft.material.opacity = 1;
+            muzzleFlashRight.material.opacity = 1;
+            muzzleFlashLeft.scale.setScalar(2);
+            muzzleFlashRight.scale.setScalar(2);
+
+            // Activate point lights
+            const lightLeft = plane.getObjectByName('muzzleLightLeft');
+            const lightRight = plane.getObjectByName('muzzleLightRight');
+            if (lightLeft) lightLeft.intensity = 5;
+            if (lightRight) lightRight.intensity = 5;
+        }
+
+        function updateMuzzleFlash(delta) {
+            if (muzzleFlashTimer > 0) {
+                muzzleFlashTimer -= delta;
+
+                const t = muzzleFlashTimer / 0.05;
+                muzzleFlashLeft.material.opacity = t;
+                muzzleFlashRight.material.opacity = t;
+                muzzleFlashLeft.scale.setScalar(1 + t);
+                muzzleFlashRight.scale.setScalar(1 + t);
+
+                const lightLeft = plane.getObjectByName('muzzleLightLeft');
+                const lightRight = plane.getObjectByName('muzzleLightRight');
+                if (lightLeft) lightLeft.intensity = t * 5;
+                if (lightRight) lightRight.intensity = t * 5;
+            }
+        }
+
+        // =====================================================
+        // SCREEN SHAKE
+        // =====================================================
+        function triggerScreenShake() {
+            const container = document.getElementById('game-container');
+            container.classList.remove('screen-shake');
+            // Trigger reflow
+            void container.offsetWidth;
+            container.classList.add('screen-shake');
+
+            setTimeout(() => {
+                container.classList.remove('screen-shake');
+            }, 300);
+        }
+
+        // =====================================================
+        // ENEMY DRONE MODEL WITH SHADOWS
         // =====================================================
         function createEnemy() {
             const enemy = new THREE.Group();
@@ -969,9 +1361,11 @@
             const accentMaterial = new THREE.MeshPhongMaterial({ color: 0xff4444, flatShading: true });
             const darkMaterial = new THREE.MeshPhongMaterial({ color: 0x2d2d2d, flatShading: true });
 
-            // Fuselage (smaller, angular)
+            // Fuselage
             const fuselageGeometry = new THREE.BoxGeometry(1.5, 1, 5);
             const fuselage = new THREE.Mesh(fuselageGeometry, bodyMaterial);
+            fuselage.castShadow = true;
+            fuselage.receiveShadow = true;
             enemy.add(fuselage);
 
             // Nose
@@ -979,9 +1373,10 @@
             const nose = new THREE.Mesh(noseGeometry, accentMaterial);
             nose.rotation.x = -Math.PI / 2;
             nose.position.z = -3.5;
+            nose.castShadow = true;
             enemy.add(nose);
 
-            // Wings (swept)
+            // Wings
             const wingShape = new THREE.Shape();
             wingShape.moveTo(0, 0);
             wingShape.lineTo(5, -1);
@@ -994,16 +1389,19 @@
             const leftWing = new THREE.Mesh(wingGeometry, bodyMaterial);
             leftWing.rotation.y = Math.PI;
             leftWing.position.set(-0.7, 0, 1);
+            leftWing.castShadow = true;
             enemy.add(leftWing);
 
             const rightWing = new THREE.Mesh(wingGeometry, bodyMaterial);
             rightWing.position.set(0.7, 0, 1);
+            rightWing.castShadow = true;
             enemy.add(rightWing);
 
             // Tail fin
             const tailGeometry = new THREE.BoxGeometry(0.1, 1.5, 1);
             const tail = new THREE.Mesh(tailGeometry, accentMaterial);
             tail.position.set(0, 0.8, 2);
+            tail.castShadow = true;
             enemy.add(tail);
 
             // Engine glow
@@ -1014,7 +1412,6 @@
             engineGlow.position.z = 2.8;
             enemy.add(engineGlow);
 
-            // Enemy data
             enemy.userData = {
                 hp: CONFIG.enemyMaxHP,
                 maxHP: CONFIG.enemyMaxHP,
@@ -1030,15 +1427,11 @@
             return enemy;
         }
 
-        /**
-         * Spawn an enemy at a random position around the player
-         */
         function spawnEnemy() {
             if (enemies.length >= CONFIG.maxEnemies || crashed) return;
 
             const enemy = createEnemy();
             
-            // Spawn at random angle around player
             const angle = Math.random() * Math.PI * 2;
             const distance = CONFIG.enemySpawnDistance;
             const altitude = plane.position.y + (Math.random() - 0.5) * 200;
@@ -1049,7 +1442,6 @@
                 plane.position.z + Math.sin(angle) * distance
             );
 
-            // Face towards player initially
             enemy.lookAt(plane.position);
 
             scene.add(enemy);
@@ -1059,10 +1451,6 @@
         // =====================================================
         // BULLET SYSTEM
         // =====================================================
-        
-        /**
-         * Create a bullet mesh
-         */
         function createBullet(isEnemy = false) {
             const geometry = new THREE.SphereGeometry(0.3, 8, 8);
             const material = new THREE.MeshBasicMaterial({ 
@@ -1070,7 +1458,6 @@
             });
             const bullet = new THREE.Mesh(geometry, material);
             
-            // Add a trail effect
             const trailGeometry = new THREE.CylinderGeometry(0.1, 0.2, 2, 6);
             const trailMaterial = new THREE.MeshBasicMaterial({ 
                 color: isEnemy ? 0xff6600 : 0xffaa00,
@@ -1085,17 +1472,15 @@
             return bullet;
         }
 
-        /**
-         * Fire player guns
-         */
         function fireGuns(currentTime) {
             if (currentTime - lastFireTime < CONFIG.fireRate) return;
             lastFireTime = currentTime;
 
-            // Get forward direction
+            // Trigger muzzle flash
+            triggerMuzzleFlash();
+
             const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(plane.quaternion);
 
-            // Create bullets from both gun positions
             const gunOffsets = [
                 new THREE.Vector3(-2, -0.3, -6),
                 new THREE.Vector3(2, -0.3, -6)
@@ -1104,11 +1489,9 @@
             gunOffsets.forEach(offset => {
                 const bullet = createBullet(false);
                 
-                // Transform offset to world space
                 const worldOffset = offset.clone().applyQuaternion(plane.quaternion);
                 bullet.position.copy(plane.position).add(worldOffset);
                 
-                // Set velocity
                 bullet.userData = {
                     velocity: forward.clone().multiplyScalar(CONFIG.bulletSpeed),
                     lifetime: CONFIG.bulletLifetime,
@@ -1120,20 +1503,15 @@
             });
         }
 
-        /**
-         * Enemy fires at player
-         */
         function enemyFire(enemy, currentTime) {
             if (currentTime - enemy.userData.lastFireTime < CONFIG.enemyFireRate) return;
             enemy.userData.lastFireTime = currentTime;
 
             const bullet = createBullet(true);
             
-            // Fire from enemy nose
             const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(enemy.quaternion);
             bullet.position.copy(enemy.position).add(forward.clone().multiplyScalar(4));
             
-            // Aim towards player with some prediction
             const toPlayer = plane.position.clone().sub(enemy.position).normalize();
             
             bullet.userData = {
@@ -1146,11 +1524,8 @@
             enemyBullets.push(bullet);
         }
 
-        /**
-         * Update all bullets
-         */
         function updateBullets(delta) {
-            // Update player bullets
+            // Player bullets
             for (let i = bullets.length - 1; i >= 0; i--) {
                 const bullet = bullets[i];
                 bullet.userData.lifetime -= delta;
@@ -1161,22 +1536,18 @@
                     continue;
                 }
 
-                // Move bullet
                 bullet.position.add(bullet.userData.velocity.clone().multiplyScalar(delta));
 
-                // Check collision with enemies
                 for (let j = enemies.length - 1; j >= 0; j--) {
                     const enemy = enemies[j];
                     const distance = bullet.position.distanceTo(enemy.position);
                     
                     if (distance < 5) {
-                        // Hit enemy
                         enemy.userData.hp -= CONFIG.bulletDamage;
                         scene.remove(bullet);
                         bullets.splice(i, 1);
 
                         if (enemy.userData.hp <= 0) {
-                            // Enemy destroyed
                             createExplosion(enemy.position.clone(), 0xff4400);
                             scene.remove(enemy);
                             enemies.splice(j, 1);
@@ -1187,7 +1558,6 @@
                     }
                 }
 
-                // Check terrain collision
                 const terrainHeight = getTerrainHeight(bullet.position.x, bullet.position.z);
                 if (bullet.position.y < terrainHeight) {
                     scene.remove(bullet);
@@ -1195,7 +1565,7 @@
                 }
             }
 
-            // Update enemy bullets
+            // Enemy bullets
             for (let i = enemyBullets.length - 1; i >= 0; i--) {
                 const bullet = enemyBullets[i];
                 bullet.userData.lifetime -= delta;
@@ -1208,17 +1578,14 @@
 
                 bullet.position.add(bullet.userData.velocity.clone().multiplyScalar(delta));
 
-                // Check collision with player
                 const distance = bullet.position.distanceTo(plane.position);
                 if (distance < 8) {
-                    // Hit player
                     damagePlayer(CONFIG.enemyDamage);
                     scene.remove(bullet);
                     enemyBullets.splice(i, 1);
                     continue;
                 }
 
-                // Check terrain collision
                 const terrainHeight = getTerrainHeight(bullet.position.x, bullet.position.z);
                 if (bullet.position.y < terrainHeight) {
                     scene.remove(bullet);
@@ -1232,7 +1599,6 @@
         // =====================================================
         function updateEnemies(delta, currentTime) {
             enemies.forEach((enemy, index) => {
-                // Seek and steer behavior
                 const toPlayer = plane.position.clone()
                     .add(enemy.userData.targetOffset)
                     .sub(enemy.position);
@@ -1240,39 +1606,31 @@
                 const distance = toPlayer.length();
                 toPlayer.normalize();
 
-                // Desired velocity towards player
                 const desiredVelocity = toPlayer.multiplyScalar(CONFIG.enemySpeed);
                 
-                // Steering force
                 const steering = desiredVelocity.sub(enemy.userData.velocity);
                 steering.clampLength(0, 50 * delta);
 
-                // Update velocity
                 enemy.userData.velocity.add(steering);
                 enemy.userData.velocity.clampLength(0, CONFIG.enemySpeed);
 
-                // Update position
                 enemy.position.add(enemy.userData.velocity.clone().multiplyScalar(delta));
 
-                // Keep above terrain
                 const terrainHeight = getTerrainHeight(enemy.position.x, enemy.position.z);
                 if (enemy.position.y < terrainHeight + 30) {
                     enemy.position.y = terrainHeight + 30;
                     enemy.userData.velocity.y = Math.abs(enemy.userData.velocity.y);
                 }
 
-                // Face movement direction
                 if (enemy.userData.velocity.lengthSq() > 0.1) {
                     const lookTarget = enemy.position.clone().add(enemy.userData.velocity);
                     enemy.lookAt(lookTarget);
                 }
 
-                // Fire at player if in range
                 if (distance < 500) {
                     enemyFire(enemy, currentTime);
                 }
 
-                // Randomize offset occasionally
                 if (Math.random() < delta * 0.5) {
                     enemy.userData.targetOffset.set(
                         (Math.random() - 0.5) * 50,
@@ -1281,7 +1639,6 @@
                     );
                 }
 
-                // Check collision with terrain
                 if (enemy.position.y < terrainHeight + 5) {
                     createExplosion(enemy.position.clone(), 0xff4400);
                     scene.remove(enemy);
@@ -1289,7 +1646,6 @@
                 }
             });
 
-            // Update enemy count display
             document.getElementById('enemy-count').textContent = `ENEMIES: ${enemies.length}`;
         }
 
@@ -1303,7 +1659,6 @@
                 position: position.clone()
             };
 
-            // Create particles
             for (let i = 0; i < CONFIG.explosionParticles; i++) {
                 const geometry = new THREE.SphereGeometry(0.5 + Math.random() * 1, 6, 6);
                 const material = new THREE.MeshBasicMaterial({
@@ -1338,23 +1693,16 @@
                 const progress = 1 - (explosion.lifetime / CONFIG.explosionDuration);
 
                 explosion.particles.forEach(particle => {
-                    // Move particle
                     particle.position.add(particle.userData.velocity.clone().multiplyScalar(delta));
-                    
-                    // Slow down
                     particle.userData.velocity.multiplyScalar(0.95);
-                    
-                    // Gravity
                     particle.userData.velocity.y -= 30 * delta;
                     
-                    // Scale and fade
                     const scale = particle.userData.initialScale * (1 + progress * 2) * (1 - progress);
                     particle.scale.setScalar(Math.max(0.1, scale));
                     particle.material.opacity = 1 - progress;
                 });
 
                 if (explosion.lifetime <= 0) {
-                    // Remove particles
                     explosion.particles.forEach(particle => {
                         scene.remove(particle);
                         particle.geometry.dispose();
@@ -1373,7 +1721,6 @@
 
             playerHP -= amount;
             
-            // Update health bar
             const healthPercent = Math.max(0, (playerHP / CONFIG.playerMaxHP) * 100);
             document.getElementById('health-bar').style.width = healthPercent + '%';
 
@@ -1382,13 +1729,16 @@
             flash.style.opacity = '1';
             setTimeout(() => flash.style.opacity = '0', 100);
 
+            // Screen shake
+            triggerScreenShake();
+
             if (playerHP <= 0) {
                 triggerCrash();
             }
         }
 
         // =====================================================
-        // CONTROLS
+        // CONTROLS - W/S INVERTED
         // =====================================================
         function setupControls() {
             window.addEventListener('keydown', (e) => {
@@ -1428,12 +1778,10 @@
             crashed = false;
             document.getElementById('crash-overlay').style.display = 'none';
 
-            // Reset position
             plane.position.set(0, CONFIG.startAltitude, 0);
             plane.rotation.set(0, 0, 0);
             plane.quaternion.identity();
 
-            // Reset flight state
             flightState.velocity.set(0, 0, -CONFIG.startSpeed);
             flightState.speed = CONFIG.startSpeed;
             flightState.throttle = 0.5;
@@ -1441,25 +1789,20 @@
             flightState.roll = 0;
             flightState.yaw = 0;
 
-            // Reset health
             playerHP = CONFIG.playerMaxHP;
             document.getElementById('health-bar').style.width = '100%';
 
-            // Reset score
             score = 0;
             document.getElementById('score-display').textContent = 'KILLS: 0';
 
-            // Clear enemies
             enemies.forEach(enemy => scene.remove(enemy));
             enemies.length = 0;
 
-            // Clear bullets
             bullets.forEach(b => scene.remove(b));
             bullets.length = 0;
             enemyBullets.forEach(b => scene.remove(b));
             enemyBullets.length = 0;
 
-            // Clear explosions
             explosions.forEach(exp => {
                 exp.particles.forEach(p => {
                     scene.remove(p);
@@ -1469,7 +1812,13 @@
             });
             explosions.length = 0;
 
-            // Clear chunks and regenerate
+            exhaustParticles.forEach(p => {
+                scene.remove(p);
+                p.geometry.dispose();
+                p.material.dispose();
+            });
+            exhaustParticles.length = 0;
+
             chunks.forEach((chunk, key) => {
                 scene.remove(chunk);
                 chunk.geometry.dispose();
@@ -1481,7 +1830,7 @@
         }
 
         // =====================================================
-        // FLIGHT PHYSICS
+        // FLIGHT PHYSICS - INVERTED W/S
         // =====================================================
         function updateFlightPhysics(delta) {
             if (crashed) return;
@@ -1497,9 +1846,22 @@
             }
             document.getElementById('throttle-fill').style.height = (flightState.throttle * 100) + '%';
 
-            // Pitch
-            if (keys.w) flightState.pitch = CONFIG.pitchRate;
-            else if (keys.s) flightState.pitch = -CONFIG.pitchRate;
+            // Update engine glow based on throttle
+            const leftExhaust = plane.getObjectByName('leftExhaust');
+            const rightExhaust = plane.getObjectByName('rightExhaust');
+            if (leftExhaust && rightExhaust) {
+                const glowScale = 0.5 + flightState.throttle * 1;
+                leftExhaust.scale.setScalar(glowScale);
+                rightExhaust.scale.setScalar(glowScale);
+                
+                const glowColor = new THREE.Color(0xff3300).lerp(new THREE.Color(0xffff00), flightState.throttle);
+                leftExhaust.material.color = glowColor;
+                rightExhaust.material.color = glowColor;
+            }
+
+            // INVERTED Pitch control (W = nose UP, S = nose DOWN)
+            if (keys.w) flightState.pitch = -CONFIG.pitchRate;  // Inverted: W pulls up
+            else if (keys.s) flightState.pitch = CONFIG.pitchRate;  // Inverted: S pushes down
             else flightState.pitch *= 0.9;
 
             // Roll
@@ -1582,7 +1944,6 @@
         function triggerCrash() {
             crashed = true;
             
-            // Create explosion at plane position
             createExplosion(plane.position.clone(), 0xff6600);
             createExplosion(plane.position.clone().add(new THREE.Vector3(5, 0, 0)), 0xff4400);
             createExplosion(plane.position.clone().add(new THREE.Vector3(-5, 0, 0)), 0xff4400);
@@ -1611,7 +1972,7 @@
             const lookTarget = plane.position.clone().add(forward.multiplyScalar(20));
             camera.lookAt(lookTarget);
 
-            // Update water position to follow camera
+            // Update water position
             if (water) {
                 water.position.x = plane.position.x;
                 water.position.z = plane.position.z;
@@ -1622,13 +1983,23 @@
             if (sky) {
                 sky.position.copy(plane.position);
             }
+
+            // Update sun position relative to camera
+            if (sunMesh) {
+                sunMesh.position.copy(camera.position).add(sunPosition.clone().normalize().multiplyScalar(4000));
+            }
+
+            // Update shadow light to follow player
+            if (sunLight) {
+                sunLight.position.copy(plane.position).add(sunPosition.clone().normalize().multiplyScalar(500));
+                sunLight.target.position.copy(plane.position);
+            }
         }
 
         // =====================================================
-        // RADAR UPDATE
+        // RADAR
         // =====================================================
         function updateRadar() {
-            // Remove old blips
             radarBlips.forEach(blip => blip.remove());
             radarBlips.length = 0;
 
@@ -1642,14 +2013,11 @@
                 const distance = Math.sqrt(dx * dx + dz * dz);
 
                 if (distance < radarRange) {
-                    // Get player's heading
                     const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(plane.quaternion);
                     const playerHeading = Math.atan2(forward.x, -forward.z);
 
-                    // Get angle to enemy relative to player heading
                     const angleToEnemy = Math.atan2(dx, -dz) - playerHeading;
 
-                    // Convert to radar coordinates
                     const radarDist = (distance / radarRange) * (radarSize / 2 - 10);
                     const blipX = Math.sin(angleToEnemy) * radarDist + radarSize / 2;
                     const blipY = -Math.cos(angleToEnemy) * radarDist + radarSize / 2;
@@ -1699,7 +2067,7 @@
             const delta = clock.getDelta();
             const currentTime = clock.getElapsedTime();
 
-            // Update terrain chunks
+            // Update terrain
             updateChunks();
 
             // Update flight
@@ -1721,12 +2089,17 @@
             updateEnemies(delta, currentTime);
             updateExplosions(delta);
 
+            // Update visual effects
+            updateExhaustParticles(delta);
+            updateMuzzleFlash(delta);
+
             // Update camera and HUD
             updateCamera(delta);
             updateHUD();
             updateRadar();
 
-            renderer.render(scene, camera);
+            // Render with post-processing
+            composer.render();
         }
 
         // =====================================================
@@ -1736,6 +2109,10 @@
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+            composer.setSize(window.innerWidth, window.innerHeight);
+
+            // Update bloom pass resolution
+            bloomPass.setSize(window.innerWidth, window.innerHeight);
         }
 
         // =====================================================

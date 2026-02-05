@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Midnight Drive - Exploration Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+            background: #000;
+        }
+        
+        #gameCanvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #fff;
+            font-size: 18px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #ff0040;
+        }
+        
+        #battery-bar {
+            width: 200px;
+            height: 25px;
+            background: #222;
+            border: 2px solid #fff;
+            margin-top: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #battery-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88, #00cc66);
+            width: 100%;
+            transition: width 0.2s, background 0.3s;
+        }
+        
+        #battery-fill.low {
+            background: linear-gradient(90deg, #ff4400, #ff0000);
+        }
+        
+        #battery-fill.medium {
+            background: linear-gradient(90deg, #ffaa00, #ff8800);
+        }
+        
+        .hud-line {
+            margin: 5px 0;
+        }
+        
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: #fff;
+            font-size: 14px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 10;
+        }
+        
+        #message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ff0040;
+            font-size: 48px;
+            font-weight: bold;
+            text-shadow: 0 0 20px #ff0040;
+            opacity: 0;
+            transition: opacity 0.5s;
+            pointer-events: none;
+            z-index: 20;
+        }
+        
+        #message.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div id="hud">
+        <div class="hud-line"><strong>MIDNIGHT DRIVE</strong></div>
+        <div class="hud-line">Battery: <span id="battery-percent">100</span>%</div>
+        <div id="battery-bar">
+            <div id="battery-fill"></div>
+        </div>
+        <div class="hud-line">Distance: <span id="distance">0</span>m</div>
+        <div class="hud-line">Speed: <span id="speed">0</span> km/h</div>
+        <div class="hud-line">High-Beams: <span id="highbeam-status">OFF</span></div>
+    </div>
+    
+    <div id="controls">
+        <strong>CONTROLS:</strong><br>
+        W/↑ - Accelerate<br>
+        S/↓ - Brake<br>
+        A/← - Turn Left<br>
+        D/→ - Turn Right<br>
+        SPACE - Drift<br>
+        H - High-Beams (drains battery)
+    </div>
+    
+    <div id="message"></div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // ===========================
+        // PERLIN NOISE IMPLEMENTATION
+        // ===========================
+        class PerlinNoise {
+            constructor(seed = 12345) {
+                this.seed = seed;
+                this.permutation = this.generatePermutation();
+            }
+            
+            generatePermutation() {
+                const p = [];
+                for (let i = 0; i < 256; i++) p[i] = i;
+                
+                // Shuffle using seed
+                let random = this.seededRandom(this.seed);
+                for (let i = 255; i > 0; i--) {
+                    const j = Math.floor(random() * (i + 1));
+                    [p[i], p[j]] = [p[j], p[i]];
+                }
+                
+                return [...p, ...p]; // Duplicate for overflow
+            }
+            
+            seededRandom(seed) {
+                return function() {
+                    seed = (seed * 9301 + 49297) % 233280;
+                    return seed / 233280;
+                };
+            }
+            
+            fade(t) {
+                return t * t * t * (t * (t * 6 - 15) + 10);
+            }
+            
+            lerp(t, a, b) {
+                return a + t * (b - a);
+            }
+            
+            grad(hash, x, y) {
+                const h = hash & 3;
+                const u = h < 2 ? x : y;
+                const v = h < 2 ? y : x;
+                return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
+            }
+            
+            noise(x, y) {
+                const X = Math.floor(x) & 255;
+                const Y = Math.floor(y) & 255;
+                
+                x -= Math.floor(x);
+                y -= Math.floor(y);
+                
+                const u = this.fade(x);
+                const v = this.fade(y);
+                
+                const p = this.permutation;
+                const a = p[X] + Y;
+                const b = p[X + 1] + Y;
+                
+                return this.lerp(v,
+                    this.lerp(u, this.grad(p[a], x, y), this.grad(p[b], x - 1, y)),
+                    this.lerp(u, this.grad(p[a + 1], x, y - 1), this.grad(p[b + 1], x - 1, y - 1))
+                );
+            }
+        }
+        
+        // ===========================
+        // GAME STATE
+        // ===========================
+        const gameState = {
+            battery: 100,
+            distance: 0,
+            speed: 0,
+            highBeamsOn: false,
+            isDrifting: false,
+            batteryDead: false,
+            exploredChunks: new Set()
+        };
+        
+        const keys = {
+            w: false, s: false, a: false, d: false,
+            ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false,
+            space: false, h: false
+        };
+        
+        // ===========================
+        // SCENE SETUP
+        // ===========================
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.Fog(0x000000, 10, 100);
+        scene.background = new THREE.Color(0x000000);
+        
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        document.body.appendChild(renderer.domElement);
+        
+        // ===========================
+        // ROAD GENERATION
+        // ===========================
+        const perlin = new PerlinNoise(42069); // Consistent seed
+        const roadSegments = [];
+        const SEGMENT_LENGTH = 20;
+        const SEGMENT_WIDTH = 15;
+        const CHUNKS_AHEAD = 15;
+        const CHUNKS_BEHIND = 5;
+        
+        class RoadSegment {
+            constructor(index, position) {
+                this.index = index;
+                this.position = position;
+                this.explored = false;
+                this.mesh = null;
+                this.createMesh();
+            }
+            
+            createMesh() {
+                const geometry = new THREE.PlaneGeometry(SEGMENT_WIDTH, SEGMENT_LENGTH, 10, 10);
+                
+                // Apply terrain deformation
+                const vertices = geometry.attributes.position.array;
+                for (let i = 0; i < vertices.length; i += 3) {
+                    const x = vertices[i];
+                    const z = vertices[i + 1];
+                    const worldX = x + this.position.x;
+                    const worldZ = z + this.position.z;
+                    
+                    // Mountain-like terrain
+                    const heightNoise = perlin.noise(worldX * 0.05, worldZ * 0.05) * 3;
+                    const detailNoise = perlin.noise(worldX * 0.2, worldZ * 0.2) * 0.5;
+                    vertices[i + 2] = heightNoise + detailNoise;
+                }
+                geometry.attributes.position.needsUpdate = true;
+                geometry.computeVertexNormals();
+                
+                // Dark material initially
+                const material = new THREE.MeshStandardMaterial({
+                    color: this.explored ? 0x333333 : 0x000000,
+                    roughness: 0.8,
+                    metalness: 0.2,
+                    emissive: 0x000000,
+                    emissiveIntensity: 0
+                });
+                
+                this.mesh = new THREE.Mesh(geometry, material);
+                this.mesh.rotation.x = -Math.PI / 2;
+                this.mesh.position.copy(this.position);
+                this.mesh.receiveShadow = true;
+                this.mesh.userData.segment = this;
+                
+                scene.add(this.mesh);
+            }
+            
+            reveal() {
+                if (!this.explored) {
+                    this.explored = true;
+                    gameState.exploredChunks.add(this.index);
+                    
+                    // Change to visible road material
+                    this.mesh.material.color.setHex(0x333333);
+                    this.mesh.material.emissive.setHex(0x111111);
+                    this.mesh.material.needsUpdate = true;
+                }
+            }
+            
+            dispose() {
+                if (this.mesh) {
+                    scene.remove(this.mesh);
+                    this.mesh.geometry.dispose();
+                    this.mesh.material.dispose();
+                    this.mesh = null;
+                }
+            }
+        }
+        
+        function generateRoadSegments(centerZ) {
+            const startIndex = Math.floor((centerZ - CHUNKS_BEHIND * SEGMENT_LENGTH) / SEGMENT_LENGTH);
+            const endIndex = Math.floor((centerZ + CHUNKS_AHEAD * SEGMENT_LENGTH) / SEGMENT_LENGTH);
+            
+            // Remove far segments
+            for (let i = roadSegments.length - 1; i >= 0; i--) {
+                const seg = roadSegments[i];
+                if (seg.index < startIndex || seg.index > endIndex) {
+                    seg.dispose();
+                    roadSegments.splice(i, 1);
+                }
+            }
+            
+            // Add new segments
+            const existingIndices = new Set(roadSegments.map(s => s.index));
+            for (let i = startIndex; i <= endIndex; i++) {
+                if (!existingIndices.has(i)) {
+                    const z = i * SEGMENT_LENGTH;
+                    const x = perlin.noise(i * 0.3, 0) * 30; // Winding road
+                    const segment = new RoadSegment(i, new THREE.Vector3(x, 0, z));
+                    
+                    // Restore explored state if it was explored before
+                    if (gameState.exploredChunks.has(i)) {
+                        segment.reveal();
+                    }
+                    
+                    roadSegments.push(segment);
+                }
+            }
+        }
+        
+        // ===========================
+        // CAR MODEL (Low-poly Miata)
+        // ===========================
+        const car = new THREE.Group();
+        
+        // Car body
+        const bodyGeometry = new THREE.BoxGeometry(2, 0.8, 4);
+        const bodyMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0xcc0000,
+            metalness: 0.6,
+            roughness: 0.4
+        });
+        const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+        body.position.y = 0.6;
+        body.castShadow = true;
+        car.add(body);
+        
+        // Cabin (convertible top)
+        const cabinGeometry = new THREE.BoxGeometry(1.6, 0.6, 2);
+        const cabinMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x990000,
+            metalness: 0.3,
+            roughness: 0.7
+        });
+        const cabin = new THREE.Mesh(cabinGeometry, cabinMaterial);
+        cabin.position.set(0, 1.1, -0.3);
+        cabin.castShadow = true;
+        car.add(cabin);
+        
+        // Wheels
+        const wheelGeometry = new THREE.CylinderGeometry(0.4, 0.4, 0.3, 8);
+        const wheelMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x111111,
+            metalness: 0.8,
+            roughness: 0.3
+        });
+        
+        const wheelPositions = [
+            [-1, 0.4, 1.3],   // Front left
+            [1, 0.4, 1.3],    // Front right
+            [-1, 0.4, -1.3],  // Back left
+            [1, 0.4, -1.3]    // Back right
+        ];
+        
+        wheelPositions.forEach(pos => {
+            const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
+            wheel.rotation.z = Math.PI / 2;
+            wheel.position.set(...pos);
+            wheel.castShadow = true;
+            car.add(wheel);
+        });
+        
+        // Headlights
+        const headlightGeometry = new THREE.BoxGeometry(0.3, 0.2, 0.1);
+        const headlightMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0xffffaa,
+            emissive: 0xffffaa,
+            emissiveIntensity: 0.5
+        });
+        
+        const leftHeadlight = new THREE.Mesh(headlightGeometry, headlightMaterial);
+        leftHeadlight.position.set(-0.7, 0.6, 2.05);
+        car.add(leftHeadlight);
+        
+        const rightHeadlight = new THREE.Mesh(headlightGeometry, headlightMaterial);
+        rightHeadlight.position.set(0.7, 0.6, 2.05);
+        car.add(rightHeadlight);
+        
+        car.position.set(0, 0.5, 0);
+        scene.add(car);
+        
+        // ===========================
+        // LIGHTING
+        // ===========================
+        // Ambient light (very dark)
+        const ambientLight = new THREE.AmbientLight(0x101010, 0.1);
+        scene.add(ambientLight);
+        
+        // Car headlights (spotlights)
+        const leftSpotlight = new THREE.SpotLight(0xffffdd, 0, 50, Math.PI / 6, 0.5, 2);
+        leftSpotlight.position.set(-0.7, 0.6, 2.5);
+        leftSpotlight.castShadow = true;
+        leftSpotlight.shadow.mapSize.width = 1024;
+        leftSpotlight.shadow.mapSize.height = 1024;
+        car.add(leftSpotlight);
+        car.add(leftSpotlight.target);
+        leftSpotlight.target.position.set(-0.7, 0, 10);
+        
+        const rightSpotlight = new THREE.SpotLight(0xffffdd, 0, 50, Math.PI / 6, 0.5, 2);
+        rightSpotlight.position.set(0.7, 0.6, 2.5);
+        rightSpotlight.castShadow = true;
+        rightSpotlight.shadow.mapSize.width = 1024;
+        rightSpotlight.shadow.mapSize.height = 1024;
+        car.add(rightSpotlight);
+        car.add(rightSpotlight.target);
+        rightSpotlight.target.position.set(0.7, 0, 10);
+        
+        // ===========================
+        // CAMERA SETUP
+        // ===========================
+        camera.position.set(0, 5, -8);
+        camera.lookAt(car.position);
+        
+        // ===========================
+        // PHYSICS & CONTROLS
+        // ===========================
+        const carPhysics = {
+            velocity: new THREE.Vector3(),
+            acceleration: 0.3,
+            brakeForce: 0.5,
+            maxSpeed: 1.2,
+            turnSpeed: 0.03,
+            drift: 0,
+            driftDecay: 0.95
+        };
+        
+        // ===========================
+        // INPUT HANDLING
+        // ===========================
+        document.addEventListener('keydown', (e) => {
+            if (e.code in keys) {
+                keys[e.code] = true;
+                e.preventDefault();
+            }
+            if (e.key.toLowerCase() in keys) {
+                keys[e.key.toLowerCase()] = true;
+                e.preventDefault();
+            }
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            if (e.code in keys) {
+                keys[e.code] = false;
+                e.preventDefault();
+            }
+            if (e.key.toLowerCase() in keys) {
+                keys[e.key.toLowerCase()] = false;
+                e.preventDefault();
+            }
+        });
+        
+        // ===========================
+        // GAME LOOP
+        // ===========================
+        let lastTime = performance.now();
+        let driftCharge = 0;
+        
+        function updateCar(deltaTime) {
+            const forward = keys.w || keys.ArrowUp;
+            const backward = keys.s || keys.ArrowDown;
+            const left = keys.a || keys.ArrowLeft;
+            const right = keys.d || keys.ArrowRight;
+            const drift = keys.space;
+            
+            // Handle drifting
+            if (drift && gameState.speed > 0.3) {
+                gameState.isDrifting = true;
+                carPhysics.drift += 0.05;
+                driftCharge += deltaTime * 0.02;
+                
+                // Kinetic recharge from drifting
+                if (driftCharge > 1) {
+                    gameState.battery = Math.min(100, gameState.battery + 0.5);
+                    driftCharge = 0;
+                }
+            } else {
+                gameState.isDrifting = false;
+                carPhysics.drift *= carPhysics.driftDecay;
+                driftCharge = 0;
+            }
+            
+            // Acceleration
+            if (forward && !gameState.batteryDead) {
+                const speed = carPhysics.velocity.length();
+                if (speed < carPhysics.maxSpeed) {
+                    const forwardDir = new THREE.Vector3(0, 0, 1);
+                    forwardDir.applyQuaternion(car.quaternion);
+                    forwardDir.multiplyScalar(carPhysics.acceleration * deltaTime);
+                    carPhysics.velocity.add(forwardDir);
+                }
+            }
+            
+            // Braking
+            if (backward) {
+                carPhysics.velocity.multiplyScalar(1 - carPhysics.brakeForce * deltaTime);
+            }
+            
+            // Friction
+            carPhysics.velocity.multiplyScalar(1 - 0.3 * deltaTime);
+            
+            // Turning
+            const speed = carPhysics.velocity.length();
+            if (speed > 0.1) {
+                let turnAmount = 0;
+                if (left) turnAmount += carPhysics.turnSpeed * deltaTime;
+                if (right) turnAmount -= carPhysics.turnSpeed * deltaTime;
+                
+                // Drift affects turning
+                if (gameState.isDrifting) {
+                    turnAmount *= 1.5;
+                }
+                
+                car.rotation.y += turnAmount * speed * 30;
+                
+                // Kinetic recharge from high-speed turns
+                if (Math.abs(turnAmount) > 0.001 && speed > 0.6) {
+                    gameState.battery = Math.min(100, gameState.battery + Math.abs(turnAmount) * 5);
+                }
+            }
+            
+            // Apply velocity
+            car.position.add(carPhysics.velocity);
+            
+            // Update speed display
+            gameState.speed = speed;
+            gameState.distance = car.position.z;
+            
+            // Camera follow
+            const idealCameraOffset = new THREE.Vector3(0, 5, -8);
+            idealCameraOffset.applyQuaternion(car.quaternion);
+            const idealCameraPosition = car.position.clone().add(idealCameraOffset);
+            
+            camera.position.lerp(idealCameraPosition, 0.1);
+            
+            const lookAtPoint = car.position.clone();
+            lookAtPoint.y += 1;
+            camera.lookAt(lookAtPoint);
+        }
+        
+        function updateLighting() {
+            let intensity = 0;
+            let distance = 0;
+            let angle = Math.PI / 6;
+            
+            if (gameState.batteryDead) {
+                intensity = 0;
+                distance = 0;
+            } else if (keys.h && gameState.battery > 0) {
+                // High beams
+                gameState.highBeamsOn = true;
+                intensity = 2.5;
+                distance = 80;
+                angle = Math.PI / 4;
+                gameState.battery = Math.max(0, gameState.battery - 0.1);
+                
+                if (gameState.battery <= 0) {
+                    gameState.batteryDead = true;
+                    showMessage("BATTERY DEAD!");
+                }
+            } else {
+                // Normal headlights
+                gameState.highBeamsOn = false;
+                intensity = 1.2;
+                distance = 50;
+                angle = Math.PI / 6;
+            }
+            
+            leftSpotlight.intensity = intensity;
+            leftSpotlight.distance = distance;
+            leftSpotlight.angle = angle;
+            
+            rightSpotlight.intensity = intensity;
+            rightSpotlight.distance = distance;
+            rightSpotlight.angle = angle;
+        }
+        
+        function revealNearbyRoad() {
+            if (gameState.batteryDead) return;
+            
+            const lightRange = gameState.highBeamsOn ? 80 : 50;
+            
+            roadSegments.forEach(segment => {
+                const distance = car.position.distanceTo(segment.position);
+                if (distance < lightRange) {
+                    segment.reveal();
+                }
+            });
+        }
+        
+        function updateHUD() {
+            document.getElementById('battery-percent').textContent = Math.max(0, Math.floor(gameState.battery));
+            document.getElementById('distance').textContent = Math.floor(gameState.distance);
+            document.getElementById('speed').textContent = Math.floor(gameState.speed * 100);
+            document.getElementById('highbeam-status').textContent = gameState.highBeamsOn ? 'ON' : 'OFF';
+            
+            const batteryFill = document.getElementById('battery-fill');
+            batteryFill.style.width = Math.max(0, gameState.battery) + '%';
+            
+            if (gameState.battery < 20) {
+                batteryFill.className = 'low';
+            } else if (gameState.battery < 50) {
+                batteryFill.className = 'medium';
+            } else {
+                batteryFill.className = '';
+            }
+        }
+        
+        function showMessage(text) {
+            const msgEl = document.getElementById('message');
+            msgEl.textContent = text;
+            msgEl.classList.add('show');
+            setTimeout(() => {
+                msgEl.classList.remove('show');
+            }, 2000);
+        }
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const currentTime = performance.now();
+            const deltaTime = Math.min((currentTime - lastTime) / 1000, 0.1);
+            lastTime = currentTime;
+            
+            updateCar(deltaTime);
+            updateLighting();
+            generateRoadSegments(car.position.z);
+            revealNearbyRoad();
+            updateHUD();
+            
+            renderer.render(scene, camera);
+        }
+        
+        // ===========================
+        // WINDOW RESIZE
+        // ===========================
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        // ===========================
+        // START GAME
+        // ===========================
+        generateRoadSegments(0);
+        animate();
+        
+        // Show start message
+        setTimeout(() => {
+            showMessage("DRIVE INTO THE VOID");
+        }, 500);
+    </script>
+</body>
+</html>

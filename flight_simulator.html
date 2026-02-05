@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Three.js Flight Simulator</title>
+    <title>Three.js Flight Combat Simulator</title>
     <style>
         /* Reset and base styles */
         * {
@@ -44,6 +44,61 @@
             padding: 5px 10px;
             background: rgba(0, 0, 0, 0.5);
             border-left: 3px solid #00ff00;
+        }
+
+        /* Health bar */
+        #health-container {
+            position: fixed;
+            top: 20px;
+            right: 80px;
+            width: 200px;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        #health-label {
+            color: #ff4444;
+            font-size: 14px;
+            margin-bottom: 5px;
+            text-shadow: 0 0 10px #ff4444;
+        }
+
+        #health-bar-bg {
+            width: 100%;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #ff4444;
+            border-radius: 3px;
+        }
+
+        #health-bar {
+            height: 100%;
+            background: linear-gradient(to right, #ff0000, #ff4444);
+            border-radius: 2px;
+            transition: width 0.3s;
+        }
+
+        /* Score/Kill counter */
+        #score-display {
+            position: fixed;
+            top: 70px;
+            right: 80px;
+            color: #ffaa00;
+            font-size: 24px;
+            text-shadow: 0 0 10px #ffaa00;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        /* Enemy indicator */
+        #enemy-count {
+            position: fixed;
+            top: 110px;
+            right: 80px;
+            color: #ff6666;
+            font-size: 14px;
+            z-index: 100;
+            pointer-events: none;
         }
 
         /* Controls help */
@@ -97,6 +152,12 @@
             margin-top: 20px;
         }
 
+        #final-score {
+            color: #ffaa00;
+            font-size: 36px;
+            margin-top: 10px;
+        }
+
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
             25% { transform: translateX(-20px); }
@@ -109,8 +170,8 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 40px;
-            height: 40px;
+            width: 60px;
+            height: 60px;
             z-index: 100;
             pointer-events: none;
         }
@@ -119,21 +180,36 @@
         #crosshair::after {
             content: '';
             position: absolute;
-            background: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 100, 100, 0.8);
         }
 
         #crosshair::before {
             width: 2px;
-            height: 100%;
+            height: 20px;
             left: 50%;
+            top: 0;
             transform: translateX(-50%);
+            box-shadow: 0 40px 0 rgba(255, 100, 100, 0.8);
         }
 
         #crosshair::after {
-            width: 100%;
+            width: 20px;
             height: 2px;
             top: 50%;
+            left: 0;
             transform: translateY(-50%);
+            box-shadow: 40px 0 0 rgba(255, 100, 100, 0.8);
+        }
+
+        #crosshair-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 6px;
+            height: 6px;
+            border: 2px solid rgba(255, 100, 100, 0.8);
+            border-radius: 50%;
         }
 
         /* Throttle indicator */
@@ -165,6 +241,73 @@
             font-size: 12px;
             z-index: 100;
         }
+
+        /* Damage flash */
+        #damage-flash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 0, 0, 0.3);
+            z-index: 150;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.1s;
+        }
+
+        /* Ammo display */
+        #ammo-display {
+            position: fixed;
+            bottom: 20px;
+            right: 30px;
+            color: #ffaa00;
+            font-size: 18px;
+            z-index: 100;
+            pointer-events: none;
+            text-shadow: 0 0 10px #ffaa00;
+        }
+
+        /* Radar */
+        #radar {
+            position: fixed;
+            bottom: 20px;
+            right: 150px;
+            width: 120px;
+            height: 120px;
+            background: rgba(0, 20, 0, 0.8);
+            border: 2px solid #00ff00;
+            border-radius: 50%;
+            z-index: 100;
+            overflow: hidden;
+        }
+
+        #radar-sweep {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 50%;
+            height: 2px;
+            background: linear-gradient(to right, #00ff00, transparent);
+            transform-origin: left center;
+            animation: sweep 2s linear infinite;
+        }
+
+        @keyframes sweep {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        #radar-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 6px;
+            height: 6px;
+            background: #00ff00;
+            border-radius: 50%;
+        }
     </style>
 </head>
 <body>
@@ -178,6 +321,18 @@
         <div id="vertical-speed">V/S: 0 m/s</div>
     </div>
 
+    <!-- Health bar -->
+    <div id="health-container">
+        <div id="health-label">HULL INTEGRITY</div>
+        <div id="health-bar-bg">
+            <div id="health-bar" style="width: 100%;"></div>
+        </div>
+    </div>
+
+    <!-- Score display -->
+    <div id="score-display">KILLS: 0</div>
+    <div id="enemy-count">ENEMIES: 0</div>
+
     <!-- Controls Help -->
     <div id="controls-help">
         <h3>CONTROLS</h3>
@@ -186,11 +341,14 @@
         <div><span>Q/E</span> - Yaw Left/Right</div>
         <div><span>SHIFT</span> - Increase Throttle</div>
         <div><span>CTRL</span> - Decrease Throttle</div>
+        <div><span>SPACE</span> - Fire Guns</div>
         <div><span>R</span> - Reset Position</div>
     </div>
 
     <!-- Crosshair -->
-    <div id="crosshair"></div>
+    <div id="crosshair">
+        <div id="crosshair-center"></div>
+    </div>
 
     <!-- Throttle indicator -->
     <div id="throttle-bar">
@@ -198,10 +356,23 @@
     </div>
     <div id="throttle-label">THROTTLE</div>
 
+    <!-- Damage flash -->
+    <div id="damage-flash"></div>
+
+    <!-- Ammo display -->
+    <div id="ammo-display">∞ AMMO</div>
+
+    <!-- Radar -->
+    <div id="radar">
+        <div id="radar-sweep"></div>
+        <div id="radar-center"></div>
+    </div>
+
     <!-- Crash Overlay -->
     <div id="crash-overlay">
-        <h1>CRASHED!</h1>
+        <h1>DESTROYED!</h1>
         <p>Press R to restart</p>
+        <div id="final-score">Final Score: 0</div>
     </div>
 
     <!-- Three.js from CDN -->
@@ -210,10 +381,13 @@
     <script>
         /**
          * =====================================================
-         * THREE.JS FLIGHT SIMULATOR
+         * THREE.JS FLIGHT COMBAT SIMULATOR
          * =====================================================
-         * A complete flight simulator with procedural terrain,
-         * physics-based flight model, and collision detection.
+         * Features:
+         * - Infinite procedural chunk-based terrain
+         * - Combat with guns and enemy AI drones
+         * - Health system with explosions
+         * - Collision detection
          * =====================================================
          */
 
@@ -222,53 +396,70 @@
         // =====================================================
         const CONFIG = {
             // Terrain settings
-            terrainSize: 4000,          // Size of terrain in world units
-            terrainSegments: 256,       // Resolution of terrain mesh
-            terrainHeight: 300,         // Maximum terrain height
-            terrainSeed: 12345,         // Seed for procedural generation
-
+            terrainSeed: 42,            // Seed for procedural generation
+            chunkSize: 500,             // Size of each terrain chunk
+            chunkSegments: 64,          // Resolution per chunk
+            terrainHeight: 250,         // Maximum terrain height
+            viewDistance: 3,            // Chunks visible in each direction
+            
             // Flight physics
-            maxSpeed: 500,              // Maximum speed in units/second
-            minSpeed: 50,               // Minimum speed (stall speed)
-            acceleration: 100,          // Throttle acceleration
-            drag: 0.01,                 // Air resistance
-            gravity: 9.81,              // Gravity constant
-            liftCoefficient: 0.015,     // Lift force multiplier
+            maxSpeed: 500,
+            minSpeed: 50,
+            acceleration: 100,
+            drag: 0.01,
+            gravity: 9.81,
+            liftCoefficient: 0.015,
             
             // Control sensitivity
-            pitchRate: 1.5,             // Pitch rotation speed
-            rollRate: 2.0,              // Roll rotation speed
-            yawRate: 0.8,               // Yaw rotation speed
+            pitchRate: 1.5,
+            rollRate: 2.0,
+            yawRate: 0.8,
             
             // Camera settings
-            cameraDistance: 30,         // Distance behind plane
-            cameraHeight: 8,            // Height above plane
-            cameraSmoothing: 0.05,      // Camera follow smoothing
+            cameraDistance: 30,
+            cameraHeight: 8,
+            cameraSmoothing: 0.05,
 
             // Starting position
-            startAltitude: 500,         // Starting altitude
-            startSpeed: 200             // Starting speed
+            startAltitude: 500,
+            startSpeed: 200,
+
+            // Combat settings
+            bulletSpeed: 800,
+            bulletLifetime: 3,
+            fireRate: 0.1,              // Seconds between shots
+            bulletDamage: 25,
+
+            // Player settings
+            playerMaxHP: 100,
+
+            // Enemy settings
+            enemyMaxHP: 50,
+            enemySpeed: 150,
+            enemySpawnInterval: 5,      // Seconds between spawns
+            maxEnemies: 8,
+            enemyFireRate: 2,           // Seconds between enemy shots
+            enemyDamage: 10,
+            enemySpawnDistance: 800,
+
+            // Explosion settings
+            explosionParticles: 50,
+            explosionDuration: 1.5
         };
 
         // =====================================================
         // SIMPLEX NOISE IMPLEMENTATION
         // =====================================================
-        /**
-         * Simple 2D noise implementation based on improved Perlin noise
-         * Used for procedural terrain generation
-         */
         class SimplexNoise {
             constructor(seed = 0) {
                 this.seed = seed;
                 this.permutation = this.generatePermutation(seed);
             }
 
-            // Generate a seeded permutation table
             generatePermutation(seed) {
                 const perm = [];
                 for (let i = 0; i < 256; i++) perm[i] = i;
                 
-                // Seeded shuffle using simple LCG
                 let s = seed;
                 for (let i = 255; i > 0; i--) {
                     s = (s * 1103515245 + 12345) & 0x7fffffff;
@@ -276,21 +467,17 @@
                     [perm[i], perm[j]] = [perm[j], perm[i]];
                 }
                 
-                // Duplicate for overflow
                 return [...perm, ...perm];
             }
 
-            // Fade function for smooth interpolation
             fade(t) {
                 return t * t * t * (t * (t * 6 - 15) + 10);
             }
 
-            // Linear interpolation
             lerp(a, b, t) {
                 return a + t * (b - a);
             }
 
-            // Gradient function
             grad(hash, x, y) {
                 const h = hash & 7;
                 const u = h < 4 ? x : y;
@@ -298,35 +485,24 @@
                 return ((h & 1) ? -u : u) + ((h & 2) ? -2 * v : 2 * v);
             }
 
-            // 2D noise function
             noise2D(x, y) {
                 const perm = this.permutation;
-                
-                // Find unit grid cell
                 const X = Math.floor(x) & 255;
                 const Y = Math.floor(y) & 255;
-                
-                // Relative position in cell
                 x -= Math.floor(x);
                 y -= Math.floor(y);
-                
-                // Fade curves
                 const u = this.fade(x);
                 const v = this.fade(y);
-                
-                // Hash coordinates of corners
                 const A = perm[X] + Y;
                 const B = perm[X + 1] + Y;
                 
-                // Blend results
                 return this.lerp(
                     this.lerp(this.grad(perm[A], x, y), this.grad(perm[B], x - 1, y), u),
                     this.lerp(this.grad(perm[A + 1], x, y - 1), this.grad(perm[B + 1], x - 1, y - 1), u),
                     v
-                ) * 0.5 + 0.5; // Normalize to 0-1
+                ) * 0.5 + 0.5;
             }
 
-            // Fractal Brownian Motion for more natural terrain
             fbm(x, y, octaves = 6, persistence = 0.5, lacunarity = 2) {
                 let total = 0;
                 let amplitude = 1;
@@ -348,10 +524,26 @@
         // GLOBAL VARIABLES
         // =====================================================
         let scene, camera, renderer;
-        let plane, terrain;
+        let plane, playerHP;
         let noise;
         let clock;
         let crashed = false;
+        let score = 0;
+
+        // Chunk management
+        const chunks = new Map();        // Map of "x,z" -> chunk mesh
+        let currentChunkX = 0;
+        let currentChunkZ = 0;
+
+        // Combat arrays
+        const bullets = [];              // Player bullets
+        const enemyBullets = [];         // Enemy bullets
+        const enemies = [];              // Enemy planes
+        const explosions = [];           // Active explosions
+
+        // Timers
+        let lastFireTime = 0;
+        let lastEnemySpawn = 0;
 
         // Flight state
         const flightState = {
@@ -365,25 +557,26 @@
 
         // Input state
         const keys = {
-            w: false, s: false,     // Pitch
-            a: false, d: false,     // Roll
-            q: false, e: false,     // Yaw
-            shift: false,           // Throttle up
-            ctrl: false,            // Throttle down
-            r: false                // Reset
+            w: false, s: false,
+            a: false, d: false,
+            q: false, e: false,
+            shift: false,
+            ctrl: false,
+            space: false,
+            r: false
         };
+
+        // Radar blips (DOM elements)
+        const radarBlips = [];
 
         // =====================================================
         // INITIALIZATION
         // =====================================================
         function init() {
-            // Initialize noise generator
             noise = new SimplexNoise(CONFIG.terrainSeed);
 
-            // Create scene
             scene = new THREE.Scene();
 
-            // Create camera
             camera = new THREE.PerspectiveCamera(
                 70,
                 window.innerWidth / window.innerHeight,
@@ -391,55 +584,42 @@
                 10000
             );
 
-            // Create renderer
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-            // Create clock for delta time
             clock = new THREE.Clock();
 
-            // Build the scene
             createSkybox();
             createLighting();
-            createTerrain();
             createPlane();
             createWater();
 
-            // Set initial plane position
             resetPlane();
 
-            // Setup event listeners
             setupControls();
             window.addEventListener('resize', onWindowResize);
 
-            // Start animation loop
             animate();
         }
 
         // =====================================================
-        // SKYBOX - Gradient sky dome
+        // SKYBOX
         // =====================================================
         function createSkybox() {
-            // Create a large sphere for the sky
             const skyGeometry = new THREE.SphereGeometry(5000, 32, 32);
-            
-            // Create gradient material using vertex colors
             const skyColors = [];
             const positions = skyGeometry.attributes.position;
             
             for (let i = 0; i < positions.count; i++) {
                 const y = positions.getY(i);
-                const normalizedY = (y + 5000) / 10000; // 0 to 1 from bottom to top
+                const normalizedY = (y + 5000) / 10000;
                 
-                // Sky gradient: horizon orange -> blue -> dark blue
                 let color;
                 if (normalizedY < 0.5) {
-                    // Below horizon - ground reflection
                     color = new THREE.Color(0x1a1a2e);
                 } else if (normalizedY < 0.55) {
-                    // Horizon - warm colors
                     const t = (normalizedY - 0.5) / 0.05;
                     color = new THREE.Color().lerpColors(
                         new THREE.Color(0x1a1a2e),
@@ -447,7 +627,6 @@
                         t
                     );
                 } else if (normalizedY < 0.7) {
-                    // Lower sky
                     const t = (normalizedY - 0.55) / 0.15;
                     color = new THREE.Color().lerpColors(
                         new THREE.Color(0xff7b54),
@@ -455,7 +634,6 @@
                         t
                     );
                 } else {
-                    // Upper sky
                     const t = (normalizedY - 0.7) / 0.3;
                     color = new THREE.Color().lerpColors(
                         new THREE.Color(0x4a90d9),
@@ -475,116 +653,171 @@
             });
             
             const sky = new THREE.Mesh(skyGeometry, skyMaterial);
+            sky.name = 'sky';
             scene.add(sky);
 
-            // Add fog for atmosphere
-            scene.fog = new THREE.Fog(0x87CEEB, 1000, 4000);
+            scene.fog = new THREE.Fog(0x87CEEB, 500, 2500);
         }
 
         // =====================================================
         // LIGHTING
         // =====================================================
         function createLighting() {
-            // Ambient light for base illumination
             const ambientLight = new THREE.AmbientLight(0x404060, 0.5);
             scene.add(ambientLight);
 
-            // Directional light (sun)
             const sunLight = new THREE.DirectionalLight(0xffffcc, 1.2);
             sunLight.position.set(500, 800, -500);
-            sunLight.castShadow = false;
             scene.add(sunLight);
 
-            // Hemisphere light for sky/ground color
             const hemiLight = new THREE.HemisphereLight(0x87CEEB, 0x3d5c3d, 0.6);
             scene.add(hemiLight);
         }
 
         // =====================================================
-        // PROCEDURAL TERRAIN
+        // INFINITE TERRAIN - CHUNK SYSTEM
         // =====================================================
-        function createTerrain() {
+        
+        /**
+         * Get the chunk coordinates for a world position
+         */
+        function getChunkCoords(worldX, worldZ) {
+            return {
+                x: Math.floor(worldX / CONFIG.chunkSize),
+                z: Math.floor(worldZ / CONFIG.chunkSize)
+            };
+        }
+
+        /**
+         * Generate a terrain chunk at given chunk coordinates
+         */
+        function createChunk(chunkX, chunkZ) {
+            const key = `${chunkX},${chunkZ}`;
+            if (chunks.has(key)) return;
+
             const geometry = new THREE.PlaneGeometry(
-                CONFIG.terrainSize,
-                CONFIG.terrainSize,
-                CONFIG.terrainSegments,
-                CONFIG.terrainSegments
+                CONFIG.chunkSize,
+                CONFIG.chunkSize,
+                CONFIG.chunkSegments,
+                CONFIG.chunkSegments
             );
 
-            // Rotate to be horizontal
             geometry.rotateX(-Math.PI / 2);
 
-            // Displace vertices based on noise
             const positions = geometry.attributes.position;
             const colors = [];
 
-            for (let i = 0; i < positions.count; i++) {
-                const x = positions.getX(i);
-                const z = positions.getZ(i);
+            // World offset for this chunk
+            const offsetX = chunkX * CONFIG.chunkSize;
+            const offsetZ = chunkZ * CONFIG.chunkSize;
 
-                // Calculate height using fractal noise
-                const height = getTerrainHeight(x, z);
+            for (let i = 0; i < positions.count; i++) {
+                const localX = positions.getX(i);
+                const localZ = positions.getZ(i);
+
+                // Convert to world coordinates
+                const worldX = localX + offsetX;
+                const worldZ = localZ + offsetZ;
+
+                const height = getTerrainHeight(worldX, worldZ);
                 positions.setY(i, height);
 
-                // Color based on height
                 const color = getTerrainColor(height);
                 colors.push(color.r, color.g, color.b);
             }
 
-            // Update geometry
             geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
             geometry.computeVertexNormals();
 
-            // Create material
             const material = new THREE.MeshLambertMaterial({
                 vertexColors: true,
                 flatShading: true
             });
 
-            terrain = new THREE.Mesh(geometry, material);
-            scene.add(terrain);
+            const chunk = new THREE.Mesh(geometry, material);
+            chunk.position.set(offsetX, 0, offsetZ);
+            chunk.name = `chunk_${key}`;
+
+            scene.add(chunk);
+            chunks.set(key, chunk);
+        }
+
+        /**
+         * Remove a terrain chunk
+         */
+        function removeChunk(chunkX, chunkZ) {
+            const key = `${chunkX},${chunkZ}`;
+            const chunk = chunks.get(key);
+            if (chunk) {
+                scene.remove(chunk);
+                chunk.geometry.dispose();
+                chunk.material.dispose();
+                chunks.delete(key);
+            }
+        }
+
+        /**
+         * Update visible chunks based on player position
+         */
+        function updateChunks() {
+            const playerChunk = getChunkCoords(plane.position.x, plane.position.z);
+            
+            // Check if we moved to a new chunk
+            if (playerChunk.x !== currentChunkX || playerChunk.z !== currentChunkZ) {
+                currentChunkX = playerChunk.x;
+                currentChunkZ = playerChunk.z;
+            }
+
+            // Generate chunks within view distance
+            const neededChunks = new Set();
+            for (let dx = -CONFIG.viewDistance; dx <= CONFIG.viewDistance; dx++) {
+                for (let dz = -CONFIG.viewDistance; dz <= CONFIG.viewDistance; dz++) {
+                    const cx = currentChunkX + dx;
+                    const cz = currentChunkZ + dz;
+                    const key = `${cx},${cz}`;
+                    neededChunks.add(key);
+                    createChunk(cx, cz);
+                }
+            }
+
+            // Remove chunks outside view distance
+            for (const [key, chunk] of chunks) {
+                if (!neededChunks.has(key)) {
+                    const [cx, cz] = key.split(',').map(Number);
+                    removeChunk(cx, cz);
+                }
+            }
         }
 
         /**
          * Calculate terrain height at given world coordinates
-         * This function is used for both mesh generation and collision detection
          */
         function getTerrainHeight(x, z) {
-            // Scale coordinates for noise sampling
             const scale = 0.002;
             
-            // Base terrain using FBM
             let height = noise.fbm(x * scale, z * scale, 6, 0.5, 2);
-            
-            // Add larger features
             height += noise.fbm(x * scale * 0.3, z * scale * 0.3, 4, 0.6, 2) * 0.5;
             
-            // Create some mountain ridges
             const ridgeNoise = Math.abs(noise.noise2D(x * scale * 0.5, z * scale * 0.5) - 0.5) * 2;
             height += ridgeNoise * 0.3;
             
-            // Scale to desired height range
             height = height * CONFIG.terrainHeight;
             
-            // Ensure minimum height (ocean floor)
             return Math.max(height - 50, -10);
         }
 
         /**
-         * Get terrain color based on height (biome-style coloring)
+         * Get terrain color based on height
          */
         function getTerrainColor(height) {
             const maxHeight = CONFIG.terrainHeight;
             const normalizedHeight = (height + 10) / (maxHeight + 10);
 
             if (height < 0) {
-                // Water depth
                 return new THREE.Color(0x1a4a6e);
             } else if (normalizedHeight < 0.15) {
-                // Beach/sand
                 return new THREE.Color(0xc2b280);
             } else if (normalizedHeight < 0.4) {
-                // Grass/lowlands
                 const t = (normalizedHeight - 0.15) / 0.25;
                 return new THREE.Color().lerpColors(
                     new THREE.Color(0x567d46),
@@ -592,10 +825,8 @@
                     t
                 );
             } else if (normalizedHeight < 0.6) {
-                // Forest
                 return new THREE.Color(0x2d4a2d);
             } else if (normalizedHeight < 0.8) {
-                // Rocky mountains
                 const t = (normalizedHeight - 0.6) / 0.2;
                 return new THREE.Color().lerpColors(
                     new THREE.Color(0x4a4a4a),
@@ -603,16 +834,16 @@
                     t
                 );
             } else {
-                // Snow caps
                 return new THREE.Color(0xe8e8e8);
             }
         }
 
         // =====================================================
-        // WATER PLANE
+        // WATER PLANE (follows player)
         // =====================================================
+        let water;
         function createWater() {
-            const waterGeometry = new THREE.PlaneGeometry(CONFIG.terrainSize * 2, CONFIG.terrainSize * 2);
+            const waterGeometry = new THREE.PlaneGeometry(CONFIG.chunkSize * (CONFIG.viewDistance * 2 + 3), CONFIG.chunkSize * (CONFIG.viewDistance * 2 + 3));
             const waterMaterial = new THREE.MeshPhongMaterial({
                 color: 0x0077be,
                 transparent: true,
@@ -621,44 +852,30 @@
                 side: THREE.DoubleSide
             });
 
-            const water = new THREE.Mesh(waterGeometry, waterMaterial);
+            water = new THREE.Mesh(waterGeometry, waterMaterial);
             water.rotation.x = -Math.PI / 2;
             water.position.y = 0;
             scene.add(water);
         }
 
         // =====================================================
-        // AIRCRAFT MODEL
+        // AIRCRAFT MODEL - PLAYER
         // =====================================================
         function createPlane() {
             plane = new THREE.Group();
 
-            // Materials
-            const bodyMaterial = new THREE.MeshPhongMaterial({ 
-                color: 0x4a5568,
-                flatShading: true 
-            });
-            const accentMaterial = new THREE.MeshPhongMaterial({ 
-                color: 0xe53e3e,
-                flatShading: true 
-            });
-            const glassMaterial = new THREE.MeshPhongMaterial({
-                color: 0x63b3ed,
-                transparent: true,
-                opacity: 0.6
-            });
-            const darkMaterial = new THREE.MeshPhongMaterial({
-                color: 0x2d3748,
-                flatShading: true
-            });
+            const bodyMaterial = new THREE.MeshPhongMaterial({ color: 0x4a5568, flatShading: true });
+            const accentMaterial = new THREE.MeshPhongMaterial({ color: 0x3182ce, flatShading: true });
+            const glassMaterial = new THREE.MeshPhongMaterial({ color: 0x63b3ed, transparent: true, opacity: 0.6 });
+            const darkMaterial = new THREE.MeshPhongMaterial({ color: 0x2d3748, flatShading: true });
 
-            // Fuselage (main body)
+            // Fuselage
             const fuselageGeometry = new THREE.CylinderGeometry(0.8, 0.5, 8, 8);
             const fuselage = new THREE.Mesh(fuselageGeometry, bodyMaterial);
             fuselage.rotation.x = Math.PI / 2;
             plane.add(fuselage);
 
-            // Nose cone
+            // Nose
             const noseGeometry = new THREE.ConeGeometry(0.8, 3, 8);
             const nose = new THREE.Mesh(noseGeometry, accentMaterial);
             nose.rotation.x = -Math.PI / 2;
@@ -672,13 +889,12 @@
             cockpit.rotation.x = Math.PI * 0.1;
             plane.add(cockpit);
 
-            // Main wings
+            // Wings
             const wingGeometry = new THREE.BoxGeometry(14, 0.2, 2);
             const wings = new THREE.Mesh(wingGeometry, bodyMaterial);
-            wings.position.set(0, 0, 0);
             plane.add(wings);
 
-            // Wing tips (red)
+            // Wing tips
             const wingTipGeometry = new THREE.BoxGeometry(1, 0.25, 2);
             const leftWingTip = new THREE.Mesh(wingTipGeometry, accentMaterial);
             leftWingTip.position.set(-7, 0, 0);
@@ -688,14 +904,14 @@
             rightWingTip.position.set(7, 0, 0);
             plane.add(rightWingTip);
 
-            // Tail section (rear fuselage)
+            // Tail
             const tailFuselageGeometry = new THREE.CylinderGeometry(0.5, 0.3, 3, 8);
             const tailFuselage = new THREE.Mesh(tailFuselageGeometry, bodyMaterial);
             tailFuselage.rotation.x = Math.PI / 2;
             tailFuselage.position.z = 5.5;
             plane.add(tailFuselage);
 
-            // Vertical stabilizer (tail fin)
+            // Vertical stabilizer
             const vStabGeometry = new THREE.BoxGeometry(0.15, 2.5, 2);
             const vStab = new THREE.Mesh(vStabGeometry, bodyMaterial);
             vStab.position.set(0, 1.2, 6);
@@ -713,13 +929,7 @@
             hStab.position.set(0, 0.3, 6);
             plane.add(hStab);
 
-            // Elevators
-            const elevatorGeometry = new THREE.BoxGeometry(4.5, 0.1, 0.8);
-            const elevators = new THREE.Mesh(elevatorGeometry, darkMaterial);
-            elevators.position.set(0, 0.3, 6.8);
-            plane.add(elevators);
-
-            // Engines (under wings)
+            // Engines
             const engineGeometry = new THREE.CylinderGeometry(0.4, 0.5, 2, 8);
             
             const leftEngine = new THREE.Mesh(engineGeometry, darkMaterial);
@@ -732,53 +942,449 @@
             rightEngine.position.set(4, -0.5, 0.5);
             plane.add(rightEngine);
 
-            // Engine intakes
-            const intakeGeometry = new THREE.CylinderGeometry(0.45, 0.4, 0.3, 8);
+            // Gun barrels (visual)
+            const gunGeometry = new THREE.CylinderGeometry(0.1, 0.1, 2, 6);
+            const gunMaterial = new THREE.MeshPhongMaterial({ color: 0x1a1a1a });
             
-            const leftIntake = new THREE.Mesh(intakeGeometry, accentMaterial);
-            leftIntake.rotation.x = Math.PI / 2;
-            leftIntake.position.set(-4, -0.5, -0.7);
-            plane.add(leftIntake);
+            const leftGun = new THREE.Mesh(gunGeometry, gunMaterial);
+            leftGun.rotation.x = Math.PI / 2;
+            leftGun.position.set(-2, -0.3, -5);
+            plane.add(leftGun);
 
-            const rightIntake = new THREE.Mesh(intakeGeometry, accentMaterial);
-            rightIntake.rotation.x = Math.PI / 2;
-            rightIntake.position.set(4, -0.5, -0.7);
-            plane.add(rightIntake);
-
-            // Landing gear (simplified)
-            const gearMaterial = new THREE.MeshPhongMaterial({ color: 0x1a202c });
-            const wheelGeometry = new THREE.CylinderGeometry(0.3, 0.3, 0.2, 8);
-
-            // Front gear
-            const frontStrut = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 1.2, 6), gearMaterial);
-            frontStrut.position.set(0, -1.2, -3);
-            plane.add(frontStrut);
-
-            const frontWheel = new THREE.Mesh(wheelGeometry, gearMaterial);
-            frontWheel.rotation.z = Math.PI / 2;
-            frontWheel.position.set(0, -1.8, -3);
-            plane.add(frontWheel);
-
-            // Rear gear
-            const rearStrutL = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 1, 6), gearMaterial);
-            rearStrutL.position.set(-2, -1, 1);
-            plane.add(rearStrutL);
-
-            const rearWheelL = new THREE.Mesh(wheelGeometry, gearMaterial);
-            rearWheelL.rotation.z = Math.PI / 2;
-            rearWheelL.position.set(-2, -1.5, 1);
-            plane.add(rearWheelL);
-
-            const rearStrutR = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 1, 6), gearMaterial);
-            rearStrutR.position.set(2, -1, 1);
-            plane.add(rearStrutR);
-
-            const rearWheelR = new THREE.Mesh(wheelGeometry, gearMaterial);
-            rearWheelR.rotation.z = Math.PI / 2;
-            rearWheelR.position.set(2, -1.5, 1);
-            plane.add(rearWheelR);
+            const rightGun = new THREE.Mesh(gunGeometry, gunMaterial);
+            rightGun.rotation.x = Math.PI / 2;
+            rightGun.position.set(2, -0.3, -5);
+            plane.add(rightGun);
 
             scene.add(plane);
+        }
+
+        // =====================================================
+        // ENEMY DRONE MODEL
+        // =====================================================
+        function createEnemy() {
+            const enemy = new THREE.Group();
+
+            const bodyMaterial = new THREE.MeshPhongMaterial({ color: 0x8b0000, flatShading: true });
+            const accentMaterial = new THREE.MeshPhongMaterial({ color: 0xff4444, flatShading: true });
+            const darkMaterial = new THREE.MeshPhongMaterial({ color: 0x2d2d2d, flatShading: true });
+
+            // Fuselage (smaller, angular)
+            const fuselageGeometry = new THREE.BoxGeometry(1.5, 1, 5);
+            const fuselage = new THREE.Mesh(fuselageGeometry, bodyMaterial);
+            enemy.add(fuselage);
+
+            // Nose
+            const noseGeometry = new THREE.ConeGeometry(0.8, 2, 4);
+            const nose = new THREE.Mesh(noseGeometry, accentMaterial);
+            nose.rotation.x = -Math.PI / 2;
+            nose.position.z = -3.5;
+            enemy.add(nose);
+
+            // Wings (swept)
+            const wingShape = new THREE.Shape();
+            wingShape.moveTo(0, 0);
+            wingShape.lineTo(5, -1);
+            wingShape.lineTo(5, -1.5);
+            wingShape.lineTo(0, -1);
+            wingShape.lineTo(0, 0);
+
+            const wingGeometry = new THREE.ExtrudeGeometry(wingShape, { depth: 0.15, bevelEnabled: false });
+            
+            const leftWing = new THREE.Mesh(wingGeometry, bodyMaterial);
+            leftWing.rotation.y = Math.PI;
+            leftWing.position.set(-0.7, 0, 1);
+            enemy.add(leftWing);
+
+            const rightWing = new THREE.Mesh(wingGeometry, bodyMaterial);
+            rightWing.position.set(0.7, 0, 1);
+            enemy.add(rightWing);
+
+            // Tail fin
+            const tailGeometry = new THREE.BoxGeometry(0.1, 1.5, 1);
+            const tail = new THREE.Mesh(tailGeometry, accentMaterial);
+            tail.position.set(0, 0.8, 2);
+            enemy.add(tail);
+
+            // Engine glow
+            const engineGlow = new THREE.Mesh(
+                new THREE.SphereGeometry(0.3, 8, 8),
+                new THREE.MeshBasicMaterial({ color: 0xff6600 })
+            );
+            engineGlow.position.z = 2.8;
+            enemy.add(engineGlow);
+
+            // Enemy data
+            enemy.userData = {
+                hp: CONFIG.enemyMaxHP,
+                maxHP: CONFIG.enemyMaxHP,
+                velocity: new THREE.Vector3(),
+                lastFireTime: 0,
+                targetOffset: new THREE.Vector3(
+                    (Math.random() - 0.5) * 50,
+                    (Math.random() - 0.5) * 30,
+                    0
+                )
+            };
+
+            return enemy;
+        }
+
+        /**
+         * Spawn an enemy at a random position around the player
+         */
+        function spawnEnemy() {
+            if (enemies.length >= CONFIG.maxEnemies || crashed) return;
+
+            const enemy = createEnemy();
+            
+            // Spawn at random angle around player
+            const angle = Math.random() * Math.PI * 2;
+            const distance = CONFIG.enemySpawnDistance;
+            const altitude = plane.position.y + (Math.random() - 0.5) * 200;
+
+            enemy.position.set(
+                plane.position.x + Math.cos(angle) * distance,
+                Math.max(altitude, 100),
+                plane.position.z + Math.sin(angle) * distance
+            );
+
+            // Face towards player initially
+            enemy.lookAt(plane.position);
+
+            scene.add(enemy);
+            enemies.push(enemy);
+        }
+
+        // =====================================================
+        // BULLET SYSTEM
+        // =====================================================
+        
+        /**
+         * Create a bullet mesh
+         */
+        function createBullet(isEnemy = false) {
+            const geometry = new THREE.SphereGeometry(0.3, 8, 8);
+            const material = new THREE.MeshBasicMaterial({ 
+                color: isEnemy ? 0xff0000 : 0xffff00 
+            });
+            const bullet = new THREE.Mesh(geometry, material);
+            
+            // Add a trail effect
+            const trailGeometry = new THREE.CylinderGeometry(0.1, 0.2, 2, 6);
+            const trailMaterial = new THREE.MeshBasicMaterial({ 
+                color: isEnemy ? 0xff6600 : 0xffaa00,
+                transparent: true,
+                opacity: 0.5
+            });
+            const trail = new THREE.Mesh(trailGeometry, trailMaterial);
+            trail.rotation.x = Math.PI / 2;
+            trail.position.z = 1.2;
+            bullet.add(trail);
+
+            return bullet;
+        }
+
+        /**
+         * Fire player guns
+         */
+        function fireGuns(currentTime) {
+            if (currentTime - lastFireTime < CONFIG.fireRate) return;
+            lastFireTime = currentTime;
+
+            // Get forward direction
+            const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(plane.quaternion);
+
+            // Create bullets from both gun positions
+            const gunOffsets = [
+                new THREE.Vector3(-2, -0.3, -6),
+                new THREE.Vector3(2, -0.3, -6)
+            ];
+
+            gunOffsets.forEach(offset => {
+                const bullet = createBullet(false);
+                
+                // Transform offset to world space
+                const worldOffset = offset.clone().applyQuaternion(plane.quaternion);
+                bullet.position.copy(plane.position).add(worldOffset);
+                
+                // Set velocity
+                bullet.userData = {
+                    velocity: forward.clone().multiplyScalar(CONFIG.bulletSpeed),
+                    lifetime: CONFIG.bulletLifetime,
+                    isEnemy: false
+                };
+
+                scene.add(bullet);
+                bullets.push(bullet);
+            });
+        }
+
+        /**
+         * Enemy fires at player
+         */
+        function enemyFire(enemy, currentTime) {
+            if (currentTime - enemy.userData.lastFireTime < CONFIG.enemyFireRate) return;
+            enemy.userData.lastFireTime = currentTime;
+
+            const bullet = createBullet(true);
+            
+            // Fire from enemy nose
+            const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(enemy.quaternion);
+            bullet.position.copy(enemy.position).add(forward.clone().multiplyScalar(4));
+            
+            // Aim towards player with some prediction
+            const toPlayer = plane.position.clone().sub(enemy.position).normalize();
+            
+            bullet.userData = {
+                velocity: toPlayer.multiplyScalar(CONFIG.bulletSpeed * 0.6),
+                lifetime: CONFIG.bulletLifetime,
+                isEnemy: true
+            };
+
+            scene.add(bullet);
+            enemyBullets.push(bullet);
+        }
+
+        /**
+         * Update all bullets
+         */
+        function updateBullets(delta) {
+            // Update player bullets
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                const bullet = bullets[i];
+                bullet.userData.lifetime -= delta;
+
+                if (bullet.userData.lifetime <= 0) {
+                    scene.remove(bullet);
+                    bullets.splice(i, 1);
+                    continue;
+                }
+
+                // Move bullet
+                bullet.position.add(bullet.userData.velocity.clone().multiplyScalar(delta));
+
+                // Check collision with enemies
+                for (let j = enemies.length - 1; j >= 0; j--) {
+                    const enemy = enemies[j];
+                    const distance = bullet.position.distanceTo(enemy.position);
+                    
+                    if (distance < 5) {
+                        // Hit enemy
+                        enemy.userData.hp -= CONFIG.bulletDamage;
+                        scene.remove(bullet);
+                        bullets.splice(i, 1);
+
+                        if (enemy.userData.hp <= 0) {
+                            // Enemy destroyed
+                            createExplosion(enemy.position.clone(), 0xff4400);
+                            scene.remove(enemy);
+                            enemies.splice(j, 1);
+                            score++;
+                            document.getElementById('score-display').textContent = `KILLS: ${score}`;
+                        }
+                        break;
+                    }
+                }
+
+                // Check terrain collision
+                const terrainHeight = getTerrainHeight(bullet.position.x, bullet.position.z);
+                if (bullet.position.y < terrainHeight) {
+                    scene.remove(bullet);
+                    bullets.splice(i, 1);
+                }
+            }
+
+            // Update enemy bullets
+            for (let i = enemyBullets.length - 1; i >= 0; i--) {
+                const bullet = enemyBullets[i];
+                bullet.userData.lifetime -= delta;
+
+                if (bullet.userData.lifetime <= 0) {
+                    scene.remove(bullet);
+                    enemyBullets.splice(i, 1);
+                    continue;
+                }
+
+                bullet.position.add(bullet.userData.velocity.clone().multiplyScalar(delta));
+
+                // Check collision with player
+                const distance = bullet.position.distanceTo(plane.position);
+                if (distance < 8) {
+                    // Hit player
+                    damagePlayer(CONFIG.enemyDamage);
+                    scene.remove(bullet);
+                    enemyBullets.splice(i, 1);
+                    continue;
+                }
+
+                // Check terrain collision
+                const terrainHeight = getTerrainHeight(bullet.position.x, bullet.position.z);
+                if (bullet.position.y < terrainHeight) {
+                    scene.remove(bullet);
+                    enemyBullets.splice(i, 1);
+                }
+            }
+        }
+
+        // =====================================================
+        // ENEMY AI
+        // =====================================================
+        function updateEnemies(delta, currentTime) {
+            enemies.forEach((enemy, index) => {
+                // Seek and steer behavior
+                const toPlayer = plane.position.clone()
+                    .add(enemy.userData.targetOffset)
+                    .sub(enemy.position);
+                
+                const distance = toPlayer.length();
+                toPlayer.normalize();
+
+                // Desired velocity towards player
+                const desiredVelocity = toPlayer.multiplyScalar(CONFIG.enemySpeed);
+                
+                // Steering force
+                const steering = desiredVelocity.sub(enemy.userData.velocity);
+                steering.clampLength(0, 50 * delta);
+
+                // Update velocity
+                enemy.userData.velocity.add(steering);
+                enemy.userData.velocity.clampLength(0, CONFIG.enemySpeed);
+
+                // Update position
+                enemy.position.add(enemy.userData.velocity.clone().multiplyScalar(delta));
+
+                // Keep above terrain
+                const terrainHeight = getTerrainHeight(enemy.position.x, enemy.position.z);
+                if (enemy.position.y < terrainHeight + 30) {
+                    enemy.position.y = terrainHeight + 30;
+                    enemy.userData.velocity.y = Math.abs(enemy.userData.velocity.y);
+                }
+
+                // Face movement direction
+                if (enemy.userData.velocity.lengthSq() > 0.1) {
+                    const lookTarget = enemy.position.clone().add(enemy.userData.velocity);
+                    enemy.lookAt(lookTarget);
+                }
+
+                // Fire at player if in range
+                if (distance < 500) {
+                    enemyFire(enemy, currentTime);
+                }
+
+                // Randomize offset occasionally
+                if (Math.random() < delta * 0.5) {
+                    enemy.userData.targetOffset.set(
+                        (Math.random() - 0.5) * 50,
+                        (Math.random() - 0.5) * 30,
+                        (Math.random() - 0.5) * 50
+                    );
+                }
+
+                // Check collision with terrain
+                if (enemy.position.y < terrainHeight + 5) {
+                    createExplosion(enemy.position.clone(), 0xff4400);
+                    scene.remove(enemy);
+                    enemies.splice(index, 1);
+                }
+            });
+
+            // Update enemy count display
+            document.getElementById('enemy-count').textContent = `ENEMIES: ${enemies.length}`;
+        }
+
+        // =====================================================
+        // EXPLOSION SYSTEM
+        // =====================================================
+        function createExplosion(position, color = 0xff6600) {
+            const explosion = {
+                particles: [],
+                lifetime: CONFIG.explosionDuration,
+                position: position.clone()
+            };
+
+            // Create particles
+            for (let i = 0; i < CONFIG.explosionParticles; i++) {
+                const geometry = new THREE.SphereGeometry(0.5 + Math.random() * 1, 6, 6);
+                const material = new THREE.MeshBasicMaterial({
+                    color: new THREE.Color(color).lerp(new THREE.Color(0xffff00), Math.random() * 0.5),
+                    transparent: true,
+                    opacity: 1
+                });
+                const particle = new THREE.Mesh(geometry, material);
+                
+                particle.position.copy(position);
+                particle.userData = {
+                    velocity: new THREE.Vector3(
+                        (Math.random() - 0.5) * 100,
+                        (Math.random() - 0.5) * 100,
+                        (Math.random() - 0.5) * 100
+                    ),
+                    initialScale: 0.5 + Math.random() * 1.5
+                };
+                
+                scene.add(particle);
+                explosion.particles.push(particle);
+            }
+
+            explosions.push(explosion);
+        }
+
+        function updateExplosions(delta) {
+            for (let i = explosions.length - 1; i >= 0; i--) {
+                const explosion = explosions[i];
+                explosion.lifetime -= delta;
+
+                const progress = 1 - (explosion.lifetime / CONFIG.explosionDuration);
+
+                explosion.particles.forEach(particle => {
+                    // Move particle
+                    particle.position.add(particle.userData.velocity.clone().multiplyScalar(delta));
+                    
+                    // Slow down
+                    particle.userData.velocity.multiplyScalar(0.95);
+                    
+                    // Gravity
+                    particle.userData.velocity.y -= 30 * delta;
+                    
+                    // Scale and fade
+                    const scale = particle.userData.initialScale * (1 + progress * 2) * (1 - progress);
+                    particle.scale.setScalar(Math.max(0.1, scale));
+                    particle.material.opacity = 1 - progress;
+                });
+
+                if (explosion.lifetime <= 0) {
+                    // Remove particles
+                    explosion.particles.forEach(particle => {
+                        scene.remove(particle);
+                        particle.geometry.dispose();
+                        particle.material.dispose();
+                    });
+                    explosions.splice(i, 1);
+                }
+            }
+        }
+
+        // =====================================================
+        // HEALTH SYSTEM
+        // =====================================================
+        function damagePlayer(amount) {
+            if (crashed) return;
+
+            playerHP -= amount;
+            
+            // Update health bar
+            const healthPercent = Math.max(0, (playerHP / CONFIG.playerMaxHP) * 100);
+            document.getElementById('health-bar').style.width = healthPercent + '%';
+
+            // Damage flash
+            const flash = document.getElementById('damage-flash');
+            flash.style.opacity = '1';
+            setTimeout(() => flash.style.opacity = '0', 100);
+
+            if (playerHP <= 0) {
+                triggerCrash();
+            }
         }
 
         // =====================================================
@@ -796,6 +1402,7 @@
                 if (key === 'e') keys.e = true;
                 if (key === 'shift') { keys.shift = true; e.preventDefault(); }
                 if (key === 'control') { keys.ctrl = true; e.preventDefault(); }
+                if (key === ' ') { keys.space = true; e.preventDefault(); }
                 if (key === 'r') resetPlane();
             });
 
@@ -810,11 +1417,12 @@
                 if (key === 'e') keys.e = false;
                 if (key === 'shift') keys.shift = false;
                 if (key === 'control') keys.ctrl = false;
+                if (key === ' ') keys.space = false;
             });
         }
 
         // =====================================================
-        // RESET PLANE
+        // RESET
         // =====================================================
         function resetPlane() {
             crashed = false;
@@ -823,6 +1431,7 @@
             // Reset position
             plane.position.set(0, CONFIG.startAltitude, 0);
             plane.rotation.set(0, 0, 0);
+            plane.quaternion.identity();
 
             // Reset flight state
             flightState.velocity.set(0, 0, -CONFIG.startSpeed);
@@ -831,127 +1440,124 @@
             flightState.pitch = 0;
             flightState.roll = 0;
             flightState.yaw = 0;
+
+            // Reset health
+            playerHP = CONFIG.playerMaxHP;
+            document.getElementById('health-bar').style.width = '100%';
+
+            // Reset score
+            score = 0;
+            document.getElementById('score-display').textContent = 'KILLS: 0';
+
+            // Clear enemies
+            enemies.forEach(enemy => scene.remove(enemy));
+            enemies.length = 0;
+
+            // Clear bullets
+            bullets.forEach(b => scene.remove(b));
+            bullets.length = 0;
+            enemyBullets.forEach(b => scene.remove(b));
+            enemyBullets.length = 0;
+
+            // Clear explosions
+            explosions.forEach(exp => {
+                exp.particles.forEach(p => {
+                    scene.remove(p);
+                    p.geometry.dispose();
+                    p.material.dispose();
+                });
+            });
+            explosions.length = 0;
+
+            // Clear chunks and regenerate
+            chunks.forEach((chunk, key) => {
+                scene.remove(chunk);
+                chunk.geometry.dispose();
+                chunk.material.dispose();
+            });
+            chunks.clear();
+            currentChunkX = 0;
+            currentChunkZ = 0;
         }
 
         // =====================================================
-        // FLIGHT PHYSICS UPDATE
+        // FLIGHT PHYSICS
         // =====================================================
         function updateFlightPhysics(delta) {
             if (crashed) return;
 
-            // Clamp delta to prevent physics explosion
             delta = Math.min(delta, 0.1);
 
-            // === CONTROL INPUTS ===
-            
-            // Throttle control
+            // Throttle
             if (keys.shift) {
                 flightState.throttle = Math.min(flightState.throttle + delta * 0.5, 1);
             }
             if (keys.ctrl) {
                 flightState.throttle = Math.max(flightState.throttle - delta * 0.5, 0);
             }
-
-            // Update throttle display
             document.getElementById('throttle-fill').style.height = (flightState.throttle * 100) + '%';
 
-            // Pitch control (W = nose down, S = nose up)
+            // Pitch
             if (keys.w) flightState.pitch = CONFIG.pitchRate;
             else if (keys.s) flightState.pitch = -CONFIG.pitchRate;
-            else flightState.pitch *= 0.9; // Decay
+            else flightState.pitch *= 0.9;
 
-            // Roll control (A = roll left, D = roll right)
+            // Roll
             if (keys.a) flightState.roll = CONFIG.rollRate;
             else if (keys.d) flightState.roll = -CONFIG.rollRate;
             else flightState.roll *= 0.9;
 
-            // Yaw control (Q = yaw left, E = yaw right)
+            // Yaw
             if (keys.q) flightState.yaw = CONFIG.yawRate;
             else if (keys.e) flightState.yaw = -CONFIG.yawRate;
             else flightState.yaw *= 0.9;
 
-            // === ROTATION ===
-            
-            // Apply rotations in local space
+            // Apply rotations
             const pitchQuat = new THREE.Quaternion();
             const rollQuat = new THREE.Quaternion();
             const yawQuat = new THREE.Quaternion();
 
-            // Get local axes
             const localX = new THREE.Vector3(1, 0, 0).applyQuaternion(plane.quaternion);
             const localY = new THREE.Vector3(0, 1, 0).applyQuaternion(plane.quaternion);
             const localZ = new THREE.Vector3(0, 0, 1).applyQuaternion(plane.quaternion);
 
-            // Create rotation quaternions
             pitchQuat.setFromAxisAngle(localX, flightState.pitch * delta);
             rollQuat.setFromAxisAngle(localZ, flightState.roll * delta);
             yawQuat.setFromAxisAngle(localY, flightState.yaw * delta);
 
-            // Apply rotations
             plane.quaternion.premultiply(pitchQuat);
             plane.quaternion.premultiply(rollQuat);
             plane.quaternion.premultiply(yawQuat);
             plane.quaternion.normalize();
 
-            // === THRUST & SPEED ===
-            
-            // Calculate target speed based on throttle
+            // Speed
             const targetSpeed = CONFIG.minSpeed + (CONFIG.maxSpeed - CONFIG.minSpeed) * flightState.throttle;
-            
-            // Accelerate/decelerate towards target speed
             const speedDiff = targetSpeed - flightState.speed;
             flightState.speed += speedDiff * CONFIG.acceleration * delta * 0.01;
-            
-            // Apply drag
             flightState.speed *= (1 - CONFIG.drag * delta);
-            
-            // Clamp speed
             flightState.speed = Math.max(0, Math.min(flightState.speed, CONFIG.maxSpeed));
 
-            // === LIFT & GRAVITY ===
-            
-            // Get forward direction
+            // Lift & Gravity
             const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(plane.quaternion);
             const up = new THREE.Vector3(0, 1, 0).applyQuaternion(plane.quaternion);
 
-            // Calculate lift (depends on speed and pitch angle)
             const speedRatio = flightState.speed / CONFIG.maxSpeed;
             const liftForce = speedRatio * speedRatio * CONFIG.liftCoefficient * CONFIG.gravity;
-            
-            // Lift acts in the local up direction of the plane
             const lift = up.clone().multiplyScalar(liftForce * delta * 100);
-
-            // Gravity always acts downward
             const gravity = new THREE.Vector3(0, -CONFIG.gravity * delta, 0);
 
-            // === VELOCITY UPDATE ===
-            
-            // Set velocity in forward direction
             flightState.velocity.copy(forward).multiplyScalar(flightState.speed * delta);
-            
-            // Add lift and gravity effects
             flightState.velocity.add(lift);
             flightState.velocity.add(gravity);
 
-            // Stall condition: if speed is too low, increase sink rate
+            // Stall
             if (flightState.speed < CONFIG.minSpeed * 1.5) {
                 const stallFactor = 1 - (flightState.speed / (CONFIG.minSpeed * 1.5));
                 flightState.velocity.y -= stallFactor * CONFIG.gravity * delta * 2;
             }
 
-            // === POSITION UPDATE ===
             plane.position.add(flightState.velocity);
 
-            // === BOUNDARY CHECK ===
-            const halfTerrain = CONFIG.terrainSize / 2;
-            if (Math.abs(plane.position.x) > halfTerrain) {
-                plane.position.x = Math.sign(plane.position.x) * -halfTerrain * 0.9;
-            }
-            if (Math.abs(plane.position.z) > halfTerrain) {
-                plane.position.z = Math.sign(plane.position.z) * -halfTerrain * 0.9;
-            }
-
-            // === COLLISION DETECTION ===
             checkCollision();
         }
 
@@ -961,17 +1567,13 @@
         function checkCollision() {
             if (crashed) return;
 
-            // Get terrain height at plane's X/Z position
             const terrainHeight = getTerrainHeight(plane.position.x, plane.position.z);
-            
-            // Check if plane is below terrain (with a small buffer for the plane's size)
-            const collisionBuffer = 3; // Account for plane geometry
+            const collisionBuffer = 3;
             
             if (plane.position.y - collisionBuffer < terrainHeight) {
                 triggerCrash();
             }
 
-            // Also check water collision
             if (plane.position.y < 1) {
                 triggerCrash();
             }
@@ -979,54 +1581,111 @@
 
         function triggerCrash() {
             crashed = true;
-            document.getElementById('crash-overlay').style.display = 'flex';
             
-            // Create crash effect - tilt the plane
+            // Create explosion at plane position
+            createExplosion(plane.position.clone(), 0xff6600);
+            createExplosion(plane.position.clone().add(new THREE.Vector3(5, 0, 0)), 0xff4400);
+            createExplosion(plane.position.clone().add(new THREE.Vector3(-5, 0, 0)), 0xff4400);
+
+            document.getElementById('crash-overlay').style.display = 'flex';
+            document.getElementById('final-score').textContent = `Final Score: ${score} kills`;
+            
             plane.rotation.x = Math.PI * 0.3;
             plane.rotation.z = Math.PI * 0.2;
         }
 
         // =====================================================
-        // CAMERA UPDATE
+        // CAMERA
         // =====================================================
         function updateCamera(delta) {
-            // Get plane's orientation vectors
             const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(plane.quaternion);
             const up = new THREE.Vector3(0, 1, 0).applyQuaternion(plane.quaternion);
 
-            // Calculate desired camera position (behind and above the plane)
             const cameraOffset = forward.clone()
                 .multiplyScalar(-CONFIG.cameraDistance)
                 .add(up.clone().multiplyScalar(CONFIG.cameraHeight));
 
             const targetPosition = plane.position.clone().add(cameraOffset);
-
-            // Smooth camera movement
             camera.position.lerp(targetPosition, CONFIG.cameraSmoothing + (1 - CONFIG.cameraSmoothing) * delta * 5);
 
-            // Look slightly ahead of the plane
             const lookTarget = plane.position.clone().add(forward.multiplyScalar(20));
             camera.lookAt(lookTarget);
+
+            // Update water position to follow camera
+            if (water) {
+                water.position.x = plane.position.x;
+                water.position.z = plane.position.z;
+            }
+
+            // Update sky position
+            const sky = scene.getObjectByName('sky');
+            if (sky) {
+                sky.position.copy(plane.position);
+            }
         }
 
         // =====================================================
-        // HUD UPDATE
+        // RADAR UPDATE
+        // =====================================================
+        function updateRadar() {
+            // Remove old blips
+            radarBlips.forEach(blip => blip.remove());
+            radarBlips.length = 0;
+
+            const radar = document.getElementById('radar');
+            const radarSize = 120;
+            const radarRange = 1000;
+
+            enemies.forEach(enemy => {
+                const dx = enemy.position.x - plane.position.x;
+                const dz = enemy.position.z - plane.position.z;
+                const distance = Math.sqrt(dx * dx + dz * dz);
+
+                if (distance < radarRange) {
+                    // Get player's heading
+                    const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(plane.quaternion);
+                    const playerHeading = Math.atan2(forward.x, -forward.z);
+
+                    // Get angle to enemy relative to player heading
+                    const angleToEnemy = Math.atan2(dx, -dz) - playerHeading;
+
+                    // Convert to radar coordinates
+                    const radarDist = (distance / radarRange) * (radarSize / 2 - 10);
+                    const blipX = Math.sin(angleToEnemy) * radarDist + radarSize / 2;
+                    const blipY = -Math.cos(angleToEnemy) * radarDist + radarSize / 2;
+
+                    const blip = document.createElement('div');
+                    blip.style.cssText = `
+                        position: absolute;
+                        width: 6px;
+                        height: 6px;
+                        background: #ff4444;
+                        border-radius: 50%;
+                        left: ${blipX - 3}px;
+                        top: ${blipY - 3}px;
+                        box-shadow: 0 0 5px #ff4444;
+                    `;
+                    radar.appendChild(blip);
+                    radarBlips.push(blip);
+                }
+            });
+        }
+
+        // =====================================================
+        // HUD
         // =====================================================
         function updateHUD() {
-            // Altitude (Y position)
             const altitude = Math.max(0, Math.round(plane.position.y));
             document.getElementById('altitude').textContent = `ALTITUDE: ${altitude} m`;
 
-            // Speed (convert to km/h for display)
             const speedKmh = Math.round(flightState.speed * 3.6);
             document.getElementById('speed').textContent = `SPEED: ${speedKmh} km/h`;
 
-            // Heading (yaw angle in degrees)
-            const heading = Math.round(((plane.rotation.y * 180 / Math.PI) % 360 + 360) % 360);
+            const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(plane.quaternion);
+            const heading = Math.round(((Math.atan2(forward.x, -forward.z) * 180 / Math.PI) % 360 + 360) % 360);
             document.getElementById('heading').textContent = `HEADING: ${heading}°`;
 
-            // Vertical speed
-            const vs = Math.round(flightState.velocity.y * 60); // m/min equivalent
+            const vs = Math.round(flightState.velocity.y * 60);
             const vsSign = vs >= 0 ? '+' : '';
             document.getElementById('vertical-speed').textContent = `V/S: ${vsSign}${vs} m/s`;
         }
@@ -1038,13 +1697,35 @@
             requestAnimationFrame(animate);
 
             const delta = clock.getDelta();
+            const currentTime = clock.getElapsedTime();
 
-            // Update simulation
+            // Update terrain chunks
+            updateChunks();
+
+            // Update flight
             updateFlightPhysics(delta);
+
+            // Fire guns
+            if (keys.space && !crashed) {
+                fireGuns(currentTime);
+            }
+
+            // Spawn enemies
+            if (currentTime - lastEnemySpawn > CONFIG.enemySpawnInterval && !crashed) {
+                spawnEnemy();
+                lastEnemySpawn = currentTime;
+            }
+
+            // Update combat
+            updateBullets(delta);
+            updateEnemies(delta, currentTime);
+            updateExplosions(delta);
+
+            // Update camera and HUD
             updateCamera(delta);
             updateHUD();
+            updateRadar();
 
-            // Render
             renderer.render(scene, camera);
         }
 
@@ -1058,7 +1739,7 @@
         }
 
         // =====================================================
-        // START THE SIMULATION
+        // START
         // =====================================================
         init();
     </script>

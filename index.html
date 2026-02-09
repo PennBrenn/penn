@@ -602,7 +602,7 @@
          ===================================================== -->
     <div id="hangar-ui">
         <div id="parts-sidebar">
-            <h2>⚙ PARTS BAY</h2>
+            <h2>RAPE HALL</h2>
             
             <div class="part-category">
                 <h3>🛩 Wings</h3>
@@ -655,7 +655,7 @@
                     <div class="part-stats">DMG: ★★★★ | ROF: ★★ | RNG: ★★</div>
                 </button>
                 <button class="part-btn" data-part="guns" data-type="heavy" onclick="selectPart('guns', 'heavy')">
-                    Heavy Blasters
+                    CUM BLASTER 9000
                     <div class="part-stats">DMG: ★★★★★ | ROF: ★ | RNG: ★★★</div>
                 </button>
             </div>
@@ -741,8 +741,8 @@
             <div><span>A/D</span> - Roll Left/Right</div>
             <div><span>Q/E</span> - Yaw Left/Right</div>
             <div><span>SHIFT</span> - Increase Throttle</div>
-            <div><span>CTRL</span> - Decrease Throttle</div>
-            <div><span>F</span> - Fire Guns</div>
+            <div><span>Z</span> - Decrease Throttle</div>
+            <div><span>SPACE</span> - Fire Guns</div>
             <div><span>ESC</span> - Return to Hangar</div>
         </div>
 
@@ -900,8 +900,8 @@
                     bulletColor: 0xff8800,
                     bulletSize: 0.4
                 },
-                CUMBLASTER9000: {
-                    name: 'CUM BLASTER 9000',
+                heavy: {
+                    name: 'heavy blaster',
                     damageMod: 10.0,
                     fireRateMod: 100,
                     count: 2,
@@ -2295,8 +2295,8 @@
                 if (key === 'q') keys.q = true;
                 if (key === 'e') keys.e = true;
                 if (key === 'shift') { keys.shift = true; e.preventDefault(); }
+                if (key === 'z') { keys.z = true; e.preventDefault(); }
                 if (key === ' ') { keys.space = true; e.preventDefault(); }
-                if (key === 'f') { keys.f = true; e.preventDefault(); }
                 if (key === 'r') resetPlane();
                 if (key === 'escape' && currentGameState === GAME_STATE.FLIGHT) returnToHangar();
             });
@@ -2310,8 +2310,8 @@
                 if (key === 'q') keys.q = false;
                 if (key === 'e') keys.e = false;
                 if (key === 'shift') keys.shift = false;
+                if (key === 'z') keys.z = false;
                 if (key === ' ') keys.space = false;
-                if (key === 'f') keys.f = false;
             });
         }
 
@@ -2367,7 +2367,7 @@
             delta = Math.min(delta, 0.1);
 
             if (keys.shift) flightState.throttle = Math.min(flightState.throttle + delta * 0.5, 1);
-            if (keys.space) flightState.throttle = Math.max(flightState.throttle - delta * 0.5, 0);
+            if (keys.z) flightState.throttle = Math.max(flightState.throttle - delta * 0.5, 0);
             document.getElementById('throttle-fill').style.height = (flightState.throttle * 100) + '%';
 
             // Update engine glow
@@ -2544,7 +2544,7 @@
                 updateChunks();
                 updateFlightPhysics(delta);
 
-                if (keys.f && !crashed) fireGuns(currentTime);
+                if (keys.space && !crashed) fireGuns(currentTime);
 
                 if (currentTime - lastEnemySpawn > CONFIG.enemySpawnInterval && !crashed) {
                     spawnEnemy();

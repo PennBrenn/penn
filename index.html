@@ -741,8 +741,8 @@
             <div><span>A/D</span> - Roll Left/Right</div>
             <div><span>Q/E</span> - Yaw Left/Right</div>
             <div><span>SHIFT</span> - Increase Throttle</div>
-            <div><span>space</span> - Decrease Throttle</div>
-            <div><span>SPACE</span> - Fire Guns</div>
+            <div><span>CTRL</span> - Decrease Throttle</div>
+            <div><span>F</span> - Fire Guns</div>
             <div><span>ESC</span> - Return to Hangar</div>
         </div>
 
@@ -2295,8 +2295,8 @@
                 if (key === 'q') keys.q = true;
                 if (key === 'e') keys.e = true;
                 if (key === 'shift') { keys.shift = true; e.preventDefault(); }
-                if (key === 'space') { keys.space = true; e.preventDefault(); }
                 if (key === ' ') { keys.space = true; e.preventDefault(); }
+                if (key === 'f') { keys.space = true; e.preventDefault(); }
                 if (key === 'r') resetPlane();
                 if (key === 'escape' && currentGameState === GAME_STATE.FLIGHT) returnToHangar();
             });
@@ -2310,8 +2310,8 @@
                 if (key === 'q') keys.q = false;
                 if (key === 'e') keys.e = false;
                 if (key === 'shift') keys.shift = false;
-                if (key === 'control') keys.space = false;
                 if (key === ' ') keys.space = false;
+                if (key === 'f') keys.space = false;
             });
         }
 

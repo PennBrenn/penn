@@ -741,7 +741,7 @@
             <div><span>A/D</span> - Roll Left/Right</div>
             <div><span>Q/E</span> - Yaw Left/Right</div>
             <div><span>SHIFT</span> - Increase Throttle</div>
-            <div><span>CTRL</span> - Decrease Throttle</div>
+            <div><span>space</span> - Decrease Throttle</div>
             <div><span>SPACE</span> - Fire Guns</div>
             <div><span>ESC</span> - Return to Hangar</div>
         </div>
@@ -959,11 +959,11 @@
             terrainSeed: 42,
             chunkSize: 500,
             chunkSegments: 64,
-            terrainHeight: 250,
-            viewDistance: 3,
+            terrainHeight: 700,
+            viewDistance: 8,
             
             // Base flight physics (modified by parts)
-            baseMaxSpeed: 400,
+            baseMaxSpeed: 300,
             minSpeed: 50,
             acceleration: 100,
             drag: 0.01,
@@ -994,12 +994,12 @@
             basePlayerMaxHP: 100,
 
             // Enemy settings
-            enemyMaxHP: 50,
+            enemyMaxHP: 1,
             enemySpeed: 150,
-            enemySpawnInterval: 5,
-            maxEnemies: 8,
+            enemySpawnInterval: 0.5,
+            maxEnemies: 200,
             enemyFireRate: 2,
-            enemyDamage: 10,
+            enemyDamage: 5,
             enemySpawnDistance: 800,
 
             // Effects
@@ -1128,7 +1128,7 @@
         };
 
         // Input
-        const keys = { w: false, s: false, a: false, d: false, q: false, e: false, shift: false, ctrl: false, space: false, r: false, escape: false };
+        const keys = { w: false, s: false, a: false, d: false, q: false, e: false, shift: false, space: false, space: false, r: false, escape: false };
 
         // Radar
         const radarBlips = [];
@@ -2295,7 +2295,7 @@
                 if (key === 'q') keys.q = true;
                 if (key === 'e') keys.e = true;
                 if (key === 'shift') { keys.shift = true; e.preventDefault(); }
-                if (key === 'control') { keys.ctrl = true; e.preventDefault(); }
+                if (key === 'space') { keys.space = true; e.preventDefault(); }
                 if (key === ' ') { keys.space = true; e.preventDefault(); }
                 if (key === 'r') resetPlane();
                 if (key === 'escape' && currentGameState === GAME_STATE.FLIGHT) returnToHangar();
@@ -2310,7 +2310,7 @@
                 if (key === 'q') keys.q = false;
                 if (key === 'e') keys.e = false;
                 if (key === 'shift') keys.shift = false;
-                if (key === 'control') keys.ctrl = false;
+                if (key === 'control') keys.space = false;
                 if (key === ' ') keys.space = false;
             });
         }
@@ -2367,7 +2367,7 @@
             delta = Math.min(delta, 0.1);
 
             if (keys.shift) flightState.throttle = Math.min(flightState.throttle + delta * 0.5, 1);
-            if (keys.ctrl) flightState.throttle = Math.max(flightState.throttle - delta * 0.5, 0);
+            if (keys.space) flightState.throttle = Math.max(flightState.throttle - delta * 0.5, 0);
             document.getElementById('throttle-fill').style.height = (flightState.throttle * 100) + '%';
 
             // Update engine glow

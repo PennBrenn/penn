@@ -959,7 +959,7 @@
             terrainSeed: 42,
             chunkSize: 500,
             chunkSegments: 64,
-            terrainHeight: 300,
+            terrainHeight: -1000,
             viewDistance: 8,
             
             // Base flight physics (modified by parts)
@@ -991,13 +991,13 @@
             baseBulletDamage: 25,
 
             // Base player (modified by parts)
-            basePlayerMaxHP: 100,
+            basePlayerMaxHP: 500,
 
             // Enemy settings
             enemyMaxHP: 1,
             enemySpeed: 150,
-            enemySpawnInterval: 0.5,
-            maxEnemies: 200,
+            enemySpawnInterval: 0.1,
+            maxEnemies: 2000000,
             enemyFireRate: 2,
             enemyDamage: 5,
             enemySpawnDistance: 800,
@@ -2296,7 +2296,7 @@
                 if (key === 'e') keys.e = true;
                 if (key === 'shift') { keys.shift = true; e.preventDefault(); }
                 if (key === ' ') { keys.space = true; e.preventDefault(); }
-                if (key === 'f') { keys.space = true; e.preventDefault(); }
+                if (key === 'f') { keys.f = true; e.preventDefault(); }
                 if (key === 'r') resetPlane();
                 if (key === 'escape' && currentGameState === GAME_STATE.FLIGHT) returnToHangar();
             });
@@ -2311,7 +2311,7 @@
                 if (key === 'e') keys.e = false;
                 if (key === 'shift') keys.shift = false;
                 if (key === ' ') keys.space = false;
-                if (key === 'f') keys.space = false;
+                if (key === 'f') keys.f = false;
             });
         }
 
@@ -2544,7 +2544,7 @@
                 updateChunks();
                 updateFlightPhysics(delta);
 
-                if (keys.space && !crashed) fireGuns(currentTime);
+                if (keys.f && !crashed) fireGuns(currentTime);
 
                 if (currentTime - lastEnemySpawn > CONFIG.enemySpawnInterval && !crashed) {
                     spawnEnemy();

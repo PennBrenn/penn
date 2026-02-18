@@ -1,1 +1,382 @@
-in progress
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multiplayer Dot</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0a0f;
+    color: #e0e0e0;
+    font-family: 'Space Mono', monospace;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  #header {
+    padding: 16px 24px;
+    border-bottom: 1px solid #1e1e2e;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  #header h1 {
+    font-size: 13px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #888;
+  }
+
+  #status {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid #333;
+    color: #666;
+    transition: all 0.3s;
+  }
+  #status.connected { border-color: #00ff88; color: #00ff88; }
+  #status.error { border-color: #ff4466; color: #ff4466; }
+  #status.connecting { border-color: #ffaa00; color: #ffaa00; }
+
+  #canvas {
+    flex: 1;
+    position: relative;
+    cursor: none;
+  }
+
+  #hint {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    color: #2a2a3a;
+    letter-spacing: 0.1em;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  .dot {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    transition: left 0.08s linear, top 0.08s linear;
+  }
+
+  .dot.mine {
+    width: 22px;
+    height: 22px;
+    box-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
+    z-index: 10;
+    transition: none;
+  }
+
+  .dot-label {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 9px;
+    white-space: nowrap;
+    opacity: 0.5;
+    letter-spacing: 0.05em;
+    font-family: 'Space Mono', monospace;
+  }
+
+  #crosshair {
+    position: absolute;
+    pointer-events: none;
+    width: 20px;
+    height: 20px;
+    transform: translate(-50%, -50%);
+    z-index: 20;
+  }
+  #crosshair::before, #crosshair::after {
+    content: '';
+    position: absolute;
+    background: rgba(255,255,255,0.2);
+  }
+  #crosshair::before { width: 1px; height: 100%; left: 50%; }
+  #crosshair::after  { width: 100%; height: 1px; top: 50%; }
+
+  #setup {
+    position: fixed;
+    inset: 0;
+    background: #0a0a0f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+
+  #setup-box {
+    border: 1px solid #1e1e2e;
+    padding: 40px;
+    max-width: 460px;
+    width: 90%;
+  }
+
+  #setup-box h2 {
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #555;
+    margin-bottom: 32px;
+  }
+
+  .field { margin-bottom: 20px; }
+
+  .field label {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: #444;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+
+  .field input {
+    width: 100%;
+    background: #0f0f18;
+    border: 1px solid #1e1e2e;
+    color: #e0e0e0;
+    padding: 10px 14px;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .field input:focus { border-color: #333; }
+
+  button {
+    margin-top: 8px;
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    border: 1px solid #00ff88;
+    color: #00ff88;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  button:hover { background: #00ff8815; }
+
+  #player-count {
+    font-size: 11px;
+    color: #333;
+    letter-spacing: 0.1em;
+  }
+</style>
+</head>
+<body>
+
+<!-- Setup Screen -->
+<div id="setup">
+  <div id="setup-box">
+    <h2>Multiplayer Dot — Config</h2>
+    <div class="field">
+      <label>Supabase Project URL</label>
+      <input id="supabase-url" type="text" placeholder="https://xxxx.supabase.co" />
+    </div>
+    <div class="field">
+      <label>Supabase Anon Key</label>
+      <input id="supabase-key" type="text" placeholder="eyJ..." />
+    </div>
+    <div class="field">
+      <label>Your Name</label>
+      <input id="player-name" type="text" placeholder="player_01" maxlength="16"/>
+    </div>
+    <button onclick="connect()">Connect →</button>
+  </div>
+</div>
+
+<!-- Main UI -->
+<div id="header">
+  <h1>Multiplayer Dot</h1>
+  <div style="display:flex;align-items:center;gap:16px;">
+    <span id="player-count">— players</span>
+    <span id="status">disconnected</span>
+  </div>
+</div>
+
+<div id="canvas">
+  <div id="crosshair"></div>
+  <div id="hint">click or drag to move your dot</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+let supabase, channel;
+let myId, myName, myColor;
+let players = {};
+let isDragging = false;
+let myPos = { x: 50, y: 50 };
+
+function connect() {
+  const url  = document.getElementById('supabase-url').value.trim();
+  const key  = document.getElementById('supabase-key').value.trim();
+  const name = document.getElementById('player-name').value.trim() || 'anon';
+
+  if (!url || !key) { alert('Please enter your Supabase URL and anon key.'); return; }
+
+  myName  = name;
+  myId    = name.replace(/\s+/g,'_').toLowerCase() + '_' + Math.random().toString(36).slice(2,5);
+  myColor = '#' + ['ff','88','44'].sort(() => Math.random()-0.5).join('') +
+            Math.floor(Math.random()*0x1000).toString(16).padStart(3,'0'); // vivid random
+  // simpler: just pick a nice random hue
+  myColor = `hsl(${Math.floor(Math.random()*360)}, 90%, 65%)`;
+
+  supabase = window.supabase.createClient(url, key);
+  document.getElementById('setup').style.display = 'none';
+  initRealtime();
+}
+
+function initRealtime() {
+  setStatus('connecting', 'connecting');
+
+  channel = supabase.channel('dot-arena', {
+    config: { presence: { key: myId } }
+  });
+
+  channel
+    .on('presence', { event: 'sync' }, () => {
+      const state = channel.presenceState();
+      const activeIds = new Set(Object.keys(state));
+
+      for (const id of Object.keys(players)) {
+        if (!activeIds.has(id)) removeDot(id);
+      }
+
+      for (const [id, presences] of Object.entries(state)) {
+        if (id === myId) continue;
+        const p = presences[0];
+        upsertDot(id, p.x ?? 50, p.y ?? 50, p.color, p.name || id);
+      }
+
+      updateCount(activeIds.size);
+    })
+    .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+      if (key === myId) return;
+      const p = newPresences[0];
+      upsertDot(key, p.x ?? 50, p.y ?? 50, p.color, p.name || key);
+    })
+    .on('presence', { event: 'leave' }, ({ key }) => removeDot(key))
+    .subscribe(async (status) => {
+      if (status === 'SUBSCRIBED') {
+        setStatus('connected', 'connected');
+        spawnMyDot();
+        await broadcast();
+      } else if (status === 'CHANNEL_ERROR') {
+        setStatus('error', 'error');
+      }
+    });
+}
+
+async function broadcast() {
+  await channel.track({ x: myPos.x, y: myPos.y, color: myColor, name: myName });
+}
+
+function spawnMyDot() {
+  let el = document.getElementById('dot-' + myId);
+  if (!el) el = makeDotEl(myId, myColor, myName, true);
+  placeDot(el, myPos.x, myPos.y);
+}
+
+function makeDotEl(id, color, name, isMe) {
+  const el = document.createElement('div');
+  el.className = 'dot' + (isMe ? ' mine' : '');
+  el.id = 'dot-' + id;
+  el.style.background = color;
+  el.style.color = color;
+  const label = document.createElement('span');
+  label.className = 'dot-label';
+  label.textContent = name;
+  el.appendChild(label);
+  document.getElementById('canvas').appendChild(el);
+  return el;
+}
+
+function upsertDot(id, x, y, color, name) {
+  if (!players[id]) {
+    players[id] = { el: makeDotEl(id, color, name, false) };
+  }
+  placeDot(players[id].el, x, y);
+}
+
+function removeDot(id) {
+  if (players[id]) { players[id].el.remove(); delete players[id]; }
+}
+
+function placeDot(el, xPct, yPct) {
+  el.style.left = xPct + '%';
+  el.style.top  = yPct + '%';
+}
+
+function updateCount(n) {
+  document.getElementById('player-count').textContent =
+    n + ' player' + (n !== 1 ? 's' : '');
+}
+
+function setStatus(text, cls) {
+  const el = document.getElementById('status');
+  el.textContent = text;
+  el.className = cls || '';
+}
+
+// ── Input ──────────────────────────────────────────────────────────────────
+const canvas    = document.getElementById('canvas');
+const crosshair = document.getElementById('crosshair');
+
+function pctFromEvent(e) {
+  const r = canvas.getBoundingClientRect();
+  const cx = e.touches ? e.touches[0].clientX : e.clientX;
+  const cy = e.touches ? e.touches[0].clientY : e.clientY;
+  return {
+    x: Math.max(0, Math.min(100, ((cx - r.left) / r.width)  * 100)),
+    y: Math.max(0, Math.min(100, ((cy - r.top)  / r.height) * 100)),
+  };
+}
+
+canvas.addEventListener('mousemove', e => {
+  crosshair.style.left = e.offsetX + 'px';
+  crosshair.style.top  = e.offsetY + 'px';
+  if (isDragging && channel) {
+    myPos = pctFromEvent(e);
+    spawnMyDot();
+    broadcast();
+  }
+});
+
+canvas.addEventListener('mousedown', e => {
+  isDragging = true;
+  if (channel) { myPos = pctFromEvent(e); spawnMyDot(); broadcast(); }
+});
+
+canvas.addEventListener('mouseup',    () => isDragging = false);
+canvas.addEventListener('mouseleave', () => isDragging = false);
+
+canvas.addEventListener('click', e => {
+  if (!channel) return;
+  myPos = pctFromEvent(e);
+  spawnMyDot();
+  broadcast();
+});
+</script>
+</body>
+</html>

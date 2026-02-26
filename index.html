@@ -1,1 +1,1204 @@
-if you are looking for the personal site im working on it, if you are looking for the plane game i plan to upload it to https://phly.pennbrenn.com.
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚠ EXAM MONITOR — ANTI-CHEAT SYSTEM</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
+
+  :root {
+    --red: #ff2222;
+    --orange: #ff8800;
+    --green: #00ff88;
+    --cyan: #00ffff;
+    --yellow: #ffff00;
+    --bg: #050508;
+    --panel: #0a0a0f;
+    --border: #1a1a2e;
+    --text: #c0c0d0;
+    --dim: #404055;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Scanlines overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.15) 2px,
+      rgba(0,0,0,0.15) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  header {
+    background: linear-gradient(135deg, #0d0d1a 0%, #110011 100%);
+    border-bottom: 2px solid var(--red);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 0 30px rgba(255,34,34,0.3);
+  }
+
+  .logo {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 1.1rem;
+    letter-spacing: 3px;
+    color: var(--red);
+    text-shadow: 0 0 20px rgba(255,34,34,0.8);
+  }
+
+  .logo span { color: #ff6666; }
+
+  .status-bar {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    font-size: 0.72rem;
+  }
+
+  .status-pill {
+    padding: 4px 12px;
+    border-radius: 2px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 2px;
+    font-weight: 700;
+  }
+
+  .status-active { background: rgba(255,34,34,0.15); border: 1px solid var(--red); color: var(--red); }
+  .status-ok { background: rgba(0,255,136,0.1); border: 1px solid var(--green); color: var(--green); }
+  .status-warn { background: rgba(255,136,0,0.1); border: 1px solid var(--orange); color: var(--orange); }
+
+  #threat-level {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+  }
+
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    grid-template-rows: auto 1fr;
+    gap: 0;
+    height: calc(100vh - 61px);
+  }
+
+  /* ─── LEFT PANEL ─── */
+  .left-panel {
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .metrics-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .metric-box {
+    padding: 16px 18px;
+    border-right: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .metric-box:last-child { border-right: none; }
+
+  .metric-box::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent, var(--dim));
+    transition: all 0.3s;
+  }
+
+  .metric-label {
+    font-size: 0.62rem;
+    letter-spacing: 2px;
+    color: var(--dim);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .metric-value {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .metric-sub {
+    font-size: 0.62rem;
+    color: var(--dim);
+    margin-top: 4px;
+  }
+
+  .val-violations { color: var(--red); --accent: var(--red); }
+  .val-warnings { color: var(--orange); --accent: var(--orange); }
+  .val-timer { color: var(--cyan); --accent: var(--cyan); }
+  .val-score { color: var(--yellow); --accent: var(--yellow); }
+
+  /* ─── CONSOLE ─── */
+  .console-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #030305;
+  }
+
+  .console-header {
+    background: #0a0a0f;
+    border-bottom: 1px solid var(--border);
+    padding: 8px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  .console-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    color: var(--cyan);
+  }
+
+  .console-controls {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn-sm {
+    padding: 3px 10px;
+    background: transparent;
+    border: 1px solid var(--dim);
+    color: var(--dim);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.62rem;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+  }
+  .btn-sm:hover { border-color: var(--cyan); color: var(--cyan); }
+
+  #console-output {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  #console-output::-webkit-scrollbar { width: 4px; }
+  #console-output::-webkit-scrollbar-track { background: transparent; }
+  #console-output::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .log-entry {
+    display: flex;
+    gap: 10px;
+    padding: 4px 6px;
+    border-radius: 2px;
+    margin-bottom: 2px;
+    font-size: 0.72rem;
+    line-height: 1.5;
+    animation: logIn 0.15s ease;
+    border-left: 2px solid transparent;
+  }
+
+  @keyframes logIn {
+    from { opacity: 0; transform: translateX(-4px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .log-ts {
+    color: var(--dim);
+    flex-shrink: 0;
+    font-size: 0.65rem;
+    padding-top: 1px;
+  }
+
+  .log-icon { flex-shrink: 0; }
+  .log-msg { flex: 1; word-break: break-all; }
+
+  .log-CRITICAL { border-left-color: var(--red); background: rgba(255,34,34,0.07); }
+  .log-CRITICAL .log-msg { color: #ff6666; }
+  .log-CRITICAL .log-icon::before { content: '⛔'; }
+
+  .log-WARNING { border-left-color: var(--orange); background: rgba(255,136,0,0.05); }
+  .log-WARNING .log-msg { color: #ffaa44; }
+  .log-WARNING .log-icon::before { content: '⚠'; }
+
+  .log-INFO { border-left-color: #2a2a4a; }
+  .log-INFO .log-msg { color: var(--text); }
+  .log-INFO .log-icon::before { content: '◈'; }
+
+  .log-SYSTEM { border-left-color: var(--cyan); }
+  .log-SYSTEM .log-msg { color: var(--cyan); }
+  .log-SYSTEM .log-icon::before { content: '◉'; }
+
+  .log-OK { border-left-color: var(--green); }
+  .log-OK .log-msg { color: var(--green); }
+  .log-OK .log-icon::before { content: '✓'; }
+
+  .log-BLOCKED { border-left-color: #aa00ff; background: rgba(170,0,255,0.07); }
+  .log-BLOCKED .log-msg { color: #cc55ff; }
+  .log-BLOCKED .log-icon::before { content: '🚫'; }
+
+  /* ─── RIGHT PANEL ─── */
+  .right-panel {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--panel);
+  }
+
+  .panel-section {
+    border-bottom: 1px solid var(--border);
+    padding: 14px 16px;
+  }
+
+  .section-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.6rem;
+    letter-spacing: 3px;
+    color: var(--dim);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Threat indicators */
+  .threat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .threat-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    font-size: 0.65rem;
+    transition: all 0.3s;
+  }
+
+  .threat-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: var(--dim);
+    transition: all 0.3s;
+  }
+
+  .threat-item.triggered .threat-dot { background: var(--red); box-shadow: 0 0 8px var(--red); }
+  .threat-item.triggered { border-color: rgba(255,34,34,0.3); background: rgba(255,34,34,0.04); }
+  .threat-item.triggered .threat-label { color: #ff6666; }
+
+  .threat-label { color: var(--dim); transition: color 0.3s; }
+  .threat-count {
+    margin-left: auto;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.6rem;
+    color: var(--dim);
+  }
+  .threat-item.triggered .threat-count { color: var(--red); }
+
+  /* Activity timeline */
+  #activity-list {
+    max-height: 200px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    font-size: 0.65rem;
+    animation: logIn 0.2s ease;
+  }
+
+  .activity-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    margin-top: 4px;
+    flex-shrink: 0;
+  }
+  .dot-red { background: var(--red); }
+  .dot-orange { background: var(--orange); }
+  .dot-green { background: var(--green); }
+  .dot-cyan { background: var(--cyan); }
+
+  .activity-text { color: var(--text); flex: 1; }
+  .activity-ts { color: var(--dim); font-size: 0.6rem; margin-left: auto; }
+
+  /* Environment info */
+  .env-grid {
+    display: grid;
+    gap: 4px;
+  }
+
+  .env-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.65rem;
+    padding: 3px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+  }
+
+  .env-key { color: var(--dim); }
+  .env-val { color: var(--text); font-weight: bold; }
+  .env-val.bad { color: var(--red); }
+  .env-val.good { color: var(--green); }
+  .env-val.warn { color: var(--orange); }
+
+  /* Integrity bar */
+  .integrity-container {
+    padding: 14px 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .integrity-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.6rem;
+    letter-spacing: 3px;
+    color: var(--dim);
+    margin-bottom: 8px;
+  }
+
+  .integrity-score {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 3.5rem;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 8px;
+    transition: color 0.5s;
+  }
+
+  .integrity-bar {
+    height: 6px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+
+  .integrity-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.5s, background 0.5s;
+  }
+
+  .integrity-verdict {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.62rem;
+    letter-spacing: 2px;
+    margin-top: auto;
+    padding: 6px 10px;
+    text-align: center;
+    border: 1px solid;
+    border-radius: 2px;
+  }
+
+  /* Alert overlay */
+  #alert-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(255,0,0,0.08);
+    pointer-events: none;
+    z-index: 9000;
+    display: none;
+    animation: alertPulse 0.5s ease;
+  }
+
+  @keyframes alertPulse {
+    0% { opacity: 0; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
+  }
+
+  #alert-banner {
+    position: fixed;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255,0,0,0.9);
+    color: white;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 3px;
+    font-weight: 700;
+    padding: 12px 30px;
+    z-index: 9999;
+    border-radius: 2px;
+    pointer-events: none;
+    display: none;
+    text-align: center;
+    box-shadow: 0 0 40px rgba(255,0,0,0.8);
+    animation: bannerIn 0.3s ease;
+  }
+
+  @keyframes bannerIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+
+  /* Pulse animation for active threats */
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .pulsing { animation: pulse 1s infinite; }
+
+  .watermark {
+    position: fixed;
+    bottom: 10px;
+    right: 16px;
+    font-size: 0.55rem;
+    color: rgba(255,255,255,0.06);
+    letter-spacing: 2px;
+    pointer-events: none;
+    z-index: 1;
+  }
+</style>
+</head>
+<body>
+
+<div id="alert-overlay"></div>
+<div id="alert-banner"></div>
+
+<header>
+  <div class="logo">⬡ EXAM<span>GUARD</span> <span style="font-size:0.6rem;color:#666;letter-spacing:1px;">v3.1</span></div>
+  <div class="status-bar">
+    <div id="status-pill" class="status-pill status-active pulsing">● MONITORING ACTIVE</div>
+    <div id="threat-level">THREAT: <span id="threat-text" style="color:var(--green)">NONE</span></div>
+    <div style="font-size:0.65rem;color:var(--dim)" id="header-time">--:--:--</div>
+  </div>
+</header>
+
+<div class="main-grid">
+  <div class="left-panel">
+    <div class="metrics-row">
+      <div class="metric-box">
+        <div class="metric-label">VIOLATIONS</div>
+        <div class="metric-value val-violations" id="m-violations">0</div>
+        <div class="metric-sub">critical events</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-label">WARNINGS</div>
+        <div class="metric-value val-warnings" id="m-warnings">0</div>
+        <div class="metric-sub">suspicious events</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-label">SESSION TIME</div>
+        <div class="metric-value val-timer" id="m-timer">00:00</div>
+        <div class="metric-sub" id="m-focus">focus: normal</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-label">INTEGRITY</div>
+        <div class="metric-value val-score" id="m-integrity">100%</div>
+        <div class="metric-sub" id="m-verdict-sub">no issues detected</div>
+      </div>
+    </div>
+
+    <div class="console-wrap">
+      <div class="console-header">
+        <div class="console-title">◈ LIVE EVENT CONSOLE</div>
+        <div class="console-controls">
+          <button class="btn-sm" onclick="filterConsole('ALL')">ALL</button>
+          <button class="btn-sm" onclick="filterConsole('CRITICAL')">CRITICAL</button>
+          <button class="btn-sm" onclick="filterConsole('WARNING')">WARN</button>
+          <button class="btn-sm" onclick="clearConsole()">CLEAR</button>
+          <button class="btn-sm" onclick="exportLog()">EXPORT</button>
+        </div>
+      </div>
+      <div id="console-output"></div>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <div class="panel-section">
+      <div class="section-title">THREAT SENSORS</div>
+      <div class="threat-grid" id="threat-grid">
+        <!-- filled by JS -->
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="section-title">RECENT EVENTS</div>
+      <div id="activity-list"></div>
+    </div>
+
+    <div class="panel-section">
+      <div class="section-title">ENVIRONMENT SCAN</div>
+      <div class="env-grid" id="env-grid"></div>
+    </div>
+
+    <div class="integrity-container">
+      <div class="integrity-label">INTEGRITY SCORE</div>
+      <div class="integrity-score" id="integrity-big" style="color:var(--green)">100</div>
+      <div class="integrity-bar">
+        <div class="integrity-fill" id="integrity-fill" style="width:100%;background:var(--green)"></div>
+      </div>
+      <div style="font-size:0.62rem;color:var(--dim);margin-bottom:12px">Score degrades with each detected event</div>
+      <div class="integrity-verdict" id="verdict-box" style="color:var(--green);border-color:var(--green)">
+        ✓ EXAM INTEGRITY INTACT
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="watermark">EXAMGUARD ANTI-CHEAT SYSTEM — EVERY ACTION IS RECORDED</div>
+
+<script>
+// ─────────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────────
+const state = {
+  violations: 0,
+  warnings: 0,
+  integrity: 100,
+  sessionStart: Date.now(),
+  focusLostCount: 0,
+  tabSwitchCount: 0,
+  copyCount: 0,
+  pasteCount: 0,
+  rightClickCount: 0,
+  devToolsCount: 0,
+  keylogSuspect: 0,
+  screenshotAttempts: 0,
+  consoleOpenCount: 0,
+  networkReqCount: 0,
+  windowResizeCount: 0,
+  mouseLeaveCount: 0,
+  filterMode: 'ALL',
+  logHistory: [],
+  lastWindowSize: { w: window.innerWidth, h: window.innerHeight },
+  lastKeyTime: 0,
+  keyBuffer: [],
+  blurTime: null,
+  totalBlurDuration: 0,
+};
+
+// ─────────────────────────────────────────────
+//  THREAT SENSOR CONFIG
+// ─────────────────────────────────────────────
+const sensors = [
+  { id: 'tabSwitch',    label: 'Tab Switch',     key: 'tabSwitchCount' },
+  { id: 'focusLoss',   label: 'Focus Loss',      key: 'focusLostCount' },
+  { id: 'copy',        label: 'Copy Attempt',    key: 'copyCount' },
+  { id: 'paste',       label: 'Paste Attempt',   key: 'pasteCount' },
+  { id: 'rightClick',  label: 'Right Click',     key: 'rightClickCount' },
+  { id: 'devTools',    label: 'DevTools',        key: 'devToolsCount' },
+  { id: 'screenshot',  label: 'Print Screen',    key: 'screenshotAttempts' },
+  { id: 'mouseLeave',  label: 'Mouse Exit',      key: 'mouseLeaveCount' },
+  { id: 'resize',      label: 'Win Resize',      key: 'windowResizeCount' },
+  { id: 'keylog',      label: 'Rapid Typing',    key: 'keylogSuspect' },
+];
+
+// ─────────────────────────────────────────────
+//  INIT THREAT GRID
+// ─────────────────────────────────────────────
+function initThreatGrid() {
+  const grid = document.getElementById('threat-grid');
+  grid.innerHTML = '';
+  sensors.forEach(s => {
+    const el = document.createElement('div');
+    el.className = 'threat-item';
+    el.id = 'sensor-' + s.id;
+    el.innerHTML = `<div class="threat-dot"></div><div class="threat-label">${s.label}</div><div class="threat-count" id="tc-${s.id}">0</div>`;
+    grid.appendChild(el);
+  });
+}
+
+// ─────────────────────────────────────────────
+//  LOGGING
+// ─────────────────────────────────────────────
+function ts() {
+  return new Date().toTimeString().slice(0,8);
+}
+
+function log(msg, level = 'INFO', details = '') {
+  const entry = { ts: ts(), msg, level, details, time: Date.now() };
+  state.logHistory.push(entry);
+
+  const out = document.getElementById('console-output');
+  if (state.filterMode !== 'ALL' && state.filterMode !== level) return;
+
+  const div = document.createElement('div');
+  div.className = `log-entry log-${level}`;
+  div.dataset.level = level;
+  div.innerHTML = `
+    <span class="log-ts">${entry.ts}</span>
+    <span class="log-icon"></span>
+    <span class="log-msg">${msg}${details ? ` <span style="color:var(--dim);font-size:0.65rem">— ${details}</span>` : ''}</span>
+  `;
+  out.appendChild(div);
+  out.scrollTop = out.scrollHeight;
+}
+
+function addActivity(text, dotClass = 'dot-cyan') {
+  const list = document.getElementById('activity-list');
+  const div = document.createElement('div');
+  div.className = 'activity-item';
+  div.innerHTML = `<div class="activity-dot ${dotClass}"></div><div class="activity-text">${text}</div><div class="activity-ts">${ts()}</div>`;
+  list.insertBefore(div, list.firstChild);
+  while (list.children.length > 15) list.removeChild(list.lastChild);
+}
+
+// ─────────────────────────────────────────────
+//  ALERT FLASH
+// ─────────────────────────────────────────────
+let alertTimeout;
+function triggerAlert(message) {
+  const overlay = document.getElementById('alert-overlay');
+  const banner = document.getElementById('alert-banner');
+  overlay.style.display = 'block';
+  banner.style.display = 'block';
+  banner.textContent = '⚠ VIOLATION: ' + message.toUpperCase();
+  clearTimeout(alertTimeout);
+  alertTimeout = setTimeout(() => {
+    overlay.style.display = 'none';
+    banner.style.display = 'none';
+  }, 2000);
+}
+
+// ─────────────────────────────────────────────
+//  INTEGRITY + METRICS UPDATE
+// ─────────────────────────────────────────────
+function recordViolation(category, msg, details = '') {
+  state.violations++;
+  state.integrity = Math.max(0, state.integrity - 15);
+  state.warnings++;
+  log(msg, 'CRITICAL', details);
+  addActivity(msg, 'dot-red');
+  updateSensor(category);
+  triggerAlert(msg);
+  updateMetrics();
+}
+
+function recordWarning(category, msg, details = '') {
+  state.warnings++;
+  state.integrity = Math.max(0, state.integrity - 5);
+  log(msg, 'WARNING', details);
+  addActivity(msg, 'dot-orange');
+  updateSensor(category);
+  updateMetrics();
+}
+
+function recordBlocked(msg, details = '') {
+  log(msg, 'BLOCKED', details);
+  addActivity(msg, 'dot-orange');
+}
+
+function updateSensor(sensorId) {
+  const s = sensors.find(x => x.id === sensorId);
+  if (!s) return;
+  const val = state[s.key];
+  const item = document.getElementById('sensor-' + sensorId);
+  const count = document.getElementById('tc-' + sensorId);
+  if (item) item.classList.add('triggered');
+  if (count) count.textContent = val;
+}
+
+function updateMetrics() {
+  document.getElementById('m-violations').textContent = state.violations;
+  document.getElementById('m-warnings').textContent = state.warnings;
+  document.getElementById('m-integrity').textContent = state.integrity + '%';
+
+  const big = document.getElementById('integrity-big');
+  const fill = document.getElementById('integrity-fill');
+  const verdict = document.getElementById('verdict-box');
+  const sub = document.getElementById('m-verdict-sub');
+
+  big.textContent = state.integrity;
+
+  const threatPill = document.getElementById('status-pill');
+  const threatText = document.getElementById('threat-text');
+
+  if (state.integrity >= 85) {
+    big.style.color = 'var(--green)';
+    fill.style.background = 'var(--green)';
+    verdict.style.color = 'var(--green)';
+    verdict.style.borderColor = 'var(--green)';
+    verdict.textContent = '✓ EXAM INTEGRITY INTACT';
+    sub.textContent = 'no critical issues';
+    threatText.style.color = 'var(--green)';
+    threatText.textContent = 'NONE';
+    threatPill.className = 'status-pill status-ok';
+    threatPill.textContent = '● MONITORING ACTIVE';
+  } else if (state.integrity >= 60) {
+    big.style.color = 'var(--orange)';
+    fill.style.background = 'var(--orange)';
+    verdict.style.color = 'var(--orange)';
+    verdict.style.borderColor = 'var(--orange)';
+    verdict.textContent = '⚠ SUSPICIOUS ACTIVITY DETECTED';
+    sub.textContent = 'review required';
+    threatText.style.color = 'var(--orange)';
+    threatText.textContent = 'ELEVATED';
+    threatPill.className = 'status-pill status-warn pulsing';
+    threatPill.textContent = '⚠ SUSPICIOUS';
+  } else {
+    big.style.color = 'var(--red)';
+    fill.style.background = 'var(--red)';
+    verdict.style.color = 'var(--red)';
+    verdict.style.borderColor = 'var(--red)';
+    verdict.textContent = '⛔ EXAM INTEGRITY COMPROMISED';
+    sub.textContent = 'FLAGGED FOR REVIEW';
+    threatText.style.color = 'var(--red)';
+    threatText.textContent = 'CRITICAL';
+    threatPill.className = 'status-pill status-active pulsing';
+    threatPill.textContent = '⛔ COMPROMISED';
+  }
+
+  fill.style.width = state.integrity + '%';
+}
+
+// ─────────────────────────────────────────────
+//  TIMER
+// ─────────────────────────────────────────────
+setInterval(() => {
+  const elapsed = Math.floor((Date.now() - state.sessionStart) / 1000);
+  const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
+  const s2 = String(elapsed % 60).padStart(2, '0');
+  document.getElementById('m-timer').textContent = `${m}:${s2}`;
+  document.getElementById('header-time').textContent = new Date().toTimeString().slice(0,8);
+  document.getElementById('m-focus').textContent = `blur: ${(state.totalBlurDuration/1000).toFixed(1)}s`;
+}, 1000);
+
+// ─────────────────────────────────────────────
+//  ENVIRONMENT SCANNER
+// ─────────────────────────────────────────────
+function runEnvScan() {
+  const grid = document.getElementById('env-grid');
+  const checks = [];
+
+  // Automation/WebDriver
+  const isAutomated = !!navigator.webdriver;
+  checks.push({ key: 'WebDriver', val: isAutomated ? 'DETECTED ⚠' : 'NOT FOUND', cls: isAutomated ? 'bad' : 'good' });
+  if (isAutomated) log('WebDriver detected — automated browser possible', 'CRITICAL', 'navigator.webdriver = true');
+
+  // Headless
+  const userAgent = navigator.userAgent;
+  const isHeadless = /HeadlessChrome|PhantomJS|Puppeteer/.test(userAgent);
+  checks.push({ key: 'Headless', val: isHeadless ? 'SUSPECTED ⚠' : 'NOT FOUND', cls: isHeadless ? 'bad' : 'good' });
+  if (isHeadless) log('Headless browser suspected', 'CRITICAL', userAgent);
+
+  // Screen resolution
+  checks.push({ key: 'Resolution', val: `${screen.width}×${screen.height}`, cls: 'good' });
+
+  // Touch support (possible VM/emulator)
+  const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  checks.push({ key: 'Touch Events', val: hasTouch ? 'YES' : 'NO', cls: '' });
+
+  // Languages
+  checks.push({ key: 'Language', val: navigator.language || '?', cls: '' });
+
+  // Hardware concurrency
+  const cores = navigator.hardwareConcurrency || '?';
+  checks.push({ key: 'CPU Cores', val: String(cores), cls: '' });
+
+  // Platform
+  checks.push({ key: 'Platform', val: navigator.platform, cls: '' });
+
+  // Cookie enabled
+  checks.push({ key: 'Cookies', val: navigator.cookieEnabled ? 'YES' : 'NO', cls: navigator.cookieEnabled ? 'good' : 'warn' });
+
+  // Window size vs screen size - unusual if way smaller
+  const small = window.outerWidth < screen.width * 0.5;
+  checks.push({ key: 'Window Size', val: `${window.outerWidth}×${window.outerHeight}`, cls: small ? 'warn' : 'good' });
+
+  grid.innerHTML = '';
+  checks.forEach(c => {
+    const row = document.createElement('div');
+    row.className = 'env-row';
+    row.innerHTML = `<span class="env-key">${c.key}</span><span class="env-val ${c.cls}">${c.val}</span>`;
+    grid.appendChild(row);
+  });
+}
+
+// ─────────────────────────────────────────────
+//  VISIBILITY / TAB SWITCH
+// ─────────────────────────────────────────────
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    state.tabSwitchCount++;
+    state.blurTime = Date.now();
+    recordViolation('tabSwitch', 'Tab hidden / switched away', `count: ${state.tabSwitchCount}`);
+  } else {
+    if (state.blurTime) {
+      const dur = Date.now() - state.blurTime;
+      state.totalBlurDuration += dur;
+      state.blurTime = null;
+      log(`Tab returned after ${(dur/1000).toFixed(1)}s away`, 'WARNING', `total away: ${(state.totalBlurDuration/1000).toFixed(1)}s`);
+    }
+  }
+});
+
+// ─────────────────────────────────────────────
+//  WINDOW FOCUS / BLUR
+// ─────────────────────────────────────────────
+window.addEventListener('blur', () => {
+  state.focusLostCount++;
+  if (!state.blurTime) state.blurTime = Date.now();
+  recordWarning('focusLoss', 'Window lost focus', `count: ${state.focusLostCount}`);
+});
+
+window.addEventListener('focus', () => {
+  if (state.blurTime) {
+    const dur = Date.now() - state.blurTime;
+    state.totalBlurDuration += dur;
+    state.blurTime = null;
+    log(`Focus restored — was away for ${(dur/1000).toFixed(1)}s`, 'INFO');
+  }
+});
+
+// ─────────────────────────────────────────────
+//  COPY / CUT / PASTE
+// ─────────────────────────────────────────────
+document.addEventListener('copy', e => {
+  state.copyCount++;
+  const sel = window.getSelection()?.toString() || '';
+  recordViolation('copy', 'COPY operation detected', `"${sel.slice(0,80).replace(/\n/g,' ')}"`);
+  e.preventDefault();
+  recordBlocked('Copy blocked by monitor');
+});
+
+document.addEventListener('cut', e => {
+  state.copyCount++;
+  recordViolation('copy', 'CUT operation detected', `count: ${state.copyCount}`);
+  e.preventDefault();
+  recordBlocked('Cut blocked by monitor');
+});
+
+document.addEventListener('paste', e => {
+  state.pasteCount++;
+  let pasted = '';
+  try { pasted = e.clipboardData?.getData('text')?.slice(0, 100) || ''; } catch(er) {}
+  recordViolation('paste', 'PASTE operation detected', pasted ? `content: "${pasted}"` : 'clipboard empty or inaccessible');
+  e.preventDefault();
+  recordBlocked('Paste blocked by monitor');
+});
+
+// ─────────────────────────────────────────────
+//  RIGHT CLICK
+// ─────────────────────────────────────────────
+document.addEventListener('contextmenu', e => {
+  state.rightClickCount++;
+  recordWarning('rightClick', 'Right-click / context menu attempted', `count: ${state.rightClickCount}`);
+  e.preventDefault();
+  recordBlocked('Context menu blocked');
+});
+
+// ─────────────────────────────────────────────
+//  KEYBOARD INTERCEPTS
+// ─────────────────────────────────────────────
+const blockedKeys = new Set([
+  'F12', 'F5', 'F11',
+]);
+
+const blockedCombos = [
+  { ctrl: true, shift: true, key: 'I' },
+  { ctrl: true, shift: true, key: 'J' },
+  { ctrl: true, shift: true, key: 'C' },
+  { ctrl: true, key: 'U' },
+  { ctrl: true, key: 'S' },
+  { ctrl: true, key: 'P' },
+  { ctrl: true, key: 'A' },
+  { meta: true, key: 'C' },
+  { meta: true, key: 'V' },
+  { meta: true, key: 'A' },
+];
+
+document.addEventListener('keydown', e => {
+  // Print Screen
+  if (e.key === 'PrintScreen') {
+    state.screenshotAttempts++;
+    recordViolation('screenshot', 'Print Screen key pressed', `count: ${state.screenshotAttempts}`);
+    e.preventDefault();
+    return;
+  }
+
+  // Check blocked keys
+  if (blockedKeys.has(e.key)) {
+    recordWarning('devTools', `Blocked key: ${e.key}`, `key code: ${e.code}`);
+    e.preventDefault();
+    recordBlocked(`Key [${e.key}] blocked`);
+    return;
+  }
+
+  // Check blocked combos
+  for (const combo of blockedCombos) {
+    const ctrlMatch = combo.ctrl ? (e.ctrlKey || e.metaKey) : true;
+    const metaMatch = combo.meta ? e.metaKey : true;
+    const shiftMatch = combo.shift ? e.shiftKey : true;
+    const keyMatch = combo.key ? e.key.toUpperCase() === combo.key.toUpperCase() : true;
+
+    if (ctrlMatch && metaMatch && shiftMatch && keyMatch) {
+      if (combo.ctrl && e.ctrlKey) {
+        state.devToolsCount++;
+        const desc = Object.entries(combo).map(([k,v]) => `${k}:${v}`).join('+');
+        recordViolation('devTools', `Blocked keyboard shortcut`, desc);
+        e.preventDefault();
+        recordBlocked(`Combo blocked: ${desc}`);
+        return;
+      }
+    }
+  }
+
+  // Detect rapid/unusual typing (potential autocomplete/macro)
+  const now = Date.now();
+  const gap = now - state.lastKeyTime;
+  state.lastKeyTime = now;
+  if (gap < 30 && e.key.length === 1) {
+    state.keylogSuspect++;
+    if (state.keylogSuspect % 10 === 0) {
+      recordWarning('keylog', 'Abnormally rapid keystroke pattern detected', `${state.keylogSuspect} suspicious events`);
+    }
+    updateSensor('keylog');
+    document.getElementById(`tc-keylog`).textContent = state.keylogSuspect;
+  }
+}, true);
+
+// ─────────────────────────────────────────────
+//  MOUSE LEAVE WINDOW
+// ─────────────────────────────────────────────
+document.addEventListener('mouseleave', e => {
+  if (e.clientY <= 0 || e.clientX <= 0 || e.clientX >= window.innerWidth || e.clientY >= window.innerHeight) {
+    state.mouseLeaveCount++;
+    recordWarning('mouseLeave', 'Mouse exited exam window', `count: ${state.mouseLeaveCount}, pos: (${e.clientX},${e.clientY})`);
+  }
+});
+
+// ─────────────────────────────────────────────
+//  WINDOW RESIZE (screen share detection)
+// ─────────────────────────────────────────────
+window.addEventListener('resize', () => {
+  const nw = window.innerWidth, nh = window.innerHeight;
+  const dw = Math.abs(nw - state.lastWindowSize.w);
+  const dh = Math.abs(nh - state.lastWindowSize.h);
+  state.lastWindowSize = { w: nw, h: nh };
+  state.windowResizeCount++;
+  if (dw > 50 || dh > 50) {
+    recordWarning('resize', 'Significant window resize detected', `new: ${nw}×${nh}, delta: ${dw}×${dh}`);
+  } else {
+    log(`Minor window resize: ${nw}×${nh}`, 'INFO');
+    updateSensor('resize');
+    document.getElementById('tc-resize').textContent = state.windowResizeCount;
+  }
+});
+
+// ─────────────────────────────────────────────
+//  DEVTOOLS DETECTION (size heuristic)
+// ─────────────────────────────────────────────
+let devToolsCheckInterval = setInterval(() => {
+  const threshold = 160;
+  const widthDiff = window.outerWidth - window.innerWidth;
+  const heightDiff = window.outerHeight - window.innerHeight;
+
+  if (widthDiff > threshold || heightDiff > threshold) {
+    state.devToolsCount++;
+    if (state.devToolsCount % 3 === 1) {
+      recordViolation('devTools', 'DevTools panel detected (size heuristic)', `outer: ${window.outerWidth}×${window.outerHeight}, inner: ${window.innerWidth}×${window.innerHeight}`);
+    }
+  }
+}, 1000);
+
+// Firefox debugger trick
+let devToolsFirefox = (function() {
+  let i = 0;
+  return function() { i++; };
+})();
+
+// ─────────────────────────────────────────────
+//  CONSOLE OVERRIDES (detect console.log usage)
+// ─────────────────────────────────────────────
+(function() {
+  const orig = {
+    log: console.log,
+    warn: console.warn,
+    error: console.error,
+    info: console.info
+  };
+  ['log','warn','error','info','debug','table','dir'].forEach(method => {
+    const old = console[method];
+    console[method] = function(...args) {
+      state.consoleOpenCount++;
+      if (state.consoleOpenCount === 1) {
+        recordViolation('devTools', 'Browser console accessed (console method called)', `method: console.${method}`);
+      }
+      if (old) old.apply(console, args);
+    };
+  });
+})();
+
+// ─────────────────────────────────────────────
+//  DRAG PREVENTION
+// ─────────────────────────────────────────────
+document.addEventListener('dragstart', e => {
+  recordWarning('copy', 'Drag-and-drop attempt detected', `target: ${e.target?.tagName}`);
+  e.preventDefault();
+  recordBlocked('Drag blocked');
+});
+
+// ─────────────────────────────────────────────
+//  SELECTION PREVENTION
+// ─────────────────────────────────────────────
+document.addEventListener('selectstart', e => {
+  // allow — just monitor
+});
+
+// ─────────────────────────────────────────────
+//  STORAGE TAMPERING DETECTION
+// ─────────────────────────────────────────────
+(function() {
+  const origSetItem = localStorage.setItem.bind(localStorage);
+  const origGetItem = localStorage.getItem.bind(localStorage);
+  Object.defineProperty(window, 'localStorage', {
+    get: function() {
+      return {
+        setItem: function(k, v) {
+          log(`localStorage.setItem called: key="${k}"`, 'WARNING');
+          return origSetItem(k, v);
+        },
+        getItem: function(k) {
+          log(`localStorage.getItem called: key="${k}"`, 'INFO');
+          return origGetItem(k);
+        },
+        get length() { return localStorage.length; },
+        removeItem: localStorage.removeItem.bind(localStorage),
+        clear: localStorage.clear.bind(localStorage),
+        key: localStorage.key.bind(localStorage),
+      };
+    }
+  });
+})();
+
+// ─────────────────────────────────────────────
+//  NETWORK MONITORING (fetch/XHR override)
+// ─────────────────────────────────────────────
+(function() {
+  const origFetch = window.fetch;
+  window.fetch = function(url, opts) {
+    state.networkReqCount++;
+    recordViolation('devTools', `Network request intercepted: fetch()`, `url: ${url}`);
+    return Promise.reject(new Error('Network access blocked by ExamGuard'));
+  };
+
+  const origXHR = window.XMLHttpRequest;
+  window.XMLHttpRequest = function() {
+    const xhr = new origXHR();
+    const origOpen = xhr.open.bind(xhr);
+    xhr.open = function(method, url, ...rest) {
+      state.networkReqCount++;
+      recordViolation('devTools', `Network request intercepted: XMLHttpRequest`, `${method} ${url}`);
+      return origOpen(method, url, ...rest);
+    };
+    return xhr;
+  };
+})();
+
+// ─────────────────────────────────────────────
+//  CONSOLE FILTER
+// ─────────────────────────────────────────────
+function filterConsole(level) {
+  state.filterMode = level;
+  const out = document.getElementById('console-output');
+  out.innerHTML = '';
+  state.logHistory.forEach(entry => {
+    if (level !== 'ALL' && entry.level !== level) return;
+    const div = document.createElement('div');
+    div.className = `log-entry log-${entry.level}`;
+    div.dataset.level = entry.level;
+    div.innerHTML = `
+      <span class="log-ts">${entry.ts}</span>
+      <span class="log-icon"></span>
+      <span class="log-msg">${entry.msg}${entry.details ? ` <span style="color:var(--dim);font-size:0.65rem">— ${entry.details}</span>` : ''}</span>
+    `;
+    out.appendChild(div);
+  });
+  out.scrollTop = out.scrollHeight;
+}
+
+function clearConsole() {
+  document.getElementById('console-output').innerHTML = '';
+  log('Console cleared by user', 'SYSTEM');
+}
+
+function exportLog() {
+  const lines = state.logHistory.map(e =>
+    `[${e.ts}] [${e.level.padEnd(8)}] ${e.msg}${e.details ? ' — ' + e.details : ''}`
+  ).join('\n');
+  const header = `EXAMGUARD ANTI-CHEAT LOG\nExported: ${new Date().toISOString()}\nViolations: ${state.violations} | Warnings: ${state.warnings} | Integrity: ${state.integrity}%\n${'─'.repeat(60)}\n`;
+  const blob = new Blob([header + lines], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `examguard-log-${Date.now()}.txt`;
+  a.click();
+  log('Log exported to file', 'SYSTEM');
+}
+
+// ─────────────────────────────────────────────
+//  STARTUP
+// ─────────────────────────────────────────────
+initThreatGrid();
+
+log('ExamGuard Anti-Cheat System v3.1 initialized', 'SYSTEM');
+log('All sensors online and monitoring', 'SYSTEM');
+log('Tab visibility, focus, clipboard, keyboard, network, DevTools detection active', 'OK');
+
+setTimeout(() => {
+  runEnvScan();
+  log('Environment scan complete', 'OK');
+}, 300);
+
+log('Monitoring: tab switching, window blur, copy/paste/cut, right-click, keyboard shortcuts, DevTools, print screen, mouse exit, window resize, network requests, drag operations', 'INFO');
+log('Waiting for exam activity...', 'SYSTEM');
+</script>
+</body>
+</html>

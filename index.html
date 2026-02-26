@@ -495,6 +495,139 @@
 
   .pulsing { animation: pulse 1s infinite; }
 
+  /* ─── MATH PROBLEM ─── */
+  .math-section {
+    background: linear-gradient(135deg, #0a0a1a 0%, #0d0a14 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 18px 24px;
+    border-top: 2px solid rgba(0,255,255,0.15);
+    flex-shrink: 0;
+  }
+
+  .math-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .math-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.6rem;
+    letter-spacing: 3px;
+    color: var(--dim);
+  }
+
+  .math-meta {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    font-size: 0.62rem;
+    color: var(--dim);
+  }
+
+  .math-difficulty {
+    padding: 2px 8px;
+    border-radius: 2px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.58rem;
+    letter-spacing: 1px;
+  }
+
+  .diff-easy { background: rgba(0,255,136,0.1); border: 1px solid var(--green); color: var(--green); }
+  .diff-medium { background: rgba(255,136,0,0.1); border: 1px solid var(--orange); color: var(--orange); }
+  .diff-hard { background: rgba(255,34,34,0.1); border: 1px solid var(--red); color: var(--red); }
+
+  .math-question {
+    font-size: 1.4rem;
+    color: #e0e0ff;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.03);
+    border-left: 3px solid var(--cyan);
+    border-radius: 0 2px 2px 0;
+  }
+
+  .math-answer-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  #math-input {
+    flex: 1;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1rem;
+    padding: 8px 14px;
+    outline: none;
+    border-radius: 2px;
+    transition: border-color 0.2s;
+    max-width: 180px;
+  }
+
+  #math-input:focus { border-color: var(--cyan); }
+  #math-input.correct { border-color: var(--green); background: rgba(0,255,136,0.05); }
+  #math-input.wrong { border-color: var(--red); background: rgba(255,34,34,0.05); animation: shake 0.3s; }
+
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+
+  .btn-math {
+    padding: 8px 18px;
+    background: transparent;
+    border: 1px solid var(--cyan);
+    color: var(--cyan);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 2px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s;
+  }
+  .btn-math:hover { background: rgba(0,255,255,0.08); box-shadow: 0 0 12px rgba(0,255,255,0.2); }
+
+  .btn-next {
+    padding: 8px 14px;
+    background: transparent;
+    border: 1px solid var(--dim);
+    color: var(--dim);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s;
+  }
+  .btn-next:hover { border-color: var(--text); color: var(--text); }
+
+  #math-feedback {
+    font-size: 0.75rem;
+    margin-left: 4px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+    min-width: 80px;
+  }
+
+  .feedback-correct { color: var(--green); }
+  .feedback-wrong { color: var(--red); }
+
+  .math-stats {
+    display: flex;
+    gap: 16px;
+    margin-top: 10px;
+    font-size: 0.62rem;
+    color: var(--dim);
+  }
+
+  .math-stats span { color: var(--text); }
+
   .watermark {
     position: fixed;
     bottom: 10px;
@@ -543,6 +676,30 @@
         <div class="metric-label">INTEGRITY</div>
         <div class="metric-value val-score" id="m-integrity">100%</div>
         <div class="metric-sub" id="m-verdict-sub">no issues detected</div>
+      </div>
+    </div>
+
+    <!-- MATH PROBLEM -->
+    <div class="math-section">
+      <div class="math-top">
+        <div class="math-label">◈ EXAM QUESTION</div>
+        <div class="math-meta">
+          <div id="math-diff" class="math-difficulty diff-easy">EASY</div>
+          <div id="math-qnum">Q1</div>
+          <div>✓ <span id="math-correct-count">0</span> correct</div>
+        </div>
+      </div>
+      <div class="math-question" id="math-question">Loading...</div>
+      <div class="math-answer-row">
+        <input type="text" id="math-input" placeholder="Your answer..." autocomplete="off" spellcheck="false" />
+        <button class="btn-math" onclick="checkAnswer()">SUBMIT</button>
+        <button class="btn-next" onclick="nextQuestion()">SKIP ›</button>
+        <div id="math-feedback"></div>
+      </div>
+      <div class="math-stats">
+        ATTEMPTED: <span id="math-attempted">0</span> &nbsp;|&nbsp;
+        CORRECT: <span id="math-correct-stat">0</span> &nbsp;|&nbsp;
+        SCORE: <span id="math-score-stat">—</span>
       </div>
     </div>
 
@@ -1199,6 +1356,150 @@ setTimeout(() => {
 
 log('Monitoring: tab switching, window blur, copy/paste/cut, right-click, keyboard shortcuts, DevTools, print screen, mouse exit, window resize, network requests, drag operations', 'INFO');
 log('Waiting for exam activity...', 'SYSTEM');
+
+// ─────────────────────────────────────────────
+//  MATH PROBLEM GENERATOR
+// ─────────────────────────────────────────────
+const mathState = {
+  answer: 0,
+  attempted: 0,
+  correct: 0,
+  questionNum: 0,
+};
+
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function generateQuestion() {
+  const difficulty = mathState.questionNum < 3 ? 'easy'
+    : mathState.questionNum < 7 ? 'medium' : 'hard';
+
+  let question, answer;
+
+  if (difficulty === 'easy') {
+    const type = randInt(0, 2);
+    if (type === 0) {
+      const a = randInt(2, 20), b = randInt(2, 20);
+      question = `${a} + ${b} = ?`;
+      answer = a + b;
+    } else if (type === 1) {
+      const a = randInt(10, 30), b = randInt(1, a);
+      question = `${a} − ${b} = ?`;
+      answer = a - b;
+    } else {
+      const a = randInt(2, 9), b = randInt(2, 9);
+      question = `${a} × ${b} = ?`;
+      answer = a * b;
+    }
+  } else if (difficulty === 'medium') {
+    const type = randInt(0, 3);
+    if (type === 0) {
+      const a = randInt(10, 50), b = randInt(10, 50);
+      question = `${a} + ${b} = ?`;
+      answer = a + b;
+    } else if (type === 1) {
+      const a = randInt(2, 12), b = randInt(2, 12);
+      question = `${a}² = ?`;
+      answer = a * a;
+    } else if (type === 2) {
+      const b = randInt(2, 12), a = b * randInt(2, 9);
+      question = `${a} ÷ ${b} = ?`;
+      answer = a / b;
+    } else {
+      const a = randInt(5, 20), b = randInt(2, 10), c = randInt(1, 10);
+      question = `${a} × ${b} − ${c} = ?`;
+      answer = a * b - c;
+    }
+  } else {
+    const type = randInt(0, 3);
+    if (type === 0) {
+      const a = randInt(10, 25), b = randInt(10, 25), c = randInt(2, 10);
+      question = `(${a} + ${b}) × ${c} = ?`;
+      answer = (a + b) * c;
+    } else if (type === 1) {
+      const a = randInt(2, 10), b = randInt(2, 4);
+      question = `${a}³ = ?`;
+      answer = a * a * a;
+    } else if (type === 2) {
+      const a = randInt(50, 200), b = randInt(10, 50);
+      question = `${a} + ${b} × 3 = ?`;
+      answer = a + b * 3;
+    } else {
+      const perc = [10, 15, 20, 25, 50][randInt(0,4)];
+      const base = randInt(2, 20) * 10;
+      question = `${perc}% of ${base} = ?`;
+      answer = (perc / 100) * base;
+    }
+  }
+
+  mathState.answer = answer;
+  mathState.questionNum++;
+
+  const diffEl = document.getElementById('math-diff');
+  diffEl.textContent = difficulty.toUpperCase();
+  diffEl.className = `math-difficulty diff-${difficulty}`;
+  document.getElementById('math-qnum').textContent = `Q${mathState.questionNum}`;
+  document.getElementById('math-question').textContent = question;
+
+  const inp = document.getElementById('math-input');
+  inp.value = '';
+  inp.className = '';
+  inp.focus();
+  document.getElementById('math-feedback').textContent = '';
+  document.getElementById('math-feedback').className = '';
+
+  log(`New question generated [${difficulty}]: ${question}`, 'SYSTEM');
+}
+
+function checkAnswer() {
+  const inp = document.getElementById('math-input');
+  const val = parseFloat(inp.value.trim());
+  const fb = document.getElementById('math-feedback');
+
+  if (isNaN(val)) {
+    fb.textContent = 'Enter a number';
+    fb.className = 'feedback-wrong';
+    return;
+  }
+
+  mathState.attempted++;
+  document.getElementById('math-attempted').textContent = mathState.attempted;
+
+  if (Math.abs(val - mathState.answer) < 0.001) {
+    mathState.correct++;
+    inp.className = 'correct';
+    fb.textContent = '✓ CORRECT!';
+    fb.className = 'feedback-correct';
+    document.getElementById('math-correct-count').textContent = mathState.correct;
+    document.getElementById('math-correct-stat').textContent = mathState.correct;
+    log(`Correct answer submitted: ${val}`, 'OK');
+    setTimeout(nextQuestion, 900);
+  } else {
+    inp.className = 'wrong';
+    fb.textContent = `✗ Wrong (ans: ${mathState.answer})`;
+    fb.className = 'feedback-wrong';
+    log(`Wrong answer: submitted ${val}, correct was ${mathState.answer}`, 'WARNING');
+    state.warnings++;
+    state.integrity = Math.max(0, state.integrity - 3);
+    updateMetrics();
+  }
+
+  const pct = mathState.attempted > 0 ? Math.round((mathState.correct / mathState.attempted) * 100) : 0;
+  document.getElementById('math-score-stat').textContent = `${pct}%`;
+}
+
+function nextQuestion() {
+  generateQuestion();
+}
+
+// Allow Enter key to submit
+document.getElementById('math-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') { e.stopPropagation(); checkAnswer(); }
+}, true);
+
+// Init first question
+setTimeout(generateQuestion, 500);
 </script>
 </body>
 </html>

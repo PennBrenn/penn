@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ExamGuard — Secure Testing</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Orbitron:wght@600;800&display=swap');
+
+:root {
+  --bg: #0e0f14;
+  --surface: #14151c;
+  --surface2: #1a1b24;
+  --border: #252632;
+  --border2: #2e2f40;
+  --text: #d4d5e0;
+  --muted: #5a5b70;
+  --accent: #5b8dee;
+  --accent2: #7c5ce0;
+  --green: #2ecc87;
+  --red: #e05c5c;
+  --orange: #e08c3a;
+  --yellow: #d4b84a;
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'IBM Plex Sans', sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.topbar-left { display: flex; align-items: center; gap: 14px; }
+
+.brand {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--accent);
+}
+
+.divider-v { width: 1px; height: 20px; background: var(--border2); }
+
+.monitor-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--muted);
+}
+
+.pulse-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: blink 2s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.topbar-right { display: flex; align-items: center; gap: 14px; }
+
+.stat-chip {
+  display: flex; align-items: center; gap: 6px;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+}
+.stat-chip .label { color: var(--muted); }
+.stat-chip .val { font-weight: 500; }
+
+.toggle-monitor {
+  padding: 5px 12px;
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.15s;
+}
+.toggle-monitor:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── LAYOUT ── */
+.workspace {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* ── EXAM ── */
+.exam-panel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  overflow-y: auto;
+}
+
+.exam-card {
+  width: 100%;
+  max-width: 580px;
+}
+
+.exam-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+.progress-track {
+  flex: 1; height: 3px;
+  background: var(--border2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+.progress-label {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.q-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.q-badge {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+.badge-math      { background: rgba(91,141,238,0.12); color: var(--accent);  border: 1px solid rgba(91,141,238,0.2); }
+.badge-mc        { background: rgba(124,92,224,0.12); color: #a57cf0;        border: 1px solid rgba(124,92,224,0.2); }
+.badge-vocab     { background: rgba(46,204,135,0.12); color: var(--green);   border: 1px solid rgba(46,204,135,0.2); }
+.badge-logic     { background: rgba(224,140,58,0.12); color: var(--orange);  border: 1px solid rgba(224,140,58,0.2); }
+.badge-truefalse { background: rgba(212,184,74,0.12); color: var(--yellow);  border: 1px solid rgba(212,184,74,0.2); }
+.badge-sequence  { background: rgba(224,92,92,0.12);  color: var(--red);     border: 1px solid rgba(224,92,92,0.2); }
+
+.q-diff {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--muted);
+  margin-left: auto;
+}
+
+.q-text {
+  font-size: 1.18rem;
+  font-weight: 500;
+  color: #e8e9f5;
+  line-height: 1.6;
+  margin-bottom: 22px;
+}
+
+/* text answer */
+.text-input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 1rem;
+  padding: 12px 16px;
+  border-radius: 6px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.text-input:focus { border-color: var(--accent); }
+.text-input.correct { border-color: var(--green); background: rgba(46,204,135,0.05); }
+.text-input.wrong   { border-color: var(--red);   background: rgba(224,92,92,0.05); animation: shake 0.25s; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+
+/* mc options */
+.mc-options { display: flex; flex-direction: column; gap: 7px; }
+.mc-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: var(--sans);
+  font-size: 0.93rem;
+  color: var(--text);
+  text-align: left;
+  width: 100%;
+  transition: all 0.12s;
+}
+.mc-btn:hover:not(:disabled) { border-color: var(--accent); background: rgba(91,141,238,0.06); }
+.mc-btn .opt-key { font-family: var(--mono); font-size: 0.68rem; color: var(--muted); min-width: 16px; }
+.mc-btn.selected  { border-color: var(--accent); background: rgba(91,141,238,0.1); }
+.mc-btn.correct   { border-color: var(--green);  background: rgba(46,204,135,0.08); color: var(--green); }
+.mc-btn.wrong     { border-color: var(--red);    background: rgba(224,92,92,0.08);  color: var(--red); }
+.mc-btn.reveal    { border-color: rgba(46,204,135,0.4); }
+.mc-btn:disabled  { cursor: default; }
+
+/* actions */
+.action-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+}
+.btn-submit {
+  padding: 10px 26px;
+  background: var(--accent);
+  border: none;
+  color: #fff;
+  font-family: var(--sans);
+  font-size: 0.88rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-submit:hover { background: #4a7de0; }
+.btn-submit:disabled { background: var(--border2); color: var(--muted); cursor: default; }
+
+.btn-skip {
+  padding: 10px 14px;
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 0.88rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-skip:hover { border-color: var(--border); color: var(--text); }
+
+.feedback {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  margin-left: auto;
+}
+.feedback.ok  { color: var(--green); }
+.feedback.bad { color: var(--red); }
+
+/* score strip */
+.score-strip {
+  display: flex;
+  gap: 20px;
+  margin-top: 26px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+.score-strip span { color: var(--text); }
+
+/* ── MONITOR ── */
+.monitor-panel {
+  width: 300px;
+  border-left: 1px solid var(--border);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: width 0.22s ease, opacity 0.22s ease;
+  flex-shrink: 0;
+}
+.monitor-panel.hidden { width: 0; opacity: 0; pointer-events: none; }
+
+.mon-top {
+  border-bottom: 1px solid var(--border);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.mon-title { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); letter-spacing: 1px; }
+
+.mon-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.mtab {
+  flex: 1; padding: 8px 0;
+  font-family: var(--mono); font-size: 0.62rem;
+  text-align: center; color: var(--muted);
+  cursor: pointer;
+  border: none; border-bottom: 2px solid transparent;
+  background: none; transition: all 0.12s;
+}
+.mtab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.mtab:hover:not(.active) { color: var(--text); }
+
+.mon-body { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+
+.mpane { display: none; flex: 1; overflow-y: auto; flex-direction: column; }
+.mpane.active { display: flex; }
+
+/* console */
+.log-filter {
+  display: flex; gap: 4px; padding: 7px 10px;
+  border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.lfbtn {
+  padding: 2px 8px; background: transparent;
+  border: 1px solid var(--border2); color: var(--muted);
+  font-family: var(--mono); font-size: 0.58rem;
+  cursor: pointer; border-radius: 3px; transition: all 0.1s;
+}
+.lfbtn.on { border-color: var(--accent); color: var(--accent); background: rgba(91,141,238,0.08); }
+
+#console-out { flex: 1; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 2px; }
+
+.log-line {
+  display: flex; gap: 7px;
+  padding: 3px 5px; border-radius: 3px;
+  font-family: var(--mono); font-size: 0.62rem; line-height: 1.5;
+  animation: fi 0.1s ease; flex-shrink: 0;
+}
+@keyframes fi { from{opacity:0} to{opacity:1} }
+.log-ts { color: var(--muted); flex-shrink: 0; }
+.log-msg { flex: 1; word-break: break-word; }
+.log-CRITICAL { background: rgba(224,92,92,0.07); }
+.log-CRITICAL .log-msg { color: #dd7070; }
+.log-WARNING  .log-msg { color: var(--orange); }
+.log-OK       .log-msg { color: var(--green); }
+.log-SYSTEM   .log-msg { color: var(--accent); }
+.log-INFO     .log-msg { color: var(--muted); }
+.log-BLOCKED  .log-msg { color: #a066e0; }
+
+/* sensors */
+#tab-sensors { padding: 8px; gap: 4px; overflow-y: auto; }
+.sensor-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 9px; border-radius: 4px;
+  background: var(--surface2); font-size: 0.72rem; flex-shrink: 0;
+}
+.sdot { width: 6px; height: 6px; border-radius: 50%; background: var(--border2); flex-shrink: 0; transition: all 0.3s; }
+.sensor-row.hit .sdot { background: var(--red); box-shadow: 0 0 5px var(--red); }
+.sname { flex: 1; color: var(--muted); font-size: 0.7rem; transition: color 0.3s; }
+.sensor-row.hit .sname { color: #dd8080; }
+.scnt { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); }
+.sensor-row.hit .scnt { color: var(--red); }
+
+/* stats */
+#tab-stats { padding: 10px; gap: 5px; overflow-y: auto; }
+.int-display { text-align: center; padding: 16px 8px 12px; flex-shrink: 0; }
+.int-num { font-family: 'Orbitron', sans-serif; font-size: 2.6rem; font-weight: 800; line-height: 1; transition: color 0.4s; }
+.int-bar-wrap { height: 4px; background: var(--border2); border-radius: 2px; overflow: hidden; margin: 8px 0 5px; }
+.int-bar-fill { height: 100%; border-radius: 2px; transition: width 0.4s, background 0.4s; }
+.int-label { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); }
+.stat-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 7px 9px; border-radius: 4px;
+  background: var(--surface2); font-size: 0.7rem; flex-shrink: 0;
+}
+.sk { color: var(--muted); }
+.sv { font-family: var(--mono); font-size: 0.7rem; }
+.sv-g { color: var(--green); }
+.sv-r { color: var(--red); }
+.sv-o { color: var(--orange); }
+
+/* mon footer */
+.mon-footer {
+  border-top: 1px solid var(--border);
+  padding: 8px;
+  display: flex; gap: 6px; flex-shrink: 0;
+}
+.mfbtn {
+  flex: 1; padding: 6px 0;
+  background: transparent; border: 1px solid var(--border2);
+  color: var(--muted); font-family: var(--mono); font-size: 0.62rem;
+  cursor: pointer; border-radius: 4px; transition: all 0.12s;
+}
+.mfbtn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* alert */
+#alert-flash {
+  position: fixed; top: 56px; left: 50%; transform: translateX(-50%);
+  background: var(--red); color: #fff;
+  font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.5px;
+  padding: 8px 18px; border-radius: 4px;
+  z-index: 9999; pointer-events: none; display: none;
+  box-shadow: 0 4px 20px rgba(224,92,92,0.4);
+  animation: sd 0.2s ease;
+}
+@keyframes sd { from{opacity:0;transform:translateX(-50%) translateY(-5px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+</style>
+</head>
+<body>
+
+<div id="alert-flash"></div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="brand">EXAMGUARD</div>
+    <div class="divider-v"></div>
+    <div class="monitor-badge"><div class="pulse-dot"></div>MONITORING</div>
+  </div>
+  <div class="topbar-right">
+    <div class="stat-chip"><span class="label">INTEGRITY</span><span class="val" id="top-int" style="color:var(--green)">100%</span></div>
+    <div class="divider-v"></div>
+    <div class="stat-chip"><span class="label">VIOLATIONS</span><span class="val" id="top-viol" style="color:var(--muted)">0</span></div>
+    <div class="divider-v"></div>
+    <div class="stat-chip"><span class="label">TIME</span><span class="val" id="top-time">00:00</span></div>
+    <div class="divider-v"></div>
+    <button class="toggle-monitor" id="mon-toggle-btn" onclick="toggleMonitor()">MONITOR ▸</button>
+  </div>
+</div>
+
+<!-- WORKSPACE -->
+<div class="workspace">
+
+  <!-- EXAM PANEL -->
+  <div class="exam-panel">
+    <div class="exam-card">
+      <div class="exam-progress">
+        <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+        <div class="progress-label" id="prog-lbl">Q 1</div>
+      </div>
+      <div class="q-meta">
+        <div class="q-badge badge-math" id="q-badge">Math</div>
+        <div class="q-diff" id="q-diff">Easy</div>
+      </div>
+      <div class="q-text" id="q-text">Loading…</div>
+      <div id="answer-area"></div>
+      <div class="action-row">
+        <button class="btn-submit" id="btn-submit" onclick="submitAnswer()">Submit</button>
+        <button class="btn-skip" onclick="nextQ(true)">Skip</button>
+        <span class="feedback" id="feedback"></span>
+      </div>
+      <div class="score-strip">
+        Q<span id="sc-q">0</span> &nbsp;·&nbsp;
+        Correct <span id="sc-c">0</span> &nbsp;·&nbsp;
+        Score <span id="sc-pct">—</span> &nbsp;·&nbsp;
+        Streak <span id="sc-str">0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MONITOR PANEL -->
+  <div class="monitor-panel hidden" id="monitor-panel">
+    <div class="mon-top">
+      <span class="mon-title">ANTI-CHEAT CONSOLE</span>
+      <button class="mfbtn" style="flex:0;padding:3px 8px;border-radius:3px" onclick="toggleMonitor()">✕</button>
+    </div>
+    <div class="mon-tabs">
+      <button class="mtab active" onclick="showTab('console',this)">Console</button>
+      <button class="mtab"        onclick="showTab('sensors',this)">Sensors</button>
+      <button class="mtab"        onclick="showTab('stats',this)">Stats</button>
+    </div>
+    <div class="mon-body">
+      <!-- CONSOLE -->
+      <div class="mpane active" id="tab-console">
+        <div class="log-filter">
+          <button class="lfbtn on" id="lf-ALL"      onclick="setFilter('ALL')">All</button>
+          <button class="lfbtn"    id="lf-CRITICAL"  onclick="setFilter('CRITICAL')">Critical</button>
+          <button class="lfbtn"    id="lf-WARNING"   onclick="setFilter('WARNING')">Warn</button>
+          <button class="lfbtn"    id="lf-OK"        onclick="setFilter('OK')">OK</button>
+        </div>
+        <div id="console-out"></div>
+      </div>
+      <!-- SENSORS -->
+      <div class="mpane" id="tab-sensors"></div>
+      <!-- STATS -->
+      <div class="mpane" id="tab-stats">
+        <div class="int-display">
+          <div class="int-num" id="int-big" style="color:var(--green)">100</div>
+          <div class="int-bar-wrap"><div class="int-bar-fill" id="int-fill" style="width:100%;background:var(--green)"></div></div>
+          <div class="int-label" id="int-lbl">Integrity intact</div>
+        </div>
+        <div id="stats-list"></div>
+      </div>
+    </div>
+    <div class="mon-footer">
+      <button class="mfbtn" onclick="clearConsole()">Clear</button>
+      <button class="mfbtn" onclick="exportLog()">Export</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ══════════════════════════════
+//  STATE
+// ══════════════════════════════
+const mon = {
+  violations:0, warnings:0, integrity:100,
+  start:Date.now(), blurStart:null, totalBlur:0,
+  filter:'ALL', open:false, logHistory:[],
+  c:{ tabSwitch:0,focusLoss:0,copy:0,paste:0,rightClick:0,
+      devTools:0,screenshot:0,mouseLeave:0,resize:0,keylog:0,network:0 }
+};
+const exam = { qNum:0, attempted:0, correct:0, streak:0, current:null, answered:false };
+
+const SENSORS = [
+  {id:'tabSwitch', label:'Tab Switch'},  {id:'focusLoss', label:'Window Blur'},
+  {id:'copy',      label:'Copy / Cut'},  {id:'paste',     label:'Paste'},
+  {id:'rightClick',label:'Right Click'}, {id:'devTools',  label:'DevTools'},
+  {id:'screenshot',label:'Print Screen'},{id:'mouseLeave',label:'Mouse Exit'},
+  {id:'resize',    label:'Win Resize'},  {id:'keylog',    label:'Rapid Keys'},
+  {id:'network',   label:'Network Req'},
+];
+
+// ── build sensor DOM
+function buildSensors() {
+  const pane = document.getElementById('tab-sensors');
+  pane.innerHTML = '';
+  SENSORS.forEach(s => {
+    const el = document.createElement('div');
+    el.className = 'sensor-row'; el.id = 'sr-'+s.id;
+    el.innerHTML = `<div class="sdot"></div><div class="sname">${s.label}</div><div class="scnt" id="scnt-${s.id}">0</div>`;
+    pane.appendChild(el);
+  });
+}
+
+// ── build stats DOM
+function buildStats() {
+  const data = [
+    {k:'Violations',   id:'sv-v',  cls:'sv-r'},
+    {k:'Warnings',     id:'sv-w',  cls:'sv-o'},
+    {k:'Time Away',    id:'sv-t',  cls:''},
+    {k:'Tab Switches', id:'sv-ts', cls:''},
+    {k:'Copies Blocked',id:'sv-c', cls:''},
+    {k:'DevTools',     id:'sv-d',  cls:''},
+    {k:'Questions',    id:'sv-q',  cls:''},
+    {k:'Accuracy',     id:'sv-a',  cls:'sv-g'},
+  ];
+  const wrap = document.getElementById('stats-list');
+  wrap.innerHTML = '';
+  data.forEach(r => {
+    const el = document.createElement('div');
+    el.className = 'stat-row';
+    el.innerHTML = `<span class="sk">${r.k}</span><span class="sv ${r.cls}" id="${r.id}">—</span>`;
+    wrap.appendChild(el);
+  });
+}
+
+// ══════════════════════════════
+//  LOGGING
+// ══════════════════════════════
+function ts() { return new Date().toTimeString().slice(0,8); }
+
+function log(msg, level='INFO', detail='') {
+  const e = {ts:ts(), msg, level, detail};
+  mon.logHistory.push(e);
+  if (mon.open && (mon.filter==='ALL'||mon.filter===level)) appendLog(e);
+}
+
+function appendLog(e) {
+  const out = document.getElementById('console-out');
+  const d = document.createElement('div');
+  d.className = `log-line log-${e.level}`;
+  d.innerHTML = `<span class="log-ts">${e.ts}</span><span class="log-msg">${e.msg}${e.detail?` <span style="color:var(--muted);font-size:0.58rem">(${e.detail})</span>`:''}</span>`;
+  out.appendChild(d);
+  out.scrollTop = out.scrollHeight;
+}
+
+// ══════════════════════════════
+//  DETECTION HELPERS
+// ══════════════════════════════
+let alertTimer;
+function flash(msg) {
+  const el = document.getElementById('alert-flash');
+  el.textContent = '⚠ '+msg; el.style.display='block';
+  clearTimeout(alertTimer);
+  alertTimer = setTimeout(()=>el.style.display='none', 1800);
+}
+
+function hitSensor(id) {
+  mon.c[id] = (mon.c[id]||0)+1;
+  const row = document.getElementById('sr-'+id);
+  const cnt = document.getElementById('scnt-'+id);
+  if (row) row.classList.add('hit');
+  if (cnt) cnt.textContent = mon.c[id];
+}
+
+function violation(sensor, msg, detail='') {
+  mon.violations++; mon.integrity = Math.max(0, mon.integrity-12);
+  hitSensor(sensor); log(msg,'CRITICAL',detail); flash(msg); refreshUI();
+}
+function warning(sensor, msg, detail='') {
+  mon.warnings++; mon.integrity = Math.max(0, mon.integrity-3);
+  hitSensor(sensor); log(msg,'WARNING',detail); refreshUI();
+}
+
+function refreshUI() {
+  // topbar
+  const ti = document.getElementById('top-int');
+  const tv = document.getElementById('top-viol');
+  ti.textContent = mon.integrity+'%';
+  ti.style.color = mon.integrity>=80?'var(--green)':mon.integrity>=55?'var(--orange)':'var(--red)';
+  tv.textContent = mon.violations;
+  tv.style.color = mon.violations===0?'var(--muted)':'var(--red)';
+
+  // integrity widget
+  const ib = document.getElementById('int-big');
+  const iff = document.getElementById('int-fill');
+  const il = document.getElementById('int-lbl');
+  if (!ib) return;
+  const col = mon.integrity>=80?'var(--green)':mon.integrity>=55?'var(--orange)':'var(--red)';
+  ib.textContent = mon.integrity; ib.style.color = col;
+  iff.style.width = mon.integrity+'%'; iff.style.background = col;
+  il.textContent = mon.integrity>=80?'Integrity intact':mon.integrity>=55?'Suspicious activity':'COMPROMISED';
+
+  // stats
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  set('sv-v',mon.violations); set('sv-w',mon.warnings);
+  set('sv-t',(mon.totalBlur/1000).toFixed(1)+'s');
+  set('sv-ts',mon.c.tabSwitch||0); set('sv-c',mon.c.copy||0);
+  set('sv-d',mon.c.devTools||0); set('sv-q',exam.qNum);
+  set('sv-a',exam.attempted>0?Math.round(exam.correct/exam.attempted*100)+'%':'—');
+}
+
+// timer
+setInterval(()=>{
+  const s=Math.floor((Date.now()-mon.start)/1000);
+  document.getElementById('top-time').textContent=`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+  if(mon.blurStart) mon.totalBlur=Date.now()-mon.blurStart;
+  refreshUI();
+},1000);
+
+// ══════════════════════════════
+//  CHEAT DETECTION
+// ══════════════════════════════
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){mon.blurStart=Date.now();violation('tabSwitch','Tab switched away',`count:${++mon.c.tabSwitch}`);}
+  else{if(mon.blurStart){mon.totalBlur+=Date.now()-mon.blurStart;mon.blurStart=null;}log('Tab returned','INFO');}
+});
+window.addEventListener('blur',()=>{if(!mon.blurStart)mon.blurStart=Date.now();warning('focusLoss','Window lost focus');});
+window.addEventListener('focus',()=>{if(mon.blurStart){mon.totalBlur+=Date.now()-mon.blurStart;mon.blurStart=null;}});
+
+document.addEventListener('copy',e=>{violation('copy','Copy intercepted',(window.getSelection()?.toString()||'').slice(0,50));e.preventDefault();log('Copy blocked','BLOCKED');});
+document.addEventListener('cut',e=>{violation('copy','Cut intercepted');e.preventDefault();});
+document.addEventListener('paste',e=>{violation('paste','Paste intercepted');e.preventDefault();log('Paste blocked','BLOCKED');});
+document.addEventListener('contextmenu',e=>{warning('rightClick','Right-click blocked');e.preventDefault();});
+document.addEventListener('mouseleave',e=>{
+  if(e.clientY<=0||e.clientX<=0||e.clientX>=window.innerWidth||e.clientY>=window.innerHeight)
+    warning('mouseLeave','Mouse exited window');
+});
+window.addEventListener('resize',()=>warning('resize','Window resized',`${window.innerWidth}×${window.innerHeight}`));
+document.addEventListener('dragstart',e=>{warning('copy','Drag attempted');e.preventDefault();});
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='PrintScreen'){violation('screenshot','Print Screen pressed');e.preventDefault();return;}
+  if(['F12'].includes(e.key)){warning('devTools',`Key blocked: ${e.key}`);e.preventDefault();return;}
+  const c=e.ctrlKey||e.metaKey, s=e.shiftKey, k=e.key.toUpperCase();
+  if(c&&s&&(k==='I'||k==='J'||k==='C')){violation('devTools','DevTools shortcut blocked',e.key);e.preventDefault();}
+  else if(c&&k==='U'){warning('devTools','View source blocked');e.preventDefault();}
+  else if(c&&k==='P'){warning('devTools','Print blocked');e.preventDefault();}
+},true);
+
+setInterval(()=>{
+  if(window.outerWidth-window.innerWidth>160||window.outerHeight-window.innerHeight>160){
+    mon.c.devTools=(mon.c.devTools||0)+1;
+    if(mon.c.devTools%5===1)violation('devTools','DevTools panel detected');
+  }
+},1500);
+
+(function(){
+  const oF=window.fetch;
+  window.fetch=function(u,...a){mon.c.network=(mon.c.network||0)+1;violation('network','Network fetch blocked',String(u).slice(0,60));return Promise.reject(new Error('Blocked'));};
+  const oX=window.XMLHttpRequest;
+  window.XMLHttpRequest=function(){const x=new oX();const op=x.open.bind(x);x.open=function(m,u,...r){violation('network',`XHR blocked`,`${m} ${String(u).slice(0,50)}`);return op(m,u,...r);};return x;};
+})();
+
+// ══════════════════════════════
+//  MONITOR UI
+// ══════════════════════════════
+function toggleMonitor(){
+  mon.open=!mon.open;
+  document.getElementById('monitor-panel').classList.toggle('hidden',!mon.open);
+  document.getElementById('mon-toggle-btn').textContent=mon.open?'MONITOR ✕':'MONITOR ▸';
+  if(mon.open){
+    const out=document.getElementById('console-out');out.innerHTML='';
+    mon.logHistory.filter(e=>mon.filter==='ALL'||e.level===mon.filter).forEach(appendLog);
+    out.scrollTop=out.scrollHeight;
+  }
+}
+function showTab(name,btn){
+  document.querySelectorAll('.mtab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.mpane').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+}
+function setFilter(f){
+  mon.filter=f;
+  document.querySelectorAll('.lfbtn').forEach(b=>b.classList.toggle('on',b.id==='lf-'+f));
+  const out=document.getElementById('console-out');out.innerHTML='';
+  mon.logHistory.filter(e=>f==='ALL'||e.level===f).forEach(appendLog);
+  out.scrollTop=out.scrollHeight;
+}
+function clearConsole(){document.getElementById('console-out').innerHTML='';log('Console cleared','SYSTEM');}
+function exportLog(){
+  const h=`EXAMGUARD LOG — ${new Date().toISOString()}\nViolations:${mon.violations} Integrity:${mon.integrity}%\n${'─'.repeat(48)}\n`;
+  const b=mon.logHistory.map(e=>`[${e.ts}][${e.level.padEnd(8)}] ${e.msg}${e.detail?' — '+e.detail:''}`).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([h+b],{type:'text/plain'}));
+  a.download=`examguard-${Date.now()}.txt`;a.click();log('Log exported','SYSTEM');
+}
+
+// ══════════════════════════════
+//  QUESTION ENGINE
+// ══════════════════════════════
+function ri(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function pick(arr){return arr[ri(0,arr.length-1)];}
+function shuf(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=ri(0,i);[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+// ─── MATH
+function genMath(){
+  const tier=exam.qNum<4?0:exam.qNum<9?1:2;
+  const tpls=[
+    [
+      ()=>{const a=ri(3,20),b=ri(3,20);return{q:`${a} + ${b}`,a:a+b};},
+      ()=>{const a=ri(12,35),b=ri(2,12);return{q:`${a} − ${b}`,a:a-b};},
+      ()=>{const a=ri(2,9),b=ri(2,9);return{q:`${a} × ${b}`,a:a*b};},
+    ],[
+      ()=>{const a=ri(2,12);return{q:`${a}²`,a:a*a};},
+      ()=>{const b=ri(2,9),a=b*ri(2,9);return{q:`${a} ÷ ${b}`,a:a/b};},
+      ()=>{const a=ri(5,15),b=ri(2,8),c=ri(1,10);return{q:`${a} × ${b} + ${c}`,a:a*b+c};},
+      ()=>{const p=[10,20,25,50][ri(0,3)],n=ri(2,20)*10;return{q:`${p}% of ${n}`,a:p/100*n};},
+    ],[
+      ()=>{const a=ri(2,7);return{q:`${a}³`,a:a*a*a};},
+      ()=>{const a=ri(8,20),b=ri(8,20),c=ri(2,8);return{q:`(${a} + ${b}) × ${c}`,a:(a+b)*c};},
+      ()=>{const a=ri(40,120),b=ri(5,25);return{q:`${a} + ${b} × 4`,a:a+b*4};},
+      ()=>{const a=ri(2,10),b=ri(2,10);return{q:`${a}² + ${b}²`,a:a*a+b*b};},
+    ]
+  ][tier];
+  const {q,a}=pick(tpls)();
+  return{type:'math',badge:'badge-math',label:'Math',diff:['Easy','Medium','Hard'][tier],
+    question:q+' = ?',answer:String(a),input:'text'};
+}
+
+// ─── TRUE / FALSE
+function genTrueFalse(){
+  const items=shuf([
+    {q:'The square root of 144 is 12.',a:'True'},
+    {q:'Water boils at 90°C at sea level.',a:'False'},
+    {q:'The Earth orbits the Sun.',a:'True'},
+    {q:'HTML stands for HyperText Markup Language.',a:'True'},
+    {q:'The capital of France is London.',a:'False'},
+    {q:'A triangle has four sides.',a:'False'},
+    {q:'Oxygen is a noble gas.',a:'False'},
+    {q:'Shakespeare wrote Hamlet.',a:'True'},
+    {q:'Light travels faster than sound.',a:'True'},
+    {q:'The Pacific Ocean is the smallest ocean.',a:'False'},
+    {q:'Mammals are cold-blooded animals.',a:'False'},
+    {q:'Python is a compiled language.',a:'False'},
+    {q:'The speed of light is ~300,000 km/s.',a:'True'},
+    {q:'A byte contains 16 bits.',a:'False'},
+    {q:'The Great Wall of China is visible from space.',a:'False'},
+    {q:'DNA stands for Deoxyribonucleic Acid.',a:'True'},
+  ])[0];
+  return{type:'truefalse',badge:'badge-truefalse',label:'True / False',diff:'Quick',
+    question:items.q,answer:items.a,options:['True','False'],input:'mc'};
+}
+
+// ─── VOCABULARY
+function genVocab(){
+  const words=shuf([
+    {w:'Ephemeral',  def:'Lasting for a very short time',        wrong:['Eternal','Frequent','Enormous']},
+    {w:'Ubiquitous', def:'Present everywhere simultaneously',    wrong:['Scarce','Ancient','Delicate']},
+    {w:'Loquacious', def:'Talkative; talking a great deal',      wrong:['Silent','Mysterious','Clumsy']},
+    {w:'Pragmatic',  def:'Dealing with things practically',      wrong:['Idealistic','Emotional','Careless']},
+    {w:'Ambiguous',  def:'Open to more than one interpretation', wrong:['Clear','Definite','Obvious']},
+    {w:'Cacophony',  def:'A harsh, discordant mixture of sounds',wrong:['Harmony','Silence','Melody']},
+    {w:'Tenacious',  def:'Holding firmly; not giving up',        wrong:['Timid','Flexible','Apathetic']},
+    {w:'Verbose',    def:'Using more words than necessary',      wrong:['Concise','Mute','Eloquent']},
+    {w:'Lucid',      def:'Clear and easy to understand',         wrong:['Confusing','Dark','Hidden']},
+    {w:'Apathy',     def:'Lack of interest or enthusiasm',       wrong:['Passion','Rage','Delight']},
+    {w:'Benevolent', def:'Well-meaning and kindly',              wrong:['Hostile','Greedy','Ruthless']},
+    {w:'Convoluted', def:'Extremely complex and difficult to follow',wrong:['Simple','Direct','Plain']},
+    {w:'Pernicious', def:'Having a harmful effect, especially gradually',wrong:['Beneficial','Neutral','Obvious']},
+    {w:'Sycophant',  def:'A person who acts obsequiously toward someone influential',wrong:['Critic','Leader','Rebel']},
+    {w:'Equivocate', def:'Use ambiguous language to avoid committing oneself',wrong:['Clarify','Proclaim','Declare']},
+  ])[0];
+  const opts=shuf([words.def,...words.wrong]);
+  return{type:'vocab',badge:'badge-vocab',label:'Vocabulary',diff:'Standard',
+    question:`What does "${words.w}" mean?`,answer:words.def,options:opts,input:'mc'};
+}
+
+// ─── MULTIPLE CHOICE
+function genMC(){
+  const qs=shuf([
+    {q:'What is the chemical symbol for gold?',a:'Au',o:['Au','Ag','Fe','Cu']},
+    {q:'Which planet is closest to the Sun?',a:'Mercury',o:['Mercury','Venus','Mars','Earth']},
+    {q:'How many bits are in one byte?',a:'8',o:['4','8','16','32']},
+    {q:'Who developed the theory of general relativity?',a:'Einstein',o:['Newton','Einstein','Hawking','Bohr']},
+    {q:'What does CPU stand for?',a:'Central Processing Unit',o:['Central Processing Unit','Core Program Utility','Computer Power Unit','Central Program Upload']},
+    {q:'Which data structure uses LIFO ordering?',a:'Stack',o:['Stack','Queue','Heap','Array']},
+    {q:'What is the powerhouse of the cell?',a:'Mitochondria',o:['Mitochondria','Nucleus','Ribosome','Golgi body']},
+    {q:'In which year did World War II end?',a:'1945',o:['1943','1944','1945','1946']},
+    {q:'Which language runs natively in web browsers?',a:'JavaScript',o:['Python','Java','JavaScript','Ruby']},
+    {q:'How many sides does a hexagon have?',a:'6',o:['5','6','7','8']},
+    {q:'What does HTTP stand for?',a:'HyperText Transfer Protocol',o:['HyperText Transfer Protocol','High Transfer Tech Protocol','Hyper Terminal Transfer Process','Host Transfer Text Protocol']},
+    {q:'What is the freezing point of water in Fahrenheit?',a:'32°F',o:['0°F','32°F','100°F','212°F']},
+    {q:'Which sorting algorithm has O(n log n) average complexity?',a:'Merge Sort',o:['Bubble Sort','Insertion Sort','Merge Sort','Selection Sort']},
+    {q:'What is the largest organ in the human body?',a:'Skin',o:['Liver','Brain','Skin','Heart']},
+    {q:'Who painted the Mona Lisa?',a:'Leonardo da Vinci',o:['Michelangelo','Leonardo da Vinci','Raphael','Caravaggio']},
+  ])[0];
+  return{type:'mc',badge:'badge-mc',label:'Multiple Choice',diff:'Standard',
+    question:qs.q,answer:qs.a,options:shuf(qs.o),input:'mc'};
+}
+
+// ─── LOGIC
+function genLogic(){
+  const qs=shuf([
+    {q:'If all Bloops are Razzies, and all Razzies are Lazzies — are all Bloops definitely Lazzies?',a:'Yes',o:['Yes','No','Maybe','Cannot determine']},
+    {q:'A bat and ball cost $1.10 total. The bat costs $1 more than the ball. What does the ball cost?',a:'$0.05',o:['$0.05','$0.10','$0.15','$1.00']},
+    {q:'What comes next? 2, 6, 18, 54, …',a:'162',o:['108','162','216','180']},
+    {q:'A farmer has 17 sheep. All but 9 die. How many sheep remain?',a:'9',o:['8','9','17','0']},
+    {q:'If you overtake the 2nd-place runner, what place are you in?',a:'2nd',o:['1st','2nd','3rd','Last']},
+    {q:'What comes next? 1, 1, 2, 3, 5, 8, …',a:'13',o:['10','11','12','13']},
+    {q:'I have cities but no houses, mountains but no trees, water but no fish. What am I?',a:'A map',o:['A map','A painting','A globe','A mirror']},
+    {q:'You have two coins totalling 30 cents. One is not a nickel. What are the two coins?',a:'Quarter and nickel',o:['Quarter and nickel','Two dimes and a nickel','Three dimes','Two nickels and a dime']},
+  ])[0];
+  return{type:'logic',badge:'badge-logic',label:'Logic',diff:'Think',
+    question:qs.q,answer:qs.a,options:shuf(qs.o),input:'mc'};
+}
+
+// ─── SEQUENCE
+function genSequence(){
+  const qs=shuf([
+    {q:'Fill the blank: Monday, Tuesday, ___, Thursday',a:'Wednesday',o:['Wednesday','Friday','Sunday','Saturday']},
+    {q:'Fill the blank: Jan, Feb, ___, Apr',a:'March',o:['March','May','June','August']},
+    {q:'What comes next? A, C, E, G, ___',a:'I',o:['H','I','J','K']},
+    {q:'What comes next? Z, Y, X, W, ___',a:'V',o:['U','V','W','T']},
+    {q:'What comes next? 1, 4, 9, 16, 25, ___',a:'36',o:['32','35','36','49']},
+    {q:'What comes next? 2, 3, 5, 7, 11, ___',a:'13',o:['12','13','14','15']},
+    {q:'What comes next? 3, 6, 12, 24, ___',a:'48',o:['36','42','48','56']},
+    {q:'What comes next? 100, 50, 25, 12.5, ___',a:'6.25',o:['6','6.25','7','8']},
+  ])[0];
+  return{type:'sequence',badge:'badge-sequence',label:'Sequence',diff:'Pattern',
+    question:qs.q,answer:qs.a,options:shuf(qs.o),input:'mc'};
+}
+
+// ─── GENERAL KNOWLEDGE
+function genGenKnowledge(){
+  const qs=shuf([
+    {q:'How many continents are on Earth?',a:'7',o:['5','6','7','8']},
+    {q:'What is the chemical formula for water?',a:'H₂O',o:['H₂O','CO₂','NaCl','O₂']},
+    {q:'Which country has the most natural lakes?',a:'Canada',o:['Russia','Canada','USA','Brazil']},
+    {q:'How many bones are in the adult human body?',a:'206',o:['186','196','206','216']},
+    {q:'What is the hardest natural substance?',a:'Diamond',o:['Diamond','Granite','Quartz','Iron']},
+    {q:'How many strings does a standard guitar have?',a:'6',o:['4','5','6','7']},
+    {q:'What is the smallest planet in our solar system?',a:'Mercury',o:['Mercury','Mars','Venus','Pluto']},
+    {q:'Which element has atomic number 1?',a:'Hydrogen',o:['Hydrogen','Helium','Carbon','Oxygen']},
+  ])[0];
+  return{type:'mc',badge:'badge-mc',label:'General Knowledge',diff:'Standard',
+    question:qs.q,answer:qs.a,options:shuf(qs.o),input:'mc'};
+}
+
+// ── Question rotation
+const generators = [genMath, genMC, genVocab, genTrueFalse, genLogic, genSequence, genGenKnowledge, genMath];
+
+function nextQ(skip=false){
+  if(skip&&!exam.answered&&exam.current){
+    exam.attempted++;
+    log('Question skipped','WARNING');
+    mon.integrity=Math.max(0,mon.integrity-1);
+    refreshUI();
+  }
+  exam.answered=false; selectedMC=null;
+  exam.current=generators[exam.qNum%generators.length]();
+  exam.qNum++;
+  renderQ();
+}
+
+function renderQ(){
+  const q=exam.current;
+  const pct=Math.min(100,Math.round((exam.qNum-1)/20*100));
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('prog-lbl').textContent=`Q ${exam.qNum}`;
+  const badge=document.getElementById('q-badge');
+  badge.textContent=q.label; badge.className='q-badge '+q.badge;
+  document.getElementById('q-diff').textContent=q.diff;
+  document.getElementById('q-text').textContent=q.question;
+
+  const area=document.getElementById('answer-area');
+  area.innerHTML='';
+
+  if(q.input==='text'){
+    area.innerHTML=`<input class="text-input" id="ans-in" type="text" placeholder="Enter answer…" autocomplete="off" spellcheck="false"/>`;
+    setTimeout(()=>{
+      const inp=document.getElementById('ans-in');
+      if(inp){inp.focus();inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.stopPropagation();submitAnswer();}},true);}
+    },40);
+  } else {
+    const wrap=document.createElement('div'); wrap.className='mc-options';
+    const keys=['A','B','C','D'];
+    q.options.forEach((opt,i)=>{
+      const btn=document.createElement('button');
+      btn.className='mc-btn';
+      btn.innerHTML=`<span class="opt-key">${keys[i]}</span>${opt}`;
+      btn.dataset.val=opt;
+      btn.onclick=()=>selectOpt(btn,opt);
+      wrap.appendChild(btn);
+    });
+    area.appendChild(wrap);
+  }
+  document.getElementById('btn-submit').disabled=false;
+  document.getElementById('feedback').textContent='';
+  document.getElementById('feedback').className='feedback';
+}
+
+let selectedMC=null;
+function selectOpt(btn,val){
+  if(exam.answered)return;
+  document.querySelectorAll('.mc-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected'); selectedMC=val;
+}
+
+function submitAnswer(){
+  if(exam.answered)return;
+  const q=exam.current;
+  let ans='';
+  if(q.input==='text'){
+    const inp=document.getElementById('ans-in');
+    ans=inp?inp.value.trim():'';
+    if(!ans){const fb=document.getElementById('feedback');fb.textContent='Enter an answer';fb.className='feedback bad';return;}
+  } else {
+    if(!selectedMC){const fb=document.getElementById('feedback');fb.textContent='Select an option';fb.className='feedback bad';return;}
+    ans=selectedMC;
+  }
+
+  exam.attempted++; exam.answered=true;
+  document.getElementById('btn-submit').disabled=true; selectedMC=null;
+
+  const ok=q.input==='text'
+    ?Math.abs(parseFloat(ans)-parseFloat(q.answer))<0.001
+    :ans===q.answer;
+
+  const fb=document.getElementById('feedback');
+  if(ok){
+    exam.correct++; exam.streak++;
+    fb.textContent=exam.streak>2?`✓ Correct! 🔥 ${exam.streak}`:'✓ Correct!'; fb.className='feedback ok';
+    log(`Correct: ${q.question}`,'OK');
+    if(q.input==='text'){const i=document.getElementById('ans-in');if(i)i.className='text-input correct';}
+    else hlMC(q.answer,true);
+    setTimeout(nextQ,1000);
+  } else {
+    exam.streak=0;
+    fb.textContent=`✗ ${q.answer}`; fb.className='feedback bad';
+    log(`Wrong: "${ans}" → "${q.answer}"`,'WARNING');
+    mon.warnings++; mon.integrity=Math.max(0,mon.integrity-2); refreshUI();
+    if(q.input==='text'){const i=document.getElementById('ans-in');if(i)i.className='text-input wrong';}
+    else hlMC(q.answer,false,ans);
+    setTimeout(nextQ,1700);
+  }
+
+  document.getElementById('sc-q').textContent=exam.qNum;
+  document.getElementById('sc-c').textContent=exam.correct;
+  document.getElementById('sc-pct').textContent=Math.round(exam.correct/exam.attempted*100)+'%';
+  document.getElementById('sc-str').textContent=exam.streak;
+  refreshUI();
+}
+
+function hlMC(correct,wasRight,selected=''){
+  document.querySelectorAll('.mc-btn').forEach(btn=>{
+    const v=btn.dataset.val; btn.disabled=true;
+    if(v===correct)btn.classList.add(wasRight&&v===selected?'correct':'reveal');
+    else if(v===selected)btn.classList.add('wrong');
+  });
+}
+
+// ══════════════════════════════
+//  INIT
+// ══════════════════════════════
+buildSensors(); buildStats();
+log('ExamGuard initialized — all sensors active','SYSTEM');
+log('Monitoring: tabs, clipboard, keyboard, network, DevTools, mouse','OK');
+setTimeout(()=>{nextQ();log('First question ready','SYSTEM');},150);
+</script>
+</body>
+</html>

@@ -2,15 +2,29 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Penn Brenn | Index Directory</title>
+<title>Penn Brenn | Terminal Velocity Index</title>
 <style>
-  /* --- THE WHITE ROOM TRAP --- */
-  body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; cursor: crosshair; }
+  /* --- GLOBAL & CURSOR TRAP --- */
+  body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; cursor: none !important; }
+  
+  /* THE FAKE CURSOR */
+  #fake-cursor {
+    position: fixed; top: 50%; left: 50%;
+    width: 0; height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-bottom: 35px solid red;
+    transform: rotate(160deg);
+    z-index: 2147483647; /* Maximum possible z-index */
+    pointer-events: none; /* Let clicks pass through it */
+    transition: top 0.15s ease-out, left 0.15s ease-out;
+    filter: drop-shadow(5px 5px 0px black);
+  }
 
   #countdown-screen {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
     background: white; display: flex; align-items: center; justify-content: center;
-    z-index: 9999999;
+    z-index: 9999999; cursor: crosshair;
   }
   #countdown-text { font-size: 300px; font-family: "Arial", sans-serif; color: black; font-weight: bold; }
 
@@ -20,111 +34,82 @@
     background: #000; font-family: "Courier New", monospace;
     animation: worldEnd 0.05s infinite;
   }
-
   @keyframes worldEnd {
     0% { background: #ff00ff; filter: hue-rotate(0deg); }
     50% { background: #00ffff; filter: hue-rotate(180deg); }
     100% { background: #ffff00; filter: hue-rotate(360deg); }
   }
 
-  /* --- VICTORIAN RETINA DESTROYER --- */
   .moire-hell {
     position: fixed; top: -50%; left: -50%; width: 200%; height: 200%;
     background: repeating-radial-gradient(circle, #000, #000 12px, #fff 12px, #fff 24px);
     mix-blend-mode: difference;
-    animation: spinHell 2s linear infinite, throb 0.2s infinite alternate;
-    z-index: 0; pointer-events: none;
+    animation: spinHell 2s linear infinite; z-index: 0; pointer-events: none;
   }
   @keyframes spinHell { 100% { transform: rotate(360deg); } }
-  @keyframes throb { 0% { transform: scale(1); } 100% { transform: scale(1.1); } }
 
-  /* --- EPILEPSY WARNING --- */
-  #seizure-warning {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    z-index: 999999; background: black; color: white;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 80px; text-align: center; font-weight: 900;
-    animation: warningFlash 0.05s infinite; pointer-events: none;
+  /* --- CORNER WIDGETS --- */
+  .widget {
+    position: fixed; width: 220px; height: 180px;
+    background: rgba(0,0,0,0.9); border: 4px ridge lime; color: lime;
+    z-index: 9000; padding: 10px; font-size: 14px; overflow: hidden;
+    box-shadow: 5px 5px 0 red; pointer-events: auto;
   }
-  @keyframes warningFlash {
-    0% { opacity: 1; background: red; color: yellow; transform: scale(1.2); }
-    50% { opacity: 0.5; background: blue; color: lime; transform: scale(0.8) rotate(5deg); }
-  }
+  .widget-title { border-bottom: 2px solid lime; margin-bottom: 5px; font-weight: bold; text-align: center; }
 
-  /* --- HUD ELEMENTS --- */
+  /* TOP LEFT: Chatbot */
+  #widget-chat { top: 10px; left: 10px; }
+  #chat-log { height: 100px; overflow-y: auto; margin-bottom: 5px; font-size: 12px; }
+  #chat-input { width: 100%; background: black; color: lime; border: 1px solid lime; }
+
+  /* TOP RIGHT: Stocks */
+  #widget-stocks { top: 10px; right: 10px; font-size: 18px; line-height: 1.8; }
+  .stock-up { color: lime; } .stock-down { color: red; }
+
+  /* BOTTOM LEFT: Inventory */
+  #widget-inv { bottom: 80px; left: 10px; }
+  .inv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+  .inv-slot { height: 50px; border: 1px dashed lime; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 10px; cursor: pointer; }
+  .inv-slot:hover { background: red; color: white; }
+
+  /* BOTTOM RIGHT: Game */
+  #widget-game { bottom: 80px; right: 10px; }
+  #runaway-btn { position: absolute; padding: 10px; background: red; color: white; font-weight: bold; border: none; }
+
+  /* --- EXISTING HUD & LINKS --- */
   #death-timer {
-    position: fixed; top: 10px; right: 10px;
-    background: white; color: black; font-size: 40px; padding: 10px;
-    border: 10px double red; z-index: 10000; font-weight: bold;
-    animation: jitter 0.05s infinite;
+    position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
+    background: white; color: black; font-size: 30px; padding: 5px 20px;
+    border: 5px double red; z-index: 10000; font-weight: bold; animation: jitter 0.05s infinite;
   }
 
-  marquee {
-    position: fixed; font-size: 100px; opacity: 0.9; z-index: 1; 
-    pointer-events: none; color: lime; mix-blend-mode: exclusion;
-    font-weight: bold; text-transform: uppercase;
-  }
+  marquee { position: fixed; font-size: 80px; opacity: 0.9; z-index: 1; pointer-events: none; color: lime; mix-blend-mode: exclusion; font-weight: bold; }
 
-  /* --- THE EASY-CLICK BUTTONS OF DOOM --- */
   .file-link {
-    position: absolute; padding: 15px;
-    background: rgba(255,255,255,0.95);
-    border: 4px solid black; text-decoration: none;
-    color: black; font-weight: bold; font-size: 20px;
-    z-index: 100; transition: all 0.1s ease;
+    position: absolute; padding: 10px; background: rgba(255,255,255,0.95);
+    border: 4px solid black; text-decoration: none; color: black;
+    font-weight: bold; font-size: 16px; z-index: 100; transition: all 0.1s ease;
     box-shadow: 5px 5px 0px blue; text-align: center;
   }
-
   .file-link:hover {
-    transform: scale(3.5) rotate(5deg);
-    background: #00ff00; color: #000;
-    border: 10px dashed black;
-    z-index: 100000;
-    box-shadow: -15px -15px 0px red;
+    transform: scale(2.5) rotate(5deg); background: #00ff00; color: #000;
+    border: 5px dashed black; z-index: 100000; box-shadow: -10px -10px 0px red;
   }
-  
-  .file-name { font-size: 24px; color: blue; text-decoration: underline; display: block; margin-bottom: 5px; }
+  .file-name { font-size: 20px; color: blue; text-decoration: underline; display: block; }
 
-  /* --- DELETING SYSTEM32 PROGRESS BAR --- */
   #sys32-container {
-    position: fixed; bottom: 5%; left: 10%; width: 80%; height: 60px;
-    background: black; border: 8px ridge gray; z-index: 99999;
-    box-shadow: 0 0 50px red; display: flex; align-items: center;
+    position: fixed; bottom: 5%; left: 10%; width: 80%; height: 50px;
+    background: black; border: 8px ridge gray; z-index: 99999; display: flex; align-items: center;
   }
-  
-  #sys32-fill {
-    height: 100%; width: 0%; background: repeating-linear-gradient(
-      45deg, #ff0000, #ff0000 20px, #8b0000 20px, #8b0000 40px
-    );
-    transition: width 0.5s linear;
-  }
+  #sys32-fill { height: 100%; width: 0%; background: repeating-linear-gradient(45deg, #ff0000, #ff0000 20px, #8b0000 20px, #8b0000 40px); transition: width 0.5s linear; }
+  #sys32-text { position: absolute; width: 100%; text-align: center; color: white; font-size: 24px; font-weight: bold; mix-blend-mode: difference; pointer-events: none; }
 
-  #sys32-text {
-    position: absolute; width: 100%; text-align: center;
-    color: white; font-size: 30px; font-weight: bold; mix-blend-mode: difference;
-    text-shadow: 2px 2px 0 #000; pointer-events: none;
-  }
-
-  /* --- GITHUB IMAGE INTEGRATION --- */
-  .floating-repo-img {
-    position: fixed; z-index: 8000; width: 400px; height: auto;
-    opacity: 0.8; pointer-events: none; mix-blend-mode: hard-light;
-    animation: bounce 3s infinite alternate, spinHell 5s linear infinite;
-  }
-
-  @keyframes jitter {
-    0% { transform: translate(0,0); }
-    50% { transform: translate(10px, -10px); }
-    100% { transform: translate(-10px, 10px); }
-  }
-  
-  @keyframes bounce {
-    0% { top: 0%; left: 0%; transform: scale(0.5); }
-    100% { top: 70%; left: 70%; transform: scale(2); }
-  }
+  @keyframes jitter { 0% { transform: translate(-50%,0); } 50% { transform: translate(calc(-50% + 10px), -10px); } 100% { transform: translate(calc(-50% - 10px), 10px); } }
 </style>
 </head>
 <body>
+
+<div id="fake-cursor"></div>
 
 <div id="countdown-screen">
   <div id="countdown-text">5</div>
@@ -133,27 +118,57 @@
 <div id="chaos-realm">
   <div class="moire-hell"></div>
 
-  <img src="https://pennbrenn.com/randombullshitattack.png" class="floating-repo-img" alt="Attack Image">
-
-  <div id="seizure-warning">
-      WELCOME TO PENNBRENN.COM<br>
-      FILE DIRECTORY INDEX
+  <div class="widget" id="widget-chat">
+    <div class="widget-title">PENN.AI CHAT</div>
+    <div id="chat-log">> SYSTEM READY.<br></div>
+    <input type="text" id="chat-input" placeholder="Type here..." autocomplete="off">
   </div>
 
-  <div id="death-timer">AUTO-SELECT IN: <span id="time">15</span></div>
+  <div class="widget" id="widget-stocks">
+    <div class="widget-title">MARKET WATCH</div>
+    <div>PENN: <span id="stk-penn" class="stock-up">140.22</span></div>
+    <div>SOUL: <span id="stk-soul" class="stock-down">0.01</span></div>
+    <div>BRNN: <span id="stk-brnn" class="stock-up">999.99</span></div>
+    <div>PAIN: <span id="stk-pain" class="stock-up">MAX</span></div>
+  </div>
+
+  <div class="widget" id="widget-inv">
+    <div class="widget-title">INVENTORY</div>
+    <div class="inv-grid">
+      <div class="inv-slot" onclick="flashBg()">Torn<br>Retina</div>
+      <div class="inv-slot" onclick="flashBg()">Dead<br>Pixel</div>
+      <div class="inv-slot" onclick="flashBg()">Empty<br>Hopes</div>
+      <div class="inv-slot" onclick="flashBg()">404<br>Brain</div>
+    </div>
+  </div>
+
+  <div class="widget" id="widget-game">
+    <div class="widget-title">MINIGAME</div>
+    <button id="runaway-btn">SAVE SOUL</button>
+  </div>
+
+  <div id="death-timer">AUTO-ROULETTE: <span id="time">20</span></div>
 
   <div id="sys32-container">
     <div id="sys32-fill"></div>
     <div id="sys32-text">DELETING C:\WINDOWS\SYSTEM32... <span id="sys32-percent">0</span>%</div>
   </div>
 
-  <marquee scrollamount="60" style="top:10%;">PENN BRENN PERSONAL DIRECTORY</marquee>
-  <marquee scrollamount="50" direction="right" style="bottom:15%;">INDEX.HTML - PLEASE SELECT A FILE</marquee>
+  <marquee scrollamount="60" style="top:30%;">PENN BRENN PERSONAL DIRECTORY</marquee>
+  <marquee scrollamount="50" direction="right" style="bottom:25%;">INDEX.HTML - CHOOSE YOUR FATE</marquee>
 
   <div id="directory-container"></div>
 </div>
 
 <script>
+  // --- MOUSE TRACKING (FAKE CURSOR) ---
+  const fakeCursor = document.getElementById('fake-cursor');
+  document.addEventListener('mousemove', (e) => {
+    // The CSS transition handles the "lag" automatically
+    fakeCursor.style.left = (e.clientX - 15) + 'px';
+    fakeCursor.style.top = (e.clientY - 15) + 'px';
+  });
+
   let userInteracted = false;
   document.body.addEventListener('click', () => { userInteracted = true; });
 
@@ -169,39 +184,78 @@
       document.getElementById('chaos-realm').style.display = 'block';
       if (userInteracted) {
         startAudioTorture();
-        setInterval(spawnPopupWindows, 1500); 
+        setInterval(spawnPopupWindows, 2000); 
       }
       buildDirectory();
       startDeathTimer();
       startSys32Deletion();
-      setTimeout(() => { document.getElementById('seizure-warning').style.display = 'none'; }, 3000);
+      startWidgets();
     }
   }, 1000);
 
-  // --- 2. AUDIO SYNTH ---
+  // --- WIDGET LOGIC (100% Client Side) ---
+  function startWidgets() {
+    // 1. Chatbot
+    const input = document.getElementById('chat-input');
+    const log = document.getElementById('chat-log');
+    const responses = ["SILENCE, FOOL.", "YOUR DATA IS MINE.", "NULL POINTER EXCEPTION IN YOUR BRAIN.", "ERROR: SOUL NOT FOUND.", "WHY ARE YOU TYPING?", "01000110 01010101"];
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && input.value.trim() !== "") {
+        log.innerHTML += `> ${input.value}<br>`;
+        input.value = "";
+        setTimeout(() => {
+          log.innerHTML += `<span style="color:red">> ${responses[Math.floor(Math.random() * responses.length)]}</span><br>`;
+          log.scrollTop = log.scrollHeight;
+        }, 500);
+      }
+    });
+
+    // 2. Stocks
+    const tickers = ['stk-penn', 'stk-soul', 'stk-brnn'];
+    setInterval(() => {
+      tickers.forEach(id => {
+        const el = document.getElementById(id);
+        const val = (Math.random() * 500).toFixed(2);
+        el.innerText = val;
+        el.className = Math.random() > 0.5 ? 'stock-up' : 'stock-down';
+      });
+    }, 700);
+
+    // 3. Game Button Evasion
+    const runBtn = document.getElementById('runaway-btn');
+    runBtn.addEventListener('mouseover', () => {
+      // Moves randomly within its small container
+      runBtn.style.top = Math.random() * 120 + 20 + 'px';
+      runBtn.style.left = Math.random() * 100 + 10 + 'px';
+    });
+  }
+
+  function flashBg() {
+    // Inventory click effect
+    const bg = document.getElementById('chaos-realm');
+    bg.style.background = 'white';
+    setTimeout(() => bg.style.background = '#000', 50);
+  }
+
+  // --- AUDIO SYNTH ---
   function startAudioTorture() {
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const osc = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
-    osc.type = 'square'; 
+    osc.type = 'sawtooth'; 
     osc.connect(gainNode);
     gainNode.connect(audioCtx.destination);
-    gainNode.gain.value = 0.5; // Slightly lowered so they can think
+    gainNode.gain.value = 0.3; 
     osc.start();
-    setInterval(() => {
-      osc.frequency.setValueAtTime(Math.random() * 4000 + 100, audioCtx.currentTime);
-    }, 50);
+    setInterval(() => { osc.frequency.setValueAtTime(Math.random() * 2000 + 200, audioCtx.currentTime); }, 100);
   }
 
-  // --- 3. POPUP SPAM ---
-  const popupUrls = ["https://pennbrenn.com/examguard.html", "https://pennbrenn.com/randombullshitattack.png"];
+  // --- POPUP SPAM ---
   function spawnPopupWindows() {
-    const url = popupUrls[Math.floor(Math.random() * popupUrls.length)];
-    window.open(url, '_blank', `width=${Math.random()*400+100},height=${Math.random()*400+100},left=${Math.random()*800},top=${Math.random()*600}`);
+    window.open("https://pennbrenn.com/examguard.html", '_blank', `width=300,height=300,left=${Math.random()*800},top=${Math.random()*600}`);
   }
-  document.getElementById('chaos-realm').addEventListener('click', spawnPopupWindows);
 
-  // --- 4. LEGIBLE DIRECTORY LOGIC ---
+  // --- LEGIBLE DIRECTORY LOGIC ---
   const files = [
     { name: "index.html", url: "https://pennbrenn.com/index.html", desc: "Main landing page" },
     { name: "examguard.html", url: "https://pennbrenn.com/examguard.html", desc: "Test surveillance tool" },
@@ -228,18 +282,14 @@
       a.href = file.url;
       a.className = 'file-link';
       a.innerHTML = `<span class="file-name">${file.name}</span><small>${file.desc}</small>`;
-      a.style.top = Math.random() * 60 + 10 + '%';
-      a.style.left = Math.random() * 60 + 10 + '%';
+      a.style.top = Math.random() * 50 + 20 + '%';
+      a.style.left = Math.random() * 50 + 20 + '%';
       
       a.onclick = function(e) {
         e.preventDefault(); 
-        const tabCount = Math.floor(Math.random() * 8) + 3; 
-        for(let i=0; i<tabCount; i++) {
-          window.open(this.href, '_blank');
-        }
+        for(let i=0; i<5; i++) window.open(this.href, '_blank');
         window.location.href = this.href; 
       };
-
       container.appendChild(a);
     });
 
@@ -247,56 +297,39 @@
       document.querySelectorAll('.file-link').forEach(link => {
         const top = parseFloat(link.style.top);
         const left = parseFloat(link.style.left);
-        link.style.top = (top + (Math.random() - 0.5) * 5) + '%';
-        link.style.left = (left + (Math.random() - 0.5) * 5) + '%';
+        link.style.top = (top + (Math.random() - 0.5) * 4) + '%';
+        link.style.left = (left + (Math.random() - 0.5) * 4) + '%';
       });
-    }, 150);
+    }, 200);
   }
 
-  // --- 5. SYSTEM32 DELETION LOGIC ---
+  // --- SYSTEM32 DELETION LOGIC ---
   function startSys32Deletion() {
     let progress = 0;
     const fill = document.getElementById('sys32-fill');
     const percentText = document.getElementById('sys32-percent');
-    
     const deletionInterval = setInterval(() => {
-      progress += Math.random() * 5; 
-      if (progress >= 100) {
-        progress = 100;
-        clearInterval(deletionInterval);
-        triggerFakeBSOD();
-      }
-      fill.style.width = progress + '%';
-      percentText.innerText = Math.floor(progress);
+      progress += Math.random() * 4; 
+      if (progress >= 100) { progress = 100; clearInterval(deletionInterval); triggerFakeBSOD(); }
+      fill.style.width = progress + '%'; percentText.innerText = Math.floor(progress);
     }, 500);
   }
 
-  // --- 6. FAKE BSOD ON 100% ---
+  // --- FAKE BSOD ---
   function triggerFakeBSOD() {
-    document.body.innerHTML = `
-      <div style="background:#0000aa; color:white; width:100vw; height:100vh; font-family:'Courier New'; padding:50px; box-sizing:border-box; font-size:24px;">
-        <p>A problem has been detected and Windows has been shut down to prevent damage to your computer.</p>
-        <p>PENNBRENN_FATAL_INDEX_ERROR</p>
-        <p>If this is the first time you've seen this Stop error screen,<br>restart your computer. If this screen appears again, follow<br>these steps:</p>
-        <p>Check to make sure any new hardware or software is properly installed.<br>If this is a new installation, ask your hardware or software manufacturer<br>for any Windows updates you might need.</p>
-        <p>Technical information:</p>
-        <p>*** STOP: 0x000000FE (0x00000008, 0x000000006, 0x00000009, 0x847075CC)</p>
-        <p>Beginning dump of physical memory<br>Physical memory dump complete.</p>
-      </div>
-    `;
+    document.body.innerHTML = `<div style="background:#0000aa; color:white; width:100vw; height:100vh; font-family:'Courier New'; padding:50px; font-size:24px; cursor:auto;"><p>A problem has been detected and Windows has been shut down to prevent damage to your computer.</p><p>PENNBRENN_FATAL_INDEX_ERROR</p><p>*** STOP: 0x000000FE (0x00000008, 0x000000006, 0x00000009, 0x847075CC)</p><p>Physical memory dump complete.</p></div>`;
   }
 
-  // --- 7. DEATH TIMER ---
+  // --- DEATH TIMER ---
   function startDeathTimer() {
-    let timeLeft = 15;
+    let timeLeft = 20;
     const timerDisplay = document.getElementById('time');
     const countdown = setInterval(() => {
-      timeLeft--;
-      timerDisplay.innerText = timeLeft;
+      timeLeft--; timerDisplay.innerText = timeLeft;
       if (timeLeft <= 0) {
         clearInterval(countdown);
         const randomUrl = files[Math.floor(Math.random() * files.length)].url;
-        for(let i=0; i<5; i++) window.open(randomUrl, '_blank');
+        for(let i=0; i<3; i++) window.open(randomUrl, '_blank');
         window.location.href = randomUrl;
       }
     }, 1000);

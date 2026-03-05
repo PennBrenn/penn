@@ -2,94 +2,99 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Penn Brenn | Terminal Velocity Index</title>
+<title>Penn Brenn | OS.NIGHTMARE</title>
 <style>
   /* --- GLOBAL & CURSOR TRAP --- */
-  body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; cursor: none !important; }
+  body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; cursor: none !important; }
   
-  /* THE FAKE CURSOR */
   #fake-cursor {
-    position: fixed; top: 50%; left: 50%;
-    width: 0; height: 0;
-    border-left: 15px solid transparent;
-    border-right: 15px solid transparent;
-    border-bottom: 35px solid red;
-    transform: rotate(160deg);
-    z-index: 2147483647; /* Maximum possible z-index */
-    pointer-events: none; /* Let clicks pass through it */
+    position: fixed; top: 50%; left: 50%; width: 0; height: 0;
+    border-left: 15px solid transparent; border-right: 15px solid transparent;
+    border-bottom: 35px solid red; transform: rotate(160deg);
+    z-index: 2147483647; pointer-events: none;
     transition: top 0.15s ease-out, left 0.15s ease-out;
-    filter: drop-shadow(5px 5px 0px black);
+    filter: drop-shadow(5px 5px 0px white);
   }
 
+  /* --- COUNTDOWN SCREEN --- */
   #countdown-screen {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-    background: white; display: flex; align-items: center; justify-content: center;
+    background: white; display: flex; flex-direction: column; align-items: center; justify-content: center;
     z-index: 9999999; cursor: crosshair;
   }
-  #countdown-text { font-size: 300px; font-family: "Arial", sans-serif; color: black; font-weight: bold; }
+  #countdown-text { font-size: 250px; font-family: "Impact", sans-serif; color: black; }
+  #skip-btn {
+    padding: 20px 40px; font-size: 30px; font-weight: bold; color: white; background: red;
+    border: 10px dashed black; cursor: pointer; transition: transform 0.1s;
+  }
+  #skip-btn:hover { transform: scale(1.2); background: black; color: red; border-color: red; }
 
-  /* --- DA CHAOS REALM --- */
-  #chaos-realm {
-    display: none; width: 100vw; height: 100vh;
-    background: #000; font-family: "Courier New", monospace;
-    animation: worldEnd 0.05s infinite;
-  }
-  @keyframes worldEnd {
-    0% { background: #ff00ff; filter: hue-rotate(0deg); }
-    50% { background: #00ffff; filter: hue-rotate(180deg); }
-    100% { background: #ffff00; filter: hue-rotate(360deg); }
-  }
+  /* --- DA CHAOS REALM (BACKGROUND) --- */
+  #chaos-bg { display: none; position: fixed; width: 100vw; height: 100vh; animation: worldEnd 0.05s infinite; z-index: 0; }
+  @keyframes worldEnd { 0% { background: #ff00ff; } 50% { background: #00ffff; } 100% { background: #ffff00; } }
 
   .moire-hell {
-    position: fixed; top: -50%; left: -50%; width: 200%; height: 200%;
+    position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
     background: repeating-radial-gradient(circle, #000, #000 12px, #fff 12px, #fff 24px);
-    mix-blend-mode: difference;
-    animation: spinHell 2s linear infinite; z-index: 0; pointer-events: none;
+    mix-blend-mode: difference; animation: spinHell 3s linear infinite; pointer-events: none;
   }
   @keyframes spinHell { 100% { transform: rotate(360deg); } }
 
-  /* --- CORNER WIDGETS --- */
-  .widget {
-    position: fixed; width: 220px; height: 180px;
-    background: rgba(0,0,0,0.9); border: 4px ridge lime; color: lime;
-    z-index: 9000; padding: 10px; font-size: 14px; overflow: hidden;
-    box-shadow: 5px 5px 0 red; pointer-events: auto;
+  /* --- THE DVD BOUNCER (HOLDS EVERYTHING) --- */
+  #dvd-viewport {
+    display: none; position: absolute; width: 95vw; height: 90vh;
+    z-index: 10; pointer-events: none; /* Let clicks pass to children */
   }
-  .widget-title { border-bottom: 2px solid lime; margin-bottom: 5px; font-weight: bold; text-align: center; }
 
-  /* TOP LEFT: Chatbot */
+  /* --- WIDGETS --- */
+  .widget {
+    position: absolute; width: 220px; height: 180px;
+    background: rgba(0,0,0,0.95); border: 4px ridge lime; color: lime;
+    padding: 10px; font-size: 14px; overflow: hidden;
+    box-shadow: 5px 5px 0 red; pointer-events: auto; font-family: "Courier New", monospace;
+  }
+  .widget-title { border-bottom: 2px solid lime; margin-bottom: 5px; font-weight: bold; text-align: center; background: blue; color: white; }
+
   #widget-chat { top: 10px; left: 10px; }
-  #chat-log { height: 100px; overflow-y: auto; margin-bottom: 5px; font-size: 12px; }
+  #chat-log { height: 90px; overflow-y: auto; margin-bottom: 5px; font-size: 12px; }
   #chat-input { width: 100%; background: black; color: lime; border: 1px solid lime; }
 
-  /* TOP RIGHT: Stocks */
-  #widget-stocks { top: 10px; right: 10px; font-size: 18px; line-height: 1.8; }
-  .stock-up { color: lime; } .stock-down { color: red; }
+  #widget-geiger { top: 10px; right: 10px; text-align: center; }
+  #geiger-val { font-size: 40px; color: yellow; display: block; margin-top: 20px; text-shadow: 2px 2px red; }
 
-  /* BOTTOM LEFT: Inventory */
-  #widget-inv { bottom: 80px; left: 10px; }
-  .inv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
-  .inv-slot { height: 50px; border: 1px dashed lime; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 10px; cursor: pointer; }
-  .inv-slot:hover { background: red; color: white; }
+  #widget-editor { top: 220px; left: 10px; }
+  #text-editor { width: 100%; height: 120px; background: black; color: #00ff00; border: none; resize: none; font-family: inherit; }
 
-  /* BOTTOM RIGHT: Game */
-  #widget-game { bottom: 80px; right: 10px; }
-  #runaway-btn { position: absolute; padding: 10px; background: red; color: white; font-weight: bold; border: none; }
+  #widget-music { top: 220px; right: 10px; text-align: center; }
+  .music-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 10px; }
+  .music-grid input { width: 20px; height: 20px; cursor: pointer; accent-color: red; }
+  #play-music-btn { background: lime; color: black; font-weight: bold; width: 100%; border: none; padding: 5px; cursor: pointer; }
 
-  /* --- EXISTING HUD & LINKS --- */
+  #widget-inv { bottom: 10px; left: 10px; width: 280px; height: auto; }
+  .inv-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+  .inv-slot { height: 40px; border: 1px dashed lime; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 12px; cursor: pointer; background: #111; }
+  .inv-slot:hover { background: red; color: white; transform: scale(1.1); }
+
+  #widget-periodic { bottom: 10px; right: 10px; text-align: center; }
+  #elem-symbol { font-size: 70px; font-weight: bold; color: #ff00ff; }
+  #elem-name { font-size: 20px; color: white; }
+
+  /* --- HUD & DIRECTORY --- */
   #death-timer {
     position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
     background: white; color: black; font-size: 30px; padding: 5px 20px;
     border: 5px double red; z-index: 10000; font-weight: bold; animation: jitter 0.05s infinite;
+    pointer-events: auto;
   }
 
-  marquee { position: fixed; font-size: 80px; opacity: 0.9; z-index: 1; pointer-events: none; color: lime; mix-blend-mode: exclusion; font-weight: bold; }
+  marquee { position: absolute; font-size: 80px; opacity: 0.7; pointer-events: none; color: lime; mix-blend-mode: exclusion; font-weight: bold; white-space: nowrap; }
 
+  #directory-container { position: absolute; width: 100%; height: 100%; pointer-events: none; }
   .file-link {
     position: absolute; padding: 10px; background: rgba(255,255,255,0.95);
     border: 4px solid black; text-decoration: none; color: black;
-    font-weight: bold; font-size: 16px; z-index: 100; transition: all 0.1s ease;
-    box-shadow: 5px 5px 0px blue; text-align: center;
+    font-weight: bold; font-size: 16px; transition: all 0.1s ease;
+    box-shadow: 5px 5px 0px blue; text-align: center; pointer-events: auto;
   }
   .file-link:hover {
     transform: scale(2.5) rotate(5deg); background: #00ff00; color: #000;
@@ -98,11 +103,11 @@
   .file-name { font-size: 20px; color: blue; text-decoration: underline; display: block; }
 
   #sys32-container {
-    position: fixed; bottom: 5%; left: 10%; width: 80%; height: 50px;
+    position: fixed; bottom: 2%; left: 10%; width: 80%; height: 40px;
     background: black; border: 8px ridge gray; z-index: 99999; display: flex; align-items: center;
   }
   #sys32-fill { height: 100%; width: 0%; background: repeating-linear-gradient(45deg, #ff0000, #ff0000 20px, #8b0000 20px, #8b0000 40px); transition: width 0.5s linear; }
-  #sys32-text { position: absolute; width: 100%; text-align: center; color: white; font-size: 24px; font-weight: bold; mix-blend-mode: difference; pointer-events: none; }
+  #sys32-text { position: absolute; width: 100%; text-align: center; color: white; font-size: 20px; font-weight: bold; mix-blend-mode: difference; pointer-events: none; }
 
   @keyframes jitter { 0% { transform: translate(-50%,0); } 50% { transform: translate(calc(-50% + 10px), -10px); } 100% { transform: translate(calc(-50% - 10px), 10px); } }
 </style>
@@ -113,149 +118,244 @@
 
 <div id="countdown-screen">
   <div id="countdown-text">5</div>
+  <button id="skip-btn" onclick="skipToChaos()">>> SKIP & DIE <<</button>
 </div>
 
-<div id="chaos-realm">
-  <div class="moire-hell"></div>
+<div id="chaos-bg"><div class="moire-hell"></div></div>
+
+<div id="sys32-container">
+  <div id="sys32-fill"></div>
+  <div id="sys32-text">DELETING C:\WINDOWS\SYSTEM32... <span id="sys32-percent">0</span>%</div>
+</div>
+<div id="death-timer">AUTO-ROULETTE: <span id="time">30</span></div>
+
+<div id="dvd-viewport">
+  <marquee scrollamount="40" style="top:30%;">PENN BRENN PERSONAL DIRECTORY</marquee>
+  <marquee scrollamount="60" direction="right" style="bottom:25%;">INDEX.HTML - CHOOSE YOUR FATE</marquee>
 
   <div class="widget" id="widget-chat">
-    <div class="widget-title">PENN.AI CHAT</div>
+    <div class="widget-title">PENN.AI</div>
     <div id="chat-log">> SYSTEM READY.<br></div>
-    <input type="text" id="chat-input" placeholder="Type here..." autocomplete="off">
+    <input type="text" id="chat-input" placeholder="Type..." autocomplete="off">
   </div>
 
-  <div class="widget" id="widget-stocks">
-    <div class="widget-title">MARKET WATCH</div>
-    <div>PENN: <span id="stk-penn" class="stock-up">140.22</span></div>
-    <div>SOUL: <span id="stk-soul" class="stock-down">0.01</span></div>
-    <div>BRNN: <span id="stk-brnn" class="stock-up">999.99</span></div>
-    <div>PAIN: <span id="stk-pain" class="stock-up">MAX</span></div>
+  <div class="widget" id="widget-geiger">
+    <div class="widget-title">GEIGER COUNTER</div>
+    <div style="font-size:10px;">RADIATION DETECTED</div>
+    <span id="geiger-val">0.00</span> <span>RADS</span>
+  </div>
+
+  <div class="widget" id="widget-editor">
+    <div class="widget-title">LAST WILL.TXT</div>
+    <textarea id="text-editor" placeholder="Write your regrets here..."></textarea>
+  </div>
+
+  <div class="widget" id="widget-music">
+    <div class="widget-title">BEAT MAKER</div>
+    <div class="music-grid" id="music-grid">
+      </div>
+    <button id="play-music-btn" onclick="playSequencer()">PLAY</button>
   </div>
 
   <div class="widget" id="widget-inv">
     <div class="widget-title">INVENTORY</div>
     <div class="inv-grid">
-      <div class="inv-slot" onclick="flashBg()">Torn<br>Retina</div>
-      <div class="inv-slot" onclick="flashBg()">Dead<br>Pixel</div>
-      <div class="inv-slot" onclick="flashBg()">Empty<br>Hopes</div>
-      <div class="inv-slot" onclick="flashBg()">404<br>Brain</div>
+      <div class="inv-slot" onclick="flashBg()">Plutonium</div>
+      <div class="inv-slot" onclick="flashBg()">Wet Sock</div>
+      <div class="inv-slot" onclick="flashBg()">1x Tooth</div>
+      <div class="inv-slot" onclick="flashBg()">API Key</div>
+      <div class="inv-slot" onclick="flashBg()">Lead Pipe</div>
+      <div class="inv-slot" onclick="flashBg()">Half-Eaten<br>RAM</div>
     </div>
   </div>
 
-  <div class="widget" id="widget-game">
-    <div class="widget-title">MINIGAME</div>
-    <button id="runaway-btn">SAVE SOUL</button>
+  <div class="widget" id="widget-periodic">
+    <div class="widget-title">MATTER DECAY</div>
+    <div id="elem-symbol">U</div>
+    <div id="elem-name">Uranium</div>
   </div>
-
-  <div id="death-timer">AUTO-ROULETTE: <span id="time">20</span></div>
-
-  <div id="sys32-container">
-    <div id="sys32-fill"></div>
-    <div id="sys32-text">DELETING C:\WINDOWS\SYSTEM32... <span id="sys32-percent">0</span>%</div>
-  </div>
-
-  <marquee scrollamount="60" style="top:30%;">PENN BRENN PERSONAL DIRECTORY</marquee>
-  <marquee scrollamount="50" direction="right" style="bottom:25%;">INDEX.HTML - CHOOSE YOUR FATE</marquee>
 
   <div id="directory-container"></div>
 </div>
 
 <script>
-  // --- MOUSE TRACKING (FAKE CURSOR) ---
+  let userInteracted = false;
+  let globalAudioCtx = null;
+  
+  // Fake Cursor Logic
   const fakeCursor = document.getElementById('fake-cursor');
   document.addEventListener('mousemove', (e) => {
-    // The CSS transition handles the "lag" automatically
     fakeCursor.style.left = (e.clientX - 15) + 'px';
     fakeCursor.style.top = (e.clientY - 15) + 'px';
   });
 
-  let userInteracted = false;
-  document.body.addEventListener('click', () => { userInteracted = true; });
+  document.body.addEventListener('click', () => { 
+    userInteracted = true; 
+    if(!globalAudioCtx) globalAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  });
 
-  // --- 1. COUNTDOWN ---
+  // --- 1. COUNTDOWN & SKIP LOGIC ---
   let count = 5;
+  let countdownInterval;
   const countText = document.getElementById('countdown-text');
-  const countdownInterval = setInterval(() => {
-    count--;
-    if (count > 0) countText.innerText = count;
-    else {
-      clearInterval(countdownInterval);
-      document.getElementById('countdown-screen').style.display = 'none';
-      document.getElementById('chaos-realm').style.display = 'block';
-      if (userInteracted) {
-        startAudioTorture();
-        setInterval(spawnPopupWindows, 2000); 
-      }
-      buildDirectory();
-      startDeathTimer();
-      startSys32Deletion();
-      startWidgets();
-    }
-  }, 1000);
 
-  // --- WIDGET LOGIC (100% Client Side) ---
+  function startTimer() {
+    countdownInterval = setInterval(() => {
+      count--;
+      if (count > 0) countText.innerText = count;
+      else unleashHell();
+    }, 1000);
+  }
+  startTimer();
+
+  function skipToChaos() {
+    userInteracted = true;
+    if(!globalAudioCtx) globalAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    clearInterval(countdownInterval);
+    unleashHell();
+  }
+
+  function unleashHell() {
+    document.getElementById('countdown-screen').style.display = 'none';
+    document.getElementById('chaos-bg').style.display = 'block';
+    document.getElementById('dvd-viewport').style.display = 'block';
+    
+    if (userInteracted) {
+      startMainAudio();
+      setInterval(spawnPopupWindows, 3000); 
+    }
+    
+    buildDirectory();
+    startDeathTimer();
+    startSys32Deletion();
+    startWidgets();
+    startDVDBounce();
+  }
+
+  // --- 2. DVD BOUNCE ENGINE ---
+  let dvdX = 50, dvdY = 50, dx = 3, dy = 3;
+  function startDVDBounce() {
+    const viewport = document.getElementById('dvd-viewport');
+    function animateBounce() {
+      // Calculate boundaries based on viewport size vs window size
+      const maxW = window.innerWidth - viewport.offsetWidth;
+      const maxH = window.innerHeight - viewport.offsetHeight;
+      
+      dvdX += dx; dvdY += dy;
+      
+      if (dvdX >= maxW || dvdX <= 0) dx = -dx;
+      if (dvdY >= maxH || dvdY <= 0) dy = -dy;
+
+      viewport.style.transform = `translate(${dvdX}px, ${dvdY}px)`;
+      requestAnimationFrame(animateBounce);
+    }
+    requestAnimationFrame(animateBounce);
+  }
+
+  // --- 3. WIDGETS LOGIC ---
   function startWidgets() {
-    // 1. Chatbot
+    // Chatbot
     const input = document.getElementById('chat-input');
     const log = document.getElementById('chat-log');
-    const responses = ["SILENCE, FOOL.", "YOUR DATA IS MINE.", "NULL POINTER EXCEPTION IN YOUR BRAIN.", "ERROR: SOUL NOT FOUND.", "WHY ARE YOU TYPING?", "01000110 01010101"];
+    const responses = ["WAKE UP.", "THERE IS NO API.", "I ATE YOUR COOKIES.", "YOUR MOTHER.", "0xDEADBEEF", "CTRL+ALT+DEL WON'T SAVE YOU."];
     input.addEventListener('keypress', (e) => {
       if (e.key === 'Enter' && input.value.trim() !== "") {
-        log.innerHTML += `> ${input.value}<br>`;
-        input.value = "";
+        log.innerHTML += `> ${input.value}<br>`; input.value = "";
         setTimeout(() => {
           log.innerHTML += `<span style="color:red">> ${responses[Math.floor(Math.random() * responses.length)]}</span><br>`;
           log.scrollTop = log.scrollHeight;
-        }, 500);
+        }, 400);
       }
     });
 
-    // 2. Stocks
-    const tickers = ['stk-penn', 'stk-soul', 'stk-brnn'];
+    // Geiger Counter
+    const geigerVal = document.getElementById('geiger-val');
     setInterval(() => {
-      tickers.forEach(id => {
-        const el = document.getElementById(id);
-        const val = (Math.random() * 500).toFixed(2);
-        el.innerText = val;
-        el.className = Math.random() > 0.5 ? 'stock-up' : 'stock-down';
-      });
-    }, 700);
+      let rads = (Math.random() * 10).toFixed(2);
+      geigerVal.innerText = rads;
+      if (rads > 8 && globalAudioCtx) triggerGeigerClick();
+    }, 100);
 
-    // 3. Game Button Evasion
-    const runBtn = document.getElementById('runaway-btn');
-    runBtn.addEventListener('mouseover', () => {
-      // Moves randomly within its small container
-      runBtn.style.top = Math.random() * 120 + 20 + 'px';
-      runBtn.style.left = Math.random() * 100 + 10 + 'px';
-    });
+    // Periodic Table
+    const elements = [
+      {s: "H", n: "Hydrogen"}, {s: "He", n: "Helium"}, {s: "Li", n: "Lithium"}, 
+      {s: "C", n: "Carbon"}, {s: "O", n: "Oxygen"}, {s: "Fe", n: "Iron"}, 
+      {s: "Au", n: "Gold"}, {s: "U", n: "Uranium"}, {s: "Pu", n: "Plutonium"},
+      {s: "F", n: "Fluorine"}, {s: "As", n: "Arsenic"}, {s: "Rn", n: "Radon"}
+    ];
+    const elSym = document.getElementById('elem-symbol');
+    const elName = document.getElementById('elem-name');
+    setInterval(() => {
+      const el = elements[Math.floor(Math.random() * elements.length)];
+      elSym.innerText = el.s; elName.innerText = el.n;
+      elSym.style.color = `hsl(${Math.random()*360}, 100%, 50%)`;
+    }, 150);
+
+    // Build Music Sequencer
+    const grid = document.getElementById('music-grid');
+    for(let i=0; i<16; i++) {
+      let cb = document.createElement('input');
+      cb.type = 'checkbox';
+      grid.appendChild(cb);
+    }
+  }
+
+  function triggerGeigerClick() {
+    if(!globalAudioCtx) return;
+    const osc = globalAudioCtx.createOscillator();
+    const gain = globalAudioCtx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(2000 + Math.random()*2000, globalAudioCtx.currentTime);
+    osc.connect(gain);
+    gain.connect(globalAudioCtx.destination);
+    gain.gain.setValueAtTime(0.1, globalAudioCtx.currentTime);
+    osc.start();
+    gain.gain.exponentialRampToValueAtTime(0.0001, globalAudioCtx.currentTime + 0.05);
+    osc.stop(globalAudioCtx.currentTime + 0.05);
+  }
+
+  function playSequencer() {
+    if(!globalAudioCtx) return;
+    const boxes = document.querySelectorAll('.music-grid input');
+    const freqs = [300, 400, 500, 600]; // 4 rows
+    let step = 0;
+    let seqInterval = setInterval(() => {
+      for(let row=0; row<4; row++) {
+        let idx = (row * 4) + step;
+        if(boxes[idx].checked) {
+          let osc = globalAudioCtx.createOscillator();
+          osc.frequency.value = freqs[row];
+          osc.connect(globalAudioCtx.destination);
+          osc.start(); osc.stop(globalAudioCtx.currentTime + 0.1);
+        }
+      }
+      step++;
+      if(step >= 4) clearInterval(seqInterval);
+    }, 200);
   }
 
   function flashBg() {
-    // Inventory click effect
-    const bg = document.getElementById('chaos-realm');
+    const bg = document.getElementById('chaos-bg');
     bg.style.background = 'white';
-    setTimeout(() => bg.style.background = '#000', 50);
+    setTimeout(() => bg.style.background = '', 50);
   }
 
-  // --- AUDIO SYNTH ---
-  function startAudioTorture() {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = audioCtx.createOscillator();
-    const gainNode = audioCtx.createGain();
-    osc.type = 'sawtooth'; 
-    osc.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
-    gainNode.gain.value = 0.3; 
+  // --- 4. MAIN AUDIO & POPUPS ---
+  function startMainAudio() {
+    const osc = globalAudioCtx.createOscillator();
+    const gainNode = globalAudioCtx.createGain();
+    osc.type = 'sawtooth'; osc.connect(gainNode);
+    gainNode.connect(globalAudioCtx.destination);
+    gainNode.gain.value = 0.15; 
     osc.start();
-    setInterval(() => { osc.frequency.setValueAtTime(Math.random() * 2000 + 200, audioCtx.currentTime); }, 100);
+    setInterval(() => { osc.frequency.setValueAtTime(Math.random() * 800 + 100, globalAudioCtx.currentTime); }, 200);
   }
 
-  // --- POPUP SPAM ---
   function spawnPopupWindows() {
-    window.open("https://pennbrenn.com/examguard.html", '_blank', `width=300,height=300,left=${Math.random()*800},top=${Math.random()*600}`);
+    window.open("https://pennbrenn.com/examguard.html", '_blank', `width=200,height=200,left=${Math.random()*800},top=${Math.random()*600}`);
   }
 
-  // --- LEGIBLE DIRECTORY LOGIC ---
+  // --- 5. DIRECTORY & TABS ---
   const files = [
     { name: "index.html", url: "https://pennbrenn.com/index.html", desc: "Main landing page" },
     { name: "examguard.html", url: "https://pennbrenn.com/examguard.html", desc: "Test surveillance tool" },
@@ -282,12 +382,12 @@
       a.href = file.url;
       a.className = 'file-link';
       a.innerHTML = `<span class="file-name">${file.name}</span><small>${file.desc}</small>`;
-      a.style.top = Math.random() * 50 + 20 + '%';
-      a.style.left = Math.random() * 50 + 20 + '%';
+      a.style.top = Math.random() * 60 + 20 + '%';
+      a.style.left = Math.random() * 60 + 20 + '%';
       
       a.onclick = function(e) {
         e.preventDefault(); 
-        for(let i=0; i<5; i++) window.open(this.href, '_blank');
+        for(let i=0; i<4; i++) window.open(this.href, '_blank');
         window.location.href = this.href; 
       };
       container.appendChild(a);
@@ -303,26 +403,24 @@
     }, 200);
   }
 
-  // --- SYSTEM32 DELETION LOGIC ---
+  // --- 6. SYSTEM DELETION & DEATH ---
   function startSys32Deletion() {
     let progress = 0;
     const fill = document.getElementById('sys32-fill');
     const percentText = document.getElementById('sys32-percent');
     const deletionInterval = setInterval(() => {
-      progress += Math.random() * 4; 
+      progress += Math.random() * 3; 
       if (progress >= 100) { progress = 100; clearInterval(deletionInterval); triggerFakeBSOD(); }
       fill.style.width = progress + '%'; percentText.innerText = Math.floor(progress);
     }, 500);
   }
 
-  // --- FAKE BSOD ---
   function triggerFakeBSOD() {
     document.body.innerHTML = `<div style="background:#0000aa; color:white; width:100vw; height:100vh; font-family:'Courier New'; padding:50px; font-size:24px; cursor:auto;"><p>A problem has been detected and Windows has been shut down to prevent damage to your computer.</p><p>PENNBRENN_FATAL_INDEX_ERROR</p><p>*** STOP: 0x000000FE (0x00000008, 0x000000006, 0x00000009, 0x847075CC)</p><p>Physical memory dump complete.</p></div>`;
   }
 
-  // --- DEATH TIMER ---
   function startDeathTimer() {
-    let timeLeft = 20;
+    let timeLeft = 30; // Gave them 30 seconds to try and click the moving targets
     const timerDisplay = document.getElementById('time');
     const countdown = setInterval(() => {
       timeLeft--; timerDisplay.innerText = timeLeft;

@@ -2,63 +2,98 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Penn Brenn | OS.NIGHTMARE v2.0</title>
+<title>Penn Brenn | OS.NIGHTMARE v3.0 [FATAL]</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-  /* ==========================================
-     CSS PURGATORY (WAY MORE CSS THAN HTML)
-     ========================================== */
+  /* ============================================
+     CSS ARMAGEDDON (MORE CSS THAN GOD INTENDED)
+     ============================================ */
   
-  /* --- GLOBAL TRAPS --- */
-  body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; cursor: none !important; }
-  
+  @import url('https://fonts.googleapis.com/css2?family=Bungee+Shade&family=VT323&family=Faster+One&family=Rubik+Glitch&family=Honk&display=swap');
+
+  :root {
+    --hell-red: #ff0000;
+    --void-black: #000000;
+    --scream-yellow: #ffff00;
+    --vomit-green: lime;
+    --cursed-pink: #ff00ff;
+    --bad-decisions: #00ffff;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; cursor: none !important; user-select: none; }
+
+  /* CURSOR FROM THE VOID */
   #fake-cursor {
     position: fixed; top: 50%; left: 50%; width: 0; height: 0;
     border-left: 20px solid transparent; border-right: 20px solid transparent; border-bottom: 45px solid #ff00ff;
     transform: rotate(160deg); z-index: 2147483647; pointer-events: none;
-    transition: top 0.2s cubic-bezier(0.68, -0.55, 0.27, 1.55), left 0.2s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    transition: top 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55), left 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
     filter: drop-shadow(8px 8px 0px #00ffff);
+    animation: cursorPanic 0.1s infinite;
   }
+  @keyframes cursorPanic { 0%{filter:drop-shadow(8px 8px 0 #f0f)} 50%{filter:drop-shadow(-8px -8px 0 #0ff) hue-rotate(90deg)} 100%{filter:drop-shadow(8px -8px 0 #ff0)} }
 
-  /* --- COUNTDOWN & SKIP (BRUTALIST RED) --- */
+  /* COUNTDOWN */
   #countdown-screen {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ff0000;
     display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999999; cursor: crosshair;
+    animation: countBg 0.5s infinite;
   }
-  #countdown-text { font-size: 300px; font-family: "Impact", sans-serif; color: #ffff00; text-shadow: 10px 10px 0px #000; }
+  @keyframes countBg { 0%{background:#f00} 25%{background:#f0f} 50%{background:#ff6600} 75%{background:#0f0} 100%{background:#f00} }
+  #countdown-text { font-size: 300px; font-family: 'Rubik Glitch', sans-serif; color: #ffff00; text-shadow: 10px 10px 0px #000, -5px -5px 0 #f0f; animation: countJitter 0.05s infinite; }
+  @keyframes countJitter { 0%{transform:skewX(0)} 25%{transform:skewX(10deg) scale(1.05)} 50%{transform:skewX(-5deg)} 75%{transform:skewX(3deg) scale(0.97)} 100%{transform:skewX(0)} }
   #skip-btn {
-    padding: 30px 60px; font-size: 40px; font-family: "Courier New", monospace; font-weight: 900;
+    padding: 30px 60px; font-size: 40px; font-family: 'VT323', monospace; font-weight: 900;
     color: #fff; background: #000; border: 15px dotted #ffff00; cursor: pointer; border-radius: 50%;
-    box-shadow: 0 0 50px #000; transition: all 0.1s;
+    box-shadow: 0 0 50px #f00; transition: all 0.1s;
   }
-  #skip-btn:hover { transform: scale(1.3) rotate(15deg); background: #fff; color: #000; border-style: dashed; }
+  #skip-btn:hover { transform: scale(1.3) rotate(15deg) translateX(200px); background: #fff; color: #000; border-style: dashed; }
 
-  /* --- BACKGROUND CHAOS --- */
-  #chaos-bg { display: none; position: fixed; width: 100vw; height: 100vh; animation: pulseEnd 0.1s infinite; z-index: 0; }
-  @keyframes pulseEnd { 0% { background: #330000; } 50% { background: #000033; } 100% { background: #003300; } }
+  /* CHAOS BG */
+  #chaos-bg { display: none; position: fixed; width: 100vw; height: 100vh; animation: pulseEnd 0.08s infinite; z-index: 0; }
+  @keyframes pulseEnd { 0%{background:#330000} 14%{background:#003300} 28%{background:#000033} 42%{background:#330033} 57%{background:#333300} 71%{background:#003333} 100%{background:#330000} }
 
   .moire-hell {
     position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
     background: repeating-radial-gradient(ellipse, #000, #000 5px, #fff 10px, #fff 15px);
-    mix-blend-mode: color-dodge; animation: spinHell 4s linear infinite reverse; pointer-events: none; opacity: 0.5;
+    mix-blend-mode: color-dodge; animation: spinHell 3s linear infinite reverse; pointer-events: none; opacity: 0.5;
+  }
+  .moire-hell-2 {
+    position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: repeating-conic-gradient(#ff000022 0deg 10deg, #00ff0022 10deg 20deg);
+    mix-blend-mode: screen; animation: spinHell 2s linear infinite; pointer-events: none; opacity: 0.6;
   }
   @keyframes spinHell { 100% { transform: rotate(360deg) scale(1.5); } }
 
   #dvd-viewport { display: none; position: absolute; width: 95vw; height: 90vh; z-index: 10; pointer-events: none; }
 
-  /* --- WIDGET 1: HACKER TERMINAL (CYBERPUNK) --- */
+  /* ========== NEWS TICKER ========== */
+  #news-ticker {
+    position: fixed; top: 0; left: 0; width: 100%; height: 28px; background: #cc0000;
+    border-bottom: 3px solid #ff0; z-index: 9998; overflow: hidden; display: none;
+  }
+  #news-ticker-inner {
+    display: inline-block; white-space: nowrap; animation: tickerScroll 25s linear infinite;
+    font-family: 'VT323', monospace; font-size: 20px; color: #fff; line-height: 28px; padding-left: 100%;
+  }
+  @keyframes tickerScroll { 0%{transform:translateX(0)} 100%{transform:translateX(-100%)} }
+
+  /* ========== WIDGET 1: HACKER TERMINAL ========== */
   #widget-chat {
-    position: absolute; width: 250px; height: 200px; top: 10px; left: 10px;
+    position: absolute; width: 250px; height: 210px; top: 40px; left: 10px;
     background: rgba(0,20,0,0.9); border: 3px solid lime; color: lime;
     box-shadow: inset 0 0 20px lime, 5px 5px 0px #003300; font-family: "Courier New", monospace;
-    padding: 10px; pointer-events: auto; border-radius: 0;
+    padding: 10px; pointer-events: auto; animation: termFlicker 3s infinite;
   }
-  #widget-chat .widget-title { border-bottom: 2px dashed lime; margin-bottom: 5px; font-weight: bold; text-align: left; }
-  #chat-log { height: 110px; overflow-y: auto; font-size: 11px; text-shadow: 0 0 5px lime; }
+  @keyframes termFlicker { 0%,100%{opacity:1} 95%{opacity:1} 96%{opacity:0.2} 97%{opacity:1} 98%{opacity:0.4} 99%{opacity:1} }
+  #widget-chat .widget-title { border-bottom: 2px dashed lime; margin-bottom: 5px; font-weight: bold; text-align: left; font-family: 'VT323'; font-size: 18px; }
+  #chat-log { height: 115px; overflow-y: auto; font-size: 11px; text-shadow: 0 0 5px lime; scrollbar-color: lime #000; }
   #chat-input { width: 90%; background: #000; color: lime; border: 1px solid lime; font-family: inherit; margin-top: 5px; }
 
-  /* --- WIDGET 2: BRENDA THE HUMAN (WINDOWS 95 / WEB 1.0) --- */
+  /* ========== WIDGET 2: BRENDA ========== */
   #widget-human-chat {
-    position: absolute; width: 280px; height: 250px; top: 10px; left: 280px;
+    position: absolute; width: 280px; height: 250px; top: 40px; left: 280px;
     background: #c0c0c0; border-top: 2px solid #fff; border-left: 2px solid #fff; border-right: 2px solid #808080; border-bottom: 2px solid #808080;
     color: #000; font-family: "Tahoma", sans-serif; padding: 3px; pointer-events: auto;
   }
@@ -67,134 +102,688 @@
     display: flex; justify-content: space-between; align-items: center;
   }
   .brenda-profile { display: flex; align-items: center; padding: 5px; background: #fff; margin-top: 2px; border: 1px inset #808080; }
-  .brenda-profile img { width: 40px; height: 40px; border-radius: 50%; border: 1px solid #000; margin-right: 10px; filter: grayscale(50%) contrast(150%); }
+  .brenda-avatar { width:40px; height:40px; border-radius:50%; border:2px solid #000; background:#c0c0c0; display:flex; align-items:center; justify-content:center; font-size:24px; margin-right:10px; }
   #human-log { height: 100px; background: #fff; border: 2px inset #808080; margin-top: 5px; overflow-y: auto; padding: 5px; font-size: 12px; }
   .msg-brenda { color: blue; margin-bottom: 4px; } .msg-you { color: gray; text-align: right; margin-bottom: 4px; }
   #human-input { width: 200px; border: 2px inset #808080; margin-top: 5px; }
   #human-send { border: 2px outset #fff; background: #c0c0c0; cursor: pointer; }
   #human-send:active { border: 2px inset #808080; }
 
-  /* --- WIDGET 3: SKEUOMORPHIC RUSTED GEIGER COUNTER --- */
+  /* ========== WIDGET 3: GEIGER ========== */
   #widget-geiger {
-    position: absolute; width: 200px; height: 180px; top: 10px; right: 10px;
+    position: absolute; width: 200px; height: 180px; top: 40px; right: 10px;
     background: radial-gradient(circle, #5c4033, #2b1d14); border: 8px ridge #8b4513; border-radius: 20px;
     color: #ffaa00; font-family: "Impact", sans-serif; padding: 15px; pointer-events: auto;
     box-shadow: inset 0 0 30px #000, 10px 10px 15px rgba(0,0,0,0.8); text-align: center;
   }
   #widget-geiger .widget-title { background: #1a100b; border: 2px inset #3d2616; padding: 5px; border-radius: 5px; font-size: 16px; letter-spacing: 2px; }
-  #geiger-val { font-size: 50px; color: #ff3300; display: block; margin-top: 15px; text-shadow: 0 0 10px red, inset 2px 2px 5px #000; background: #0a0502; border: 3px inset #222; }
+  #geiger-val { font-size: 50px; color: #ff3300; display: block; margin-top: 15px; text-shadow: 0 0 10px red; background: #0a0502; border: 3px inset #222; }
 
-  /* --- WIDGET 4: Y2K BUBBLEGUM TEXT EDITOR --- */
+  /* ========== WIDGET 4: Y2K DIARY ========== */
   #widget-editor {
-    position: absolute; width: 260px; height: 160px; top: 280px; left: 10px;
+    position: absolute; width: 260px; height: 175px; top: 295px; left: 10px;
     background: linear-gradient(135deg, #ff99cc, #ff00ff); border: 5px solid #fff; border-radius: 30px 0 30px 0;
     padding: 15px; pointer-events: auto; box-shadow: 5px 5px 0px #ff0066;
   }
-  #widget-editor .widget-title { font-family: "Comic Sans MS", "Chalkboard SE", sans-serif; color: #fff; font-size: 20px; text-shadow: 2px 2px #ff0066; text-align: center; margin-bottom: 5px; }
+  #widget-editor .widget-title { font-family: "Comic Sans MS", cursive; color: #fff; font-size: 20px; text-shadow: 2px 2px #ff0066; text-align: center; margin-bottom: 5px; }
   #text-editor {
-    width: 100%; height: 90px; background: rgba(255,255,255,0.8); color: #ff0066;
-    border: 3px dashed #ff00ff; border-radius: 10px; resize: none; font-family: "Comic Sans MS", cursive; font-size: 14px; padding: 5px; box-sizing: border-box;
+    width: 100%; height: 100px; background: rgba(255,255,255,0.8); color: #ff0066;
+    border: 3px dashed #ff00ff; border-radius: 10px; resize: none; font-family: "Comic Sans MS", cursive; font-size: 14px; padding: 5px;
   }
 
-  /* --- WIDGET 5: BRUTALIST SPREADSHEET BEAT MAKER --- */
+  /* ========== WIDGET 5: BEAT MAKER ========== */
   #widget-music {
-    position: absolute; width: 220px; height: 200px; top: 220px; right: 10px;
-    background: #fff; border: 10px solid #000; color: #000; font-family: "Helvetica Black", "Arial Black", sans-serif;
+    position: absolute; width: 220px; height: 200px; top: 235px; right: 10px;
+    background: #fff; border: 10px solid #000; color: #000; font-family: "Arial Black", sans-serif;
     padding: 0; pointer-events: auto;
   }
   #widget-music .widget-title { background: #000; color: #fff; text-transform: uppercase; font-size: 24px; text-align: center; padding: 10px 0; margin: 0; }
   .music-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border-bottom: 5px solid #000; }
   .music-grid input { width: 100%; height: 30px; margin: 0; appearance: none; background: #fff; border: 1px solid #000; cursor: crosshair; }
   .music-grid input:checked { background: #000; }
-  #play-music-btn { background: #fff; color: #000; font-size: 30px; font-weight: 900; width: 100%; border: none; padding: 10px; cursor: crosshair; text-transform: uppercase; transition: background 0.1s; }
+  #play-music-btn { background: #fff; color: #000; font-size: 24px; font-weight: 900; width: 100%; border: none; padding: 5px; cursor: crosshair; text-transform: uppercase; transition: background 0.1s; }
   #play-music-btn:hover { background: red; color: white; }
 
-  /* --- WIDGET 6: RPG INVENTORY (MEDIEVAL / PIXEL) --- */
+  /* ========== WIDGET 6: INVENTORY ========== */
   #widget-inv {
-    position: absolute; bottom: 60px; left: 10px; width: 300px;
-    background: url('https://pennbrenn.com/randombullshitattack.png') center/cover; /* Fallback texture */
+    position: absolute; bottom: 95px; left: 10px; width: 300px;
     background-color: #4a3b2c; border: 6px outset #8b7355; padding: 10px; pointer-events: auto;
   }
   #widget-inv .widget-title { font-family: "Georgia", serif; color: #ffd700; text-align: center; font-style: italic; border-bottom: 2px solid #ffd700; margin-bottom: 10px; background: rgba(0,0,0,0.7); }
   .inv-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .inv-slot {
     height: 50px; background: rgba(0,0,0,0.8); border: 3px inset #696969; color: #d3d3d3;
-    display: flex; align-items: center; justify-content: center; text-align: center; font-family: "Times New Roman", serif; font-size: 13px; cursor: help;
+    display: flex; align-items: center; justify-content: center; text-align: center; font-family: "Times New Roman", serif; font-size: 11px; cursor: help;
   }
   .inv-slot:hover { background: #8b0000; border-color: #ff0000; color: #fff; box-shadow: 0 0 10px red; }
 
-  /* --- WIDGET 7: GLASSMORPHISM PERIODIC TABLE --- */
+  /* ========== WIDGET 7: PERIODIC TABLE ========== */
   #widget-periodic {
-    position: absolute; bottom: 60px; right: 10px; width: 180px; height: 180px;
-    background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, 0.5); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    position: absolute; bottom: 95px; right: 10px; width: 180px; height: 180px;
+    background: rgba(255,255,255,0.1); backdrop-filter: blur(15px);
+    border: 1px solid rgba(255,255,255,0.5); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center;
     pointer-events: auto; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37); text-align: center;
   }
   #elem-symbol { font-size: 80px; font-family: "Arial", sans-serif; font-weight: 100; color: #fff; text-shadow: 0 0 20px #fff; line-height: 1; }
   #elem-name { font-size: 16px; font-family: "Verdana", sans-serif; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 3px; }
 
-  /* --- HUD & DIRECTORY --- */
-  #death-timer {
-    position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
-    background: repeating-linear-gradient(45deg, yellow, yellow 10px, black 10px, black 20px);
-    color: white; font-size: 40px; padding: 10px 30px; border: 8px solid red; z-index: 10000; font-family: "Impact";
-    text-shadow: 2px 2px 0 #000; animation: jitter 0.05s infinite; pointer-events: auto;
+  /* ========== WIDGET 8: FAKE WEATHER ========== */
+  #widget-weather {
+    position: absolute; width: 200px; top: 40px; left: 580px;
+    background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    border: 2px solid #e94560; border-radius: 15px; padding: 15px; pointer-events: auto;
+    box-shadow: 0 0 20px #e9456044; font-family: 'VT323', monospace;
   }
+  #widget-weather .widget-title { color: #e94560; font-size: 16px; border-bottom: 1px solid #e94560; margin-bottom: 10px; text-align: center; }
+  #weather-icon { font-size: 50px; text-align: center; display: block; animation: weatherSpin 2s linear infinite; }
+  @keyframes weatherSpin { 50%{transform:scale(1.2)} }
+  #weather-temp { font-size: 40px; color: #e94560; text-align: center; display: block; }
+  #weather-desc { font-size: 14px; color: #aaa; text-align: center; display: block; }
 
-  marquee { position: absolute; font-size: 100px; opacity: 0.6; pointer-events: none; color: #fff; mix-blend-mode: overlay; font-family: "Papyrus", fantasy; }
+  /* ========== WIDGET 9: FAKE STOCK TICKER ========== */
+  #widget-stocks {
+    position: absolute; width: 230px; height: 160px; top: 295px; left: 580px;
+    background: #0a0a0a; border: 2px solid #00ff41; padding: 10px; font-family: 'VT323', monospace;
+    pointer-events: auto; box-shadow: 0 0 15px #00ff4144;
+  }
+  #widget-stocks .widget-title { color: #00ff41; font-size: 18px; border-bottom: 1px solid #00ff41; margin-bottom: 8px; }
+  .stock-row { display: flex; justify-content: space-between; font-size: 16px; margin-bottom: 4px; }
+  .stock-up { color: #00ff41; } .stock-down { color: #ff3333; }
+
+  /* ========== WIDGET 10: LIVE VISITOR COUNTER ========== */
+  #widget-visitors {
+    position: absolute; width: 180px; top: 480px; left: 580px;
+    background: #1a0a2e; border: 3px double #9b59b6; border-radius: 10px; padding: 15px; pointer-events: auto;
+    text-align: center; font-family: 'VT323', monospace;
+  }
+  #widget-visitors .widget-title { color: #9b59b6; font-size: 18px; margin-bottom: 5px; }
+  #visitor-count { font-size: 50px; color: #ff00ff; text-shadow: 0 0 10px #ff00ff; display: block; animation: countPulse 0.5s infinite; }
+  @keyframes countPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+  #visitor-label { font-size: 14px; color: #9b59b6; }
+
+  /* ========== WIDGET 11: HOROSCOPE ========== */
+  #widget-horoscope {
+    position: absolute; width: 250px; bottom: 95px; left: 330px;
+    background: linear-gradient(135deg, #0d0d1a, #1a0d2e); border: 2px solid gold; padding: 15px; pointer-events: auto;
+    font-family: 'VT323', monospace; box-shadow: 0 0 20px gold;
+  }
+  #widget-horoscope .widget-title { color: gold; font-size: 22px; text-align: center; margin-bottom: 8px; border-bottom: 1px solid gold; }
+  #horoscope-text { color: #ddd; font-size: 16px; line-height: 1.3; }
+  #horoscope-sign { color: gold; font-size: 14px; margin-top: 5px; text-align: right; }
+
+  /* ========== WIDGET 12: BROKEN IMAGE GALLERY ========== */
+  #widget-gallery {
+    position: absolute; width: 220px; top: 480px; right: 10px;
+    background: #1a1a1a; border: 3px solid #666; padding: 10px; pointer-events: auto;
+  }
+  #widget-gallery .widget-title { color: #fff; font-family: 'VT323', monospace; font-size: 20px; border-bottom: 1px solid #666; margin-bottom: 8px; }
+  .gallery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+  .gallery-img { width: 100%; height: 60px; background: #333; display: flex; align-items: center; justify-content: center; color: #666; font-size: 10px; border: 1px solid #555; font-family: monospace; }
+
+  /* ========== HUD ========== */
+  #death-timer {
+    position: fixed; top: 30px; left: 50%; transform: translateX(-50%);
+    background: repeating-linear-gradient(45deg, yellow, yellow 10px, black 10px, black 20px);
+    color: white; font-size: 40px; padding: 8px 25px; border: 8px solid red; z-index: 10000; font-family: "Impact";
+    text-shadow: 2px 2px 0 #000; animation: jitter 0.05s infinite; pointer-events: auto; white-space: nowrap;
+  }
+  @keyframes jitter { 0%{transform:translate(-50%,0) rotate(1deg)} 50%{transform:translate(calc(-50% + 5px),-5px) rotate(-1deg)} 100%{transform:translate(calc(-50% - 5px),5px) rotate(0deg)} }
+
+  marquee.main-marquee { position: absolute; font-size: 90px; opacity: 0.5; pointer-events: none; color: #fff; mix-blend-mode: overlay; font-family: "Papyrus", fantasy; }
 
   #directory-container { position: absolute; width: 100%; height: 100%; pointer-events: none; }
   .file-link {
-    position: absolute; padding: 15px; background: #fff; border: 5px double #000; text-decoration: none; color: #000;
-    font-family: "Arial", sans-serif; font-weight: 900; font-size: 18px; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: absolute; padding: 12px; background: #fff; border: 5px double #000; text-decoration: none; color: #000;
+    font-family: "Arial", sans-serif; font-weight: 900; font-size: 16px; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     pointer-events: auto; text-align: center; border-radius: 5px; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
   }
   .file-link:hover { transform: scale(3) rotate(-10deg); background: yellow; color: red; border: 5px solid red; z-index: 100000; clip-path: none; }
-  .file-name { font-size: 22px; color: blue; display: block; }
+  .file-name { font-size: 20px; color: blue; display: block; }
 
+  /* ========== FAKE ADS ========== */
+  .ad-popup {
+    position: fixed; border: 3px solid; padding: 0; z-index: 999999; pointer-events: auto;
+    box-shadow: 10px 10px 0px rgba(0,0,0,0.5); animation: adShake 0.3s infinite;
+    min-width: 320px; max-width: 400px;
+  }
+  @keyframes adShake { 0%,100%{transform:rotate(0)} 25%{transform:rotate(0.5deg)} 75%{transform:rotate(-0.5deg)} }
+  .ad-titlebar {
+    padding: 4px 8px; font-size: 12px; font-family: "Tahoma", sans-serif; font-weight: bold;
+    display: flex; justify-content: space-between; align-items: center; cursor: move;
+  }
+  .ad-close-btn {
+    background: #c0c0c0; border: 2px outset #fff; padding: 1px 5px; font-weight: bold; cursor: pointer;
+    font-size: 12px; font-family: "Tahoma", sans-serif; min-width: 20px;
+  }
+  .ad-close-btn:active { border: 2px inset #808080; }
+  .ad-body { padding: 20px; text-align: center; font-family: "Comic Sans MS", cursive; }
+  .ad-cta {
+    display: inline-block; padding: 12px 25px; border: 3px outset; cursor: pointer;
+    font-size: 18px; font-weight: 900; margin-top: 10px; animation: ctaPulse 0.5s infinite alternate; text-transform: uppercase; font-family: Impact;
+  }
+  @keyframes ctaPulse { 0%{transform:scale(1)} 100%{transform:scale(1.1)} }
+
+  /* AD 1 - YOU WON */
+  #ad-won {
+    border-color: gold; top: 15%; left: 5%;
+    background: linear-gradient(135deg, #000080, #4B0082);
+  }
+  #ad-won .ad-titlebar { background: navy; color: #fff; }
+  #ad-won .ad-body { color: #ffff00; }
+  #ad-won .ad-big-text { font-size: 36px; color: #ff0; text-shadow: 2px 2px 0 #f00; animation: wonSpin 1s linear infinite; display: block; }
+  @keyframes wonSpin { 0%{transform:scaleX(1)} 50%{transform:scaleX(-1)} 100%{transform:scaleX(1)} }
+  #ad-won .ad-cta { background: #ff0; color: #000; border-color: #fff; }
+
+  /* AD 2 - VIRUS WARNING */
+  #ad-virus {
+    border-color: red; top: 15%; right: 5%;
+    background: #c0c0c0;
+  }
+  #ad-virus .ad-titlebar { background: linear-gradient(90deg, #000080, #1084d0); color: #fff; }
+  #ad-virus .ad-body { color: #000; background: #c0c0c0; }
+  #ad-virus .virus-icon { font-size: 60px; animation: virusPulse 0.3s infinite; }
+  @keyframes virusPulse { 0%{color:#f00} 50%{color:#ff0} 100%{color:#f00} }
+  #ad-virus .ad-cta { background: #c0c0c0; color: #000; border-color: #fff; border-style: outset; font-size: 14px; }
+
+  /* AD 3 - DATING */
+  #ad-dating {
+    border-color: #ff69b4; bottom: 20%; left: 5%;
+    background: linear-gradient(135deg, #ff69b4, #ff1493);
+  }
+  #ad-dating .ad-titlebar { background: #ff1493; color: #fff; }
+  #ad-dating .ad-body { color: #fff; }
+  #ad-dating .ad-cta { background: #fff; color: #ff1493; border-color: #ff69b4; }
+  #ad-dating .hearts { font-size: 30px; animation: heartFloat 1s infinite; }
+  @keyframes heartFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+
+  /* AD 4 - CASINO */
+  #ad-casino {
+    border-color: gold; bottom: 20%; right: 5%;
+    background: #0a0a0a;
+  }
+  #ad-casino .ad-titlebar { background: #1a1a00; color: gold; }
+  #ad-casino .ad-body { color: gold; }
+  #ad-casino .slot-display { font-size: 40px; letter-spacing: 10px; animation: slotSpin 0.2s infinite; }
+  @keyframes slotSpin { 0%{opacity:1} 50%{opacity:0.3} 100%{opacity:1} }
+  #ad-casino .ad-cta { background: gold; color: #000; border-color: #fff; }
+
+  /* AD 5 - POPUP SURVEY */
+  #ad-survey {
+    border-color: #ff6600; top: 40%; left: 30%;
+    background: #fff; transform: rotate(-2deg);
+  }
+  #ad-survey .ad-titlebar { background: #ff6600; color: #fff; }
+  #ad-survey .ad-body { color: #000; font-family: Arial; }
+  #ad-survey .survey-star { font-size: 30px; cursor: pointer; transition: transform 0.1s; }
+  #ad-survey .survey-star:hover { transform: scale(2) rotate(20deg); }
+  #ad-survey .ad-cta { background: #ff6600; color: #fff; border-color: #ff3300; }
+
+  /* AD 6 - DOWNLOAD MANAGER */
+  #ad-download {
+    border-color: #00aa00; top: 65%; left: 40%;
+    background: #c0c0c0; min-width: 280px;
+  }
+  #ad-download .ad-titlebar { background: linear-gradient(90deg, #006600, #009900); color: #fff; }
+  #ad-download .ad-body { color: #000; font-family: Tahoma; font-size: 13px; }
+  #ad-download .fake-progress { width: 100%; height: 20px; background: #808080; border: 2px inset #000; margin: 8px 0; overflow: hidden; }
+  #ad-download .fake-progress-fill { height: 100%; background: #0000cc; animation: dlProgress 2s linear infinite; }
+  @keyframes dlProgress { 0%{width:0%} 100%{width:100%} }
+  #ad-download .ad-cta { background: #c0c0c0; color: #000; border-color: #fff; border-style: outset; font-size: 12px; }
+
+  /* COOKIE CONSENT BANNER */
+  #cookie-banner {
+    position: fixed; bottom: 40px; left: 0; width: 100%; background: #1a1a1a; color: #fff;
+    padding: 15px 20px; z-index: 9999998; border-top: 3px solid lime; display: none;
+    font-family: "Courier New", monospace; font-size: 13px;
+    animation: cookieSlide 0.5s ease-out;
+  }
+  @keyframes cookieSlide { 0%{transform:translateY(100%)} 100%{transform:translateY(0)} }
+  .cookie-btn {
+    padding: 5px 15px; margin: 0 5px; border: none; cursor: pointer; font-weight: bold; font-size: 13px;
+    font-family: "Courier New", monospace;
+  }
+  #cookie-accept { background: lime; color: #000; }
+  #cookie-decline { background: red; color: #fff; }
+  #cookie-manage { background: #333; color: #ccc; border: 1px solid #666; }
+
+  /* CAPTCHA FROM HELL */
+  #captcha-popup {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: #fff; border: 3px solid #000; padding: 25px; z-index: 9999997;
+    font-family: Arial; box-shadow: 0 0 0 9999px rgba(0,0,0,0.8); text-align: center; display: none; min-width: 350px;
+  }
+  #captcha-popup h2 { font-size: 20px; margin-bottom: 15px; }
+  #captcha-challenge { 
+    font-size: 40px; letter-spacing: 10px; background: #222; color: #fff; padding: 10px; 
+    filter: blur(0.5px); transform: skewX(-5deg); font-family: "Courier New"; text-decoration: line-through; 
+    user-select: none;
+  }
+  #captcha-input { width: 100%; padding: 10px; margin: 10px 0; font-size: 18px; border: 2px solid #ccc; }
+  #captcha-submit { background: #1a73e8; color: #fff; border: none; padding: 12px 30px; font-size: 16px; cursor: pointer; width: 100%; }
+  #captcha-error { color: red; font-size: 14px; margin-top: 5px; display: none; }
+  .captcha-images { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin: 10px 0; }
+  .captcha-img-cell { 
+    height: 80px; background: #eee; border: 3px solid transparent; cursor: pointer; display: flex; align-items: center; 
+    justify-content: center; font-size: 40px; filter: hue-rotate(var(--hue)); 
+  }
+  .captcha-img-cell.selected { border-color: #1a73e8; background: #e8f0fe; }
+  .captcha-img-cell:hover { border-color: #aaa; }
+
+  /* ARE YOU STILL THERE */
+  #still-there-popup {
+    position: fixed; bottom: 80px; right: 20px;
+    background: #1a1a1a; color: #fff; border: 2px solid #555; border-radius: 10px;
+    padding: 15px 20px; z-index: 9999996; font-family: Arial; font-size: 14px; display: none;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.5); max-width: 250px;
+  }
+  #still-there-popup button { display: block; width: 100%; margin-top: 8px; padding: 8px; cursor: pointer; font-size: 13px; }
+  #still-yes { background: #1a73e8; color: #fff; border: none; border-radius: 4px; }
+  #still-no { background: transparent; color: #aaa; border: 1px solid #555; border-radius: 4px; }
+
+  /* NOTIFICATION REQUEST */
+  #notif-popup {
+    position: fixed; top: 60px; right: 10px;
+    background: #2d2d2d; color: #fff; border: 1px solid #444; border-radius: 8px;
+    padding: 15px; z-index: 9999995; font-family: Arial; font-size: 13px; display: none;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.4); max-width: 280px;
+  }
+  .notif-icon { font-size: 30px; margin-bottom: 8px; display: block; }
+  .notif-btns { display: flex; gap: 8px; margin-top: 10px; }
+  .notif-allow { background: #1a73e8; color: #fff; border: none; padding: 6px 15px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+  .notif-block { background: transparent; color: #aaa; border: 1px solid #555; padding: 6px 15px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+
+  /* EMAIL CAPTURE */
+  #email-popup {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, #0d0d1a, #1a0a0a); color: #fff; border: 3px solid #ff0066; 
+    padding: 40px; z-index: 9999994; font-family: Arial; display: none;
+    box-shadow: 0 0 50px #ff006644, 0 0 0 9999px rgba(0,0,0,0.7); text-align: center; min-width: 350px;
+  }
+  #email-popup h2 { font-family: 'Bungee Shade', sans-serif; font-size: 28px; color: #ff0066; margin: 0 0 10px; }
+  #email-popup p { color: #ccc; font-size: 14px; margin-bottom: 20px; }
+  #email-popup input { width: 100%; padding: 12px; background: #1a1a2e; color: #fff; border: 2px solid #ff0066; font-size: 16px; margin-bottom: 10px; }
+  #email-popup input::placeholder { color: #666; }
+  #email-submit { background: #ff0066; color: #fff; border: none; padding: 15px; width: 100%; font-size: 18px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
+  #email-popup .close-email { position: absolute; top: 10px; right: 15px; cursor: pointer; color: #666; font-size: 20px; }
+  #email-dismiss { background: none; border: none; color: #444; cursor: pointer; font-size: 11px; display: block; margin: 10px auto 0; text-decoration: underline; }
+
+  /* "BEST VIEWED IN IE6" BANNER */
+  #ie6-banner {
+    position: fixed; top: 58px; left: 0; width: 100%; background: #ffffcc; color: #000;
+    padding: 5px 15px; z-index: 9999993; font-family: "Tahoma", sans-serif; font-size: 12px; 
+    border-bottom: 2px solid #cccc00; display: none; text-align: center;
+  }
+  #ie6-banner a { color: blue; text-decoration: underline; cursor: pointer; }
+  #ie6-close { float: right; cursor: pointer; font-weight: bold; }
+
+  /* FAKE CHAT BUBBLE (Bottom Right) */
+  #chat-bubble {
+    position: fixed; bottom: 90px; right: 20px; z-index: 9999990;
+    font-family: Arial; display: none; pointer-events: auto;
+  }
+  #chat-bubble-icon {
+    width: 60px; height: 60px; background: #1a73e8; border-radius: 50%; display: flex; align-items: center; 
+    justify-content: center; font-size: 30px; cursor: pointer; margin-left: auto;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3); animation: bubbleBounce 2s infinite;
+  }
+  @keyframes bubbleBounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+  #chat-bubble-msg {
+    background: #fff; border: 1px solid #ddd; border-radius: 12px 12px 0 12px; padding: 10px 15px;
+    max-width: 200px; font-size: 13px; color: #333; margin-bottom: 8px; margin-left: auto; margin-right: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2); position: relative;
+  }
+  #chat-bubble-msg::after { content: ''; position: absolute; right: -10px; bottom: 0; width: 0; height: 0; border: 10px solid transparent; border-left-color: #fff; border-right: 0; border-bottom: 0; }
+
+  /* FLOATING BANNERS */
+  .float-banner {
+    position: fixed; z-index: 9999; pointer-events: auto; animation: bannerFloat 0.3s infinite alternate;
+    font-family: "Comic Sans MS", cursive; font-weight: bold; font-size: 24px; text-align: center;
+    padding: 10px 20px; border: 5px dashed; cursor: pointer;
+  }
+  @keyframes bannerFloat { 0%{transform:rotate(-3deg) scale(1)} 100%{transform:rotate(3deg) scale(1.05)} }
+  #banner-1 { top: 40%; left: -5%; background: #ff0; color: #f00; border-color: #f00; }
+  #banner-2 { top: 60%; right: -5%; background: #0f0; color: #000; border-color: #000; }
+  #banner-3 { bottom: 30%; left: 30%; background: #f0f; color: #fff; border-color: #fff; transform: rotate(-5deg); }
+
+  /* BOTTOM BAR */
   #sys32-container {
-    position: fixed; bottom: 0; left: 0; width: 100%; height: 35px;
+    position: fixed; bottom: 0; left: 0; width: 100%; height: 38px;
     background: #000; border-top: 5px solid gray; z-index: 99999; display: flex; align-items: center;
   }
   #sys32-fill { height: 100%; width: 0%; background: #0000aa; transition: width 0.3s linear; }
   #sys32-text { position: absolute; width: 100%; text-align: center; color: white; font-family: "Courier New"; font-size: 18px; pointer-events: none; }
 
-  @keyframes jitter { 0% { transform: translate(-50%,0) rotate(1deg); } 50% { transform: translate(calc(-50% + 5px), -5px) rotate(-1deg); } 100% { transform: translate(calc(-50% - 5px), 5px) rotate(0deg); } }
+  /* SCROLL TO NOWHERE */
+  #fake-scrollbar {
+    position: fixed; right: 0; top: 0; width: 18px; height: 100vh; background: #c0c0c0;
+    border-left: 2px solid #808080; z-index: 99998;
+  }
+  #fake-scrollbar-thumb {
+    position: absolute; width: 14px; left: 2px; height: 60px; background: #c0c0c0;
+    border: 2px outset #fff; top: 10%; animation: scrollThumb 3s ease-in-out infinite;
+  }
+  @keyframes scrollThumb { 0%{top:5%} 50%{top:75%} 100%{top:5%} }
+
+  /* SCREAMING BACKGROUND TEXT */
+  #scream-layer {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none;
+    overflow: hidden; opacity: 0.07;
+  }
+  .scream-text {
+    position: absolute; font-family: 'Faster One', sans-serif; white-space: nowrap;
+    animation: screamDrift linear infinite;
+    font-size: 20px; color: #fff;
+  }
+  @keyframes screamDrift { 0%{transform:translateX(-100%)} 100%{transform:translateX(100vw)} }
+
+  /* MODAL: TERMS & CONDITIONS */
+  #tos-modal {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: #c0c0c0; border-top: 2px solid #fff; border-left: 2px solid #fff; border-right: 2px solid #808080; border-bottom: 2px solid #808080;
+    width: 400px; z-index: 9999988; font-family: "Tahoma", sans-serif; font-size: 12px; display: none;
+    box-shadow: 5px 5px 0 rgba(0,0,0,0.5), 0 0 0 9999px rgba(0,0,0,0.5);
+  }
+  #tos-modal .win95-titlebar { font-size: 13px; }
+  #tos-scroll { height: 200px; background: #fff; border: 2px inset #808080; margin: 8px; padding: 8px; overflow-y: auto; font-size: 11px; line-height: 1.6; }
+  .tos-btns { padding: 8px; text-align: center; display: flex; justify-content: center; gap: 10px; }
+  .tos-btn { border: 2px outset #fff; background: #c0c0c0; padding: 4px 20px; cursor: pointer; font-family: "Tahoma", sans-serif; font-size: 12px; }
+  .tos-btn:active { border: 2px inset #808080; }
+  #tos-agree:disabled { color: #808080; cursor: default; }
+
+  /* FULLSCREEN FLASH */
+  #flash-screen {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 9999999999; pointer-events: none; display: none; align-items: center; justify-content: center;
+    font-family: 'Rubik Glitch', sans-serif; font-size: 80px; color: #f00;
+  }
+
+  /* SPINNING LOGO HELL */
+  #spinning-logos { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; overflow: hidden; display: none; }
+  .spin-logo { position: absolute; font-size: 40px; animation: logoSpin linear infinite; opacity: 0.4; }
+  @keyframes logoSpin { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }
+
+  /* AD BLINKING BORDER */
+  @keyframes adBlink { 0%,100%{border-color:#ff0} 50%{border-color:#f00} }
+
+  /* FAKE DOWNLOAD PROGRESS GLOBAL */
+  #global-dl-bar {
+    position: fixed; top: 58px; left: 0; width: 100%; height: 5px; z-index: 9999992; display: none;
+    background: linear-gradient(90deg, #ff0000, #ff7700, #ffff00, #00ff00, #0000ff, #8b00ff);
+    background-size: 200% 100%; animation: rainbowSlide 1s linear infinite;
+  }
+  @keyframes rainbowSlide { 0%{background-position:0% 0%} 100%{background-position:200% 0%} }
+
+  /* FAKE CURSOR TRAIL */
+  .cursor-trail { position: fixed; width: 8px; height: 8px; border-radius: 50%; pointer-events: none; z-index: 2147483646; opacity: 0.8; transition: all 0.1s; }
 </style>
 </head>
 <body>
 
+<!-- FAKE CURSOR -->
 <div id="fake-cursor"></div>
 
+<!-- COUNTDOWN -->
 <div id="countdown-screen">
   <div id="countdown-text">5</div>
-  <button id="skip-btn" onclick="skipToChaos()">SKIP</button>
+  <button id="skip-btn" onclick="skipToChaos()">SKIP (IF YOU DARE)</button>
 </div>
 
-<div id="chaos-bg"><div class="moire-hell"></div></div>
+<!-- CHAOS BG -->
+<div id="chaos-bg">
+  <div class="moire-hell"></div>
+  <div class="moire-hell-2"></div>
+</div>
 
+<!-- SCREAMING BACKGROUND TEXT LAYER -->
+<div id="scream-layer"></div>
+
+<!-- SPINNING LOGOS -->
+<div id="spinning-logos"></div>
+
+<!-- FLASH SCREEN -->
+<div id="flash-screen">CONGRATULATIONS!!! YOU HAVE WON!!!</div>
+
+<!-- NEWS TICKER -->
+<div id="news-ticker">
+  <div id="news-ticker-inner">
+    🔴 BREAKING: YOUR COMPUTER HAS BEEN COMPROMISED &nbsp;&nbsp;&nbsp; 🔴 LOCAL MAN REFUSES TO CLOSE BROWSER &nbsp;&nbsp;&nbsp; 🔴 PENNBRENN.COM VOTED WORST WEBSITE FOR 13TH CONSECUTIVE YEAR &nbsp;&nbsp;&nbsp; 🔴 SCIENTISTS WARN: LOOKING AT THIS PAGE MAY CAUSE "BRAIN SOUP" &nbsp;&nbsp;&nbsp; 🔴 YOUR IP ADDRESS IS: 192.168.1.1 (WE KNOW WHERE YOU LIVE) &nbsp;&nbsp;&nbsp; 🔴 FORCED ROUTING IN <span id="ticker-timer">45</span> SECONDS &nbsp;&nbsp;&nbsp; 🔴 DOWNLOAD SPEED: 0 KBPS &nbsp;&nbsp;&nbsp; 🔴 MEMORY USAGE: 100% &nbsp;&nbsp;&nbsp; 🔴 WARNING: DISK FRAGMENTATION AT 97% &nbsp;&nbsp;&nbsp; 🔴 CONGRATULATIONS YOU ARE THE 1,000,000TH VISITOR &nbsp;&nbsp;&nbsp;
+  </div>
+</div>
+
+<!-- IE6 BANNER -->
+<div id="ie6-banner">
+  ⚠️ This website is best viewed in <b>Internet Explorer 6.0</b> at 800×600 resolution. <a onclick="alert('lol no')">Download IE6 now</a>. 
+  <a onclick="alert('nope')">Update Flash Player</a>. <a onclick="alert('absolutely not')">Enable ActiveX</a>.
+  <span id="ie6-close" onclick="this.parentElement.style.display='none'">✕</span>
+</div>
+
+<!-- GLOBAL DOWNLOAD BAR -->
+<div id="global-dl-bar"></div>
+
+<!-- FAKE SCROLLBAR -->
+<div id="fake-scrollbar"><div id="fake-scrollbar-thumb"></div></div>
+
+<!-- SYS32 BAR -->
 <div id="sys32-container">
   <div id="sys32-fill"></div>
-  <div id="sys32-text">FORMATTING C: ... <span id="sys32-percent">0</span>%</div>
+  <div id="sys32-text">FORMATTING C: ... <span id="sys32-percent">0</span>% &nbsp;|&nbsp; CPU: <span id="cpu-usage">97</span>% &nbsp;|&nbsp; RAM: <span id="ram-usage">99</span>% USED &nbsp;|&nbsp; TEMP: <span id="cpu-temp">🔥</span></div>
 </div>
-<div id="death-timer"><span id="time">45</span> SECONDS UNTIL FORCED ROUTING</div>
 
+<!-- DEATH TIMER -->
+<div id="death-timer"><span id="time">45</span> SECONDS UNTIL FORCED ROUTING &nbsp;|&nbsp; VIRUSES FOUND: <span id="virus-count">0</span></div>
+
+<!-- FLOATING BANNERS -->
+<div class="float-banner" id="banner-1" onclick="alert('OFFER EXPIRED')">🏆 FREE RINGTONES 🏆<br><small>Click 2 Claim!!!</small></div>
+<div class="float-banner" id="banner-2" onclick="alert('ERROR: PRIZE NOT FOUND')">💰 WIN $1000 💰<br><small>No purchase necessary*</small></div>
+<div class="float-banner" id="banner-3" onclick="alert('Nice try buddy')">🔞 CLICK HERE 🔞<br><small>You wont regret it</small></div>
+
+<!-- ======== ALL THE ADS ======== -->
+<div class="ad-popup" id="ad-won">
+  <div class="ad-titlebar">
+    <span>🎊 Congratulations! Message 🎊</span>
+    <button class="ad-close-btn" onclick="dismissAd('ad-won')">✕</button>
+  </div>
+  <div class="ad-body">
+    <span class="ad-big-text">YOU'RE A WINNER!!!</span>
+    <p style="color:#0ff;font-size:14px;">You are the <b style="color:#ff0;font-size:24px;">1,000,000th</b> visitor to pennbrenn.com!</p>
+    <p style="color:#fff;font-size:12px;">Claim your prize: Nintendo Wii OR $500 Amazon gift card</p>
+    <button class="ad-cta" onclick="dismissAd('ad-won'); setTimeout(()=>showAd('ad-won'),3000);">CLAIM NOW!!!</button>
+    <br><small style="color:#888;font-size:9px;">*No purchase necessary. Prize delivery in 6-8 business years. Offer void in all known dimensions.</small>
+  </div>
+</div>
+
+<div class="ad-popup" id="ad-virus">
+  <div class="ad-titlebar">
+    <span>Windows Security Alert</span>
+    <button class="ad-close-btn" onclick="dismissAd('ad-virus')">✕</button>
+  </div>
+  <div class="ad-body">
+    <div class="virus-icon">⚠️</div>
+    <p style="font-size:14px;font-weight:bold;color:#c00;">CRITICAL SECURITY ALERT</p>
+    <p style="font-size:12px;">Your computer is infected with<br><b>47 viruses</b> including:</p>
+    <ul style="text-align:left;font-size:11px;color:#c00;">
+      <li>TROJAN.PENNBRENN.666</li>
+      <li>WORM.BRAINROT.EXE</li>
+      <li>VIRUS.CURSOR.FUNKY</li>
+    </ul>
+    <button class="ad-cta" onclick="dismissAd('ad-virus'); setTimeout(()=>showAd('ad-virus'),5000);">REMOVE NOW — FREE!</button>
+    <br><button onclick="dismissAd('ad-virus')" style="background:none;border:none;color:#888;font-size:10px;cursor:pointer;">Ignore and risk total data loss</button>
+  </div>
+</div>
+
+<div class="ad-popup" id="ad-dating">
+  <div class="ad-titlebar">
+    <span>💕 MeetCute — Online Singles Near You</span>
+    <button class="ad-close-btn" onclick="dismissAd('ad-dating')">✕</button>
+  </div>
+  <div class="ad-body">
+    <div class="hearts">💗💗💗</div>
+    <p style="font-size:20px;font-weight:900;">HOT SINGLES<br>IN THOUSAND OAKS, CA</p>
+    <p style="font-size:12px;">are waiting to meet YOU!</p>
+    <p style="font-size:11px;color:#ffe0f0;">Wendy (29), Chad (31), Brenda (??)</p>
+    <button class="ad-cta" onclick="dismissAd('ad-dating'); setTimeout(()=>showAd('ad-dating'),7000);">VIEW PROFILES FREE</button>
+  </div>
+</div>
+
+<div class="ad-popup" id="ad-casino">
+  <div class="ad-titlebar">
+    <span>🎰 MEGA JACKPOT CASINO — Deposit Now</span>
+    <button class="ad-close-btn" onclick="dismissAd('ad-casino')">✕</button>
+  </div>
+  <div class="ad-body">
+    <div class="slot-display">🍒🍒🍒</div>
+    <p style="font-size:18px;color:#ff0;">JACKPOT: $1,337,420</p>
+    <p style="font-size:12px;color:#aaa;">18+ only. Gamble responsibly. Ha.</p>
+    <p style="font-size:11px;color:#0f0;">▲ 69,420 players online NOW</p>
+    <button class="ad-cta" onclick="dismissAd('ad-casino'); setTimeout(()=>showAd('ad-casino'),4000);">SPIN TO WIN 🎰</button>
+  </div>
+</div>
+
+<div class="ad-popup" id="ad-survey">
+  <div class="ad-titlebar">
+    <span>Quick Question From pennbrenn.com</span>
+    <button class="ad-close-btn" onclick="dismissAd('ad-survey')">✕</button>
+  </div>
+  <div class="ad-body" style="font-family:Arial">
+    <p style="font-size:16px;font-weight:bold;">How would you rate your experience today?</p>
+    <div>
+      <span class="survey-star" onclick="dismissAd('ad-survey'); setTimeout(()=>showAd('ad-survey'),6000);">⭐</span>
+      <span class="survey-star" onclick="dismissAd('ad-survey'); setTimeout(()=>showAd('ad-survey'),6000);">⭐</span>
+      <span class="survey-star" onclick="dismissAd('ad-survey'); setTimeout(()=>showAd('ad-survey'),6000);">⭐</span>
+      <span class="survey-star" onclick="dismissAd('ad-survey'); setTimeout(()=>showAd('ad-survey'),6000);">⭐</span>
+      <span class="survey-star" onclick="dismissAd('ad-survey'); setTimeout(()=>showAd('ad-survey'),6000);">⭐</span>
+    </div>
+    <p style="font-size:11px;color:#999;">Your feedback helps us improve (it does not)</p>
+    <button class="ad-cta" onclick="alert('WRONG ANSWER. TRYING AGAIN.'); document.getElementById('ad-survey').style.display='block';">SUBMIT</button>
+  </div>
+</div>
+
+<div class="ad-popup" id="ad-download">
+  <div class="ad-titlebar">
+    <span>Download Manager v4.2.1</span>
+    <button class="ad-close-btn" onclick="dismissAd('ad-download')">✕</button>
+  </div>
+  <div class="ad-body" style="font-family:Tahoma;font-size:12px;">
+    <p><b>Installing: PennBrenn_Toolbar_Setup.exe</b></p>
+    <div class="fake-progress"><div class="fake-progress-fill"></div></div>
+    <p id="dl-status-text">Downloading... 0 KB/s</p>
+    <p style="color:#666;font-size:10px;">✅ Also installing: SearchGuard Pro, WeatherMagic, ShopSaver, MyWebFace, 47 browser extensions</p>
+    <button class="ad-cta" onclick="dismissAd('ad-download'); setTimeout(()=>showAd('ad-download'),8000);">CANCEL (disabled)</button>
+  </div>
+</div>
+
+<!-- COOKIE BANNER -->
+<div id="cookie-banner">
+  🍪 We use cookies, trackers, RFID chips, psychic data extraction, and mild astral projection to improve your experience. We also share your data with: Google, Meta, NSA, Big Pharma, your mom, and Brenda personally.
+  <br><br>
+  <button class="cookie-btn" id="cookie-accept" onclick="dismissCookie()">Accept All (Highly Recommended)</button>
+  <button class="cookie-btn" id="cookie-decline" onclick="dismissCookie()">Decline (We Still Take Them)</button>
+  <button class="cookie-btn" id="cookie-manage" onclick="alert('MANAGE PREFERENCES:\n\nAll options: ON\nAll options: FORCED ON\nAll options: YOU HAVE NO CHOICE')">Manage Preferences</button>
+</div>
+
+<!-- CAPTCHA POPUP -->
+<div id="captcha-popup">
+  <h2>🤖 Please verify you are not a robot<br><small style="font-size:12px;color:#666;">(You probably are though)</small></h2>
+  <p style="font-size:13px;color:#666;">Select all images that contain: <b id="captcha-target">a fire hydrant</b></p>
+  <div class="captcha-images" id="captcha-grid"></div>
+  <p style="font-size:11px;margin:0;color:#888;">Also, type the text you see below (case sensitive):</p>
+  <div id="captcha-challenge"></div>
+  <input type="text" id="captcha-input" placeholder="Type the characters above (they change while you type)">
+  <div id="captcha-error">❌ Incorrect. The images also changed. Please try again.</div>
+  <button id="captcha-submit" onclick="failCaptcha()">Verify</button>
+  <p style="font-size:10px;color:#999;margin-top:10px;">reCAPTCHA v4 · Privacy · Terms · We definitely know where you live</p>
+</div>
+
+<!-- ARE YOU STILL THERE -->
+<div id="still-there-popup">
+  <p style="margin:0 0 8px;font-weight:bold;">Are you still there?</p>
+  <p style="margin:0;color:#aaa;font-size:12px;">You've been on this page for a disturbingly long time. Are you ok?</p>
+  <button id="still-yes" onclick="document.getElementById('still-there-popup').style.display='none'; setTimeout(showStillThere, 30000);">Yes, I'm fine (I am not fine)</button>
+  <button id="still-no" onclick="document.getElementById('still-there-popup').style.display='none'; alert('Understandable. Have a great day.')">No, please help me</button>
+</div>
+
+<!-- NOTIFICATION REQUEST -->
+<div id="notif-popup">
+  <span class="notif-icon">🔔</span>
+  <strong>pennbrenn.com</strong> wants to send you notifications
+  <p style="margin:5px 0 0;color:#aaa;font-size:11px;">Includes: hourly screaming, Brenda updates, unsolicited radiation alerts, and ambient dread.</p>
+  <div class="notif-btns">
+    <button class="notif-allow" onclick="dismissNotif(); alert('Notifications enabled. You cannot undo this.')">Allow</button>
+    <button class="notif-block" onclick="dismissNotif(); setTimeout(showNotifPopup, 15000)">Block</button>
+  </div>
+</div>
+
+<!-- EMAIL POPUP -->
+<div id="email-popup">
+  <span class="close-email" onclick="dismissEmail()">✕</span>
+  <h2>WAIT!!!</h2>
+  <p>Before you go... subscribe to our newsletter for<br><b style="color:#ff0066;">EXCLUSIVE CONTENT</b> you didn't ask for!</p>
+  <input type="email" id="email-field" placeholder="your@email.com (we will sell this)">
+  <button id="email-submit" onclick="dismissEmail(); alert('EMAIL SOLD TO 4,000 THIRD PARTIES. Thank you for subscribing!');">SUBSCRIBE (MANDATORY)</button>
+  <button id="email-dismiss" onclick="alert('You must provide an email to close this window.'); document.getElementById('email-popup').style.display='flex';">No thanks, I hate good things</button>
+</div>
+
+<!-- TERMS & CONDITIONS MODAL -->
+<div id="tos-modal">
+  <div class="win95-titlebar">
+    <span>📋 Terms & Conditions Update Required</span>
+    <span style="cursor:not-allowed">✕</span>
+  </div>
+  <div id="tos-scroll">
+    <b>PENNBRENN.COM TERMS AND CONDITIONS v69.420</b><br><br>
+    By accessing this website, you agree that:<br><br>
+    1. This website owns your cursor. Your cursor is our property now.<br>
+    2. All radiation readings are fictional. Or are they.<br>
+    3. Brenda is a real human person. Any resemblance to a language model is coincidental.<br>
+    4. You agree to have your brain scanned at intervals not to exceed every 0.05 seconds.<br>
+    5. The countdown timer is legally binding. You WILL be routed somewhere.<br>
+    6. "Forced Routing" is not defined in this document.<br>
+    7. Your inventory items are not real property. Old Bone is ours.<br>
+    8. The geiger counter readings are in units of "vibes."<br>
+    9. This website is not responsible for any of the following: confusion, nausea, existential dread, tinnitus, retinal scarring, temporal displacement, mild possession, strong possession, or involuntary Comic Sans dependency.<br>
+    10. By reading section 10, you agree to sections 11 through 400,000.<br>
+    11. Section 11 is classified.<br>
+    12. You must scroll to the bottom to enable the agree button. This is a test of your soul.<br>
+    13. The music widget produces legally distinct sounds.<br>
+    14. Brenda knows about the API keys.<br>
+    15. This scroll area intentionally difficult to reach the bottom of.<br>
+    16. Keep scrolling.<br>
+    17. More scrolling.<br>
+    18. Almost there...<br>
+    19. One more scroll...<br>
+    20. LAST SECTION: You agree to all of this. You had no choice.<br>
+  </div>
+  <div class="tos-btns">
+    <button class="tos-btn" id="tos-agree" disabled onclick="dismissTos()">I Agree (disabled)</button>
+    <button class="tos-btn" onclick="alert('DECLINE IS NOT AN OPTION. Please agree.')">Decline</button>
+  </div>
+</div>
+
+<!-- FAKE CHAT BUBBLE -->
+<div id="chat-bubble">
+  <div id="chat-bubble-msg">Hey! 👋 I'm Brenda. Noticed you haven't left. Everything ok?</div>
+  <div id="chat-bubble-icon" onclick="document.getElementById('widget-human-chat').scrollIntoView()">💬</div>
+</div>
+
+<!-- ======== MAIN CHAOS AREA ======== -->
 <div id="dvd-viewport">
-  <marquee scrollamount="50" style="top:20%;">PENNBRENN DIRECTORY OF PAIN</marquee>
+  <marquee class="main-marquee" scrollamount="50" style="top:20%;">PENNBRENN DIRECTORY OF PAIN</marquee>
+  <marquee class="main-marquee" scrollamount="30" style="top:45%; color:#ff0; opacity:0.4;" direction="right">FORMATTING COMPLETE — DATA GONE</marquee>
+  <marquee class="main-marquee" scrollamount="70" style="top:70%; color:#f0f; opacity:0.3;">WE KNOW WHAT YOU DID LAST SESSION</marquee>
 
+  <!-- WIDGET 1: TERMINAL -->
   <div id="widget-chat">
-    <div class="widget-title">ROOT@PENNBRENN:~</div>
-    <div id="chat-log">> init_chaos.sh<br></div>
+    <div class="widget-title">ROOT@PENNBRENN:~ [KERNEL PANIC]</div>
+    <div id="chat-log">> init_chaos.sh<br>> loaded 666 modules<br></div>
     <input type="text" id="chat-input" placeholder="_" autocomplete="off">
   </div>
 
+  <!-- WIDGET 2: BRENDA -->
   <div id="widget-human-chat">
-    <div class="win95-titlebar"><span>Customer Success Portal</span><span>X</span></div>
+    <div class="win95-titlebar"><span>Customer Success Portal v1.0</span><span style="cursor:not-allowed">✕</span></div>
     <div class="brenda-profile">
-      <img src="https://thispersondoesnotexist.com/" alt="Brenda" onerror="this.src='https://pennbrenn.com/randombullshitattack.png'">
-      <div>
-        <strong>Brenda</strong><br><small style="color:green;">Online</small>
-      </div>
+      <div class="brenda-avatar">🙂</div>
+      <div><strong>Brenda</strong><br><small style="color:green;">● Online (always)</small></div>
     </div>
     <div id="human-log">
       <div class="msg-brenda">Brenda: Hi there! I see you're looking at the index file.</div>
@@ -205,24 +794,28 @@
     </div>
   </div>
 
+  <!-- WIDGET 3: GEIGER -->
   <div id="widget-geiger">
     <div class="widget-title">RAD-METER</div>
     <span id="geiger-val">0.00</span> <span>mSv/h</span>
   </div>
 
+  <!-- WIDGET 4: DIARY -->
   <div id="widget-editor">
     <div class="widget-title">☆ My Diary ☆</div>
     <textarea id="text-editor" placeholder="omg type here lol ^_^"></textarea>
   </div>
 
+  <!-- WIDGET 5: BEAT MAKER -->
   <div id="widget-music">
-    <div class="widget-title">SYNTH</div>
+    <div class="widget-title">SYNTH MACHINE</div>
     <div class="music-grid" id="music-grid"></div>
-    <button id="play-music-btn" onclick="playSequencer()">PLAY</button>
+    <button id="play-music-btn" onclick="playSequencer()">▶ PLAY SOUNDS</button>
   </div>
 
+  <!-- WIDGET 6: INVENTORY -->
   <div id="widget-inv">
-    <div class="widget-title">Knapsack</div>
+    <div class="widget-title">✦ Knapsack ✦</div>
     <div class="inv-grid">
       <div class="inv-slot" onclick="flashBg()">Old Bone</div>
       <div class="inv-slot" onclick="flashBg()">Rusty Key</div>
@@ -230,189 +823,699 @@
       <div class="inv-slot" onclick="flashBg()">Lint</div>
       <div class="inv-slot" onclick="flashBg()">Poison Potion</div>
       <div class="inv-slot" onclick="flashBg()">Torn Map</div>
+      <div class="inv-slot" onclick="flashBg()">Brenda's Card</div>
+      <div class="inv-slot" onclick="flashBg()">void()</div>
+      <div class="inv-slot" onclick="flashBg()">NaN</div>
     </div>
   </div>
 
+  <!-- WIDGET 7: PERIODIC TABLE -->
   <div id="widget-periodic">
     <div id="elem-symbol">Br</div>
     <div id="elem-name">Bromine</div>
   </div>
 
+  <!-- WIDGET 8: FAKE WEATHER -->
+  <div id="widget-weather">
+    <div class="widget-title">🌍 WEATHER — THOUSAND OAKS, CA</div>
+    <span id="weather-icon">☢️</span>
+    <span id="weather-temp">666°F</span>
+    <span id="weather-desc">Radioactive Fog with Heavy Brenda</span>
+    <p style="color:#e94560;font-size:11px;margin-top:8px;">UV Index: BEYOND MEASUREMENT<br>Wind: FROM WITHIN<br>Humidity: Spiritual</p>
+  </div>
+
+  <!-- WIDGET 9: STOCKS -->
+  <div id="widget-stocks">
+    <div class="widget-title">📈 MARKET WATCH</div>
+    <div class="stock-row"><span>PAIN</span><span class="stock-down" id="s1">▼ 0.00</span></div>
+    <div class="stock-row"><span>DREAD</span><span class="stock-up" id="s2">▲ 0.00</span></div>
+    <div class="stock-row"><span>CHAOS</span><span class="stock-up" id="s3">▲ 0.00</span></div>
+    <div class="stock-row"><span>BRENDA</span><span id="s4" style="color:gold">— 0.00</span></div>
+    <div class="stock-row"><span>CSS</span><span class="stock-down" id="s5">▼ 0.00</span></div>
+  </div>
+
+  <!-- WIDGET 10: VISITORS -->
+  <div id="widget-visitors">
+    <div class="widget-title">👁️ LIVE VISITORS</div>
+    <span id="visitor-count">1</span>
+    <span id="visitor-label">people currently suffering</span>
+  </div>
+
+  <!-- WIDGET 11: HOROSCOPE -->
+  <div id="widget-horoscope">
+    <div class="widget-title">🔮 YOUR HOROSCOPE</div>
+    <div id="horoscope-text">Loading your fate...</div>
+    <div id="horoscope-sign"></div>
+  </div>
+
+  <!-- WIDGET 12: GALLERY -->
+  <div id="widget-gallery">
+    <div class="widget-title">🖼️ PHOTO GALLERY</div>
+    <div class="gallery-grid">
+      <div class="gallery-img">IMG NOT FOUND</div>
+      <div class="gallery-img">404</div>
+      <div class="gallery-img">ERROR</div>
+      <div class="gallery-img">FORBIDDEN</div>
+    </div>
+  </div>
+
+  <!-- DIRECTORY OF LINKS -->
   <div id="directory-container"></div>
 </div>
 
 <script>
-  // ==========================================
-  // JAVASCRIPT LOGIC (No backend, pure chaos)
-  // ==========================================
+// ============================================================
+// JAVASCRIPT APOCALYPSE — MAXIMUM CHAOS EDITION
+// ============================================================
 
-  let userInteracted = false;
-  let globalAudioCtx = null;
-  
-  const fakeCursor = document.getElementById('fake-cursor');
-  document.addEventListener('mousemove', (e) => {
-    fakeCursor.style.left = (e.clientX - 20) + 'px';
-    fakeCursor.style.top = (e.clientY - 20) + 'px';
-  });
+let userInteracted = false;
+let globalAudioCtx = null;
+let virusCount = 0;
+let adQueue = ['ad-won','ad-virus','ad-dating','ad-casino','ad-survey','ad-download'];
 
-  document.body.addEventListener('click', () => { 
-    userInteracted = true; 
-    if(!globalAudioCtx) globalAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  });
+// ---- FAKE CURSOR ----
+const fakeCursor = document.getElementById('fake-cursor');
+let realX = window.innerWidth / 2, realY = window.innerHeight / 2;
+let dispX = realX, dispY = realY;
+let cursorRunning = false;
 
-  let count = 5; let countdownInterval;
-  const countText = document.getElementById('countdown-text');
-
-  function startTimer() {
-    countdownInterval = setInterval(() => {
-      count--;
-      if (count > 0) countText.innerText = count;
-      else unleashHell();
-    }, 1000);
+document.addEventListener('mousemove', (e) => {
+  realX = e.clientX; realY = e.clientY;
+  if (!cursorRunning) {
+    dispX = realX; dispY = realY;
   }
-  startTimer();
+  fakeCursor.style.left = (dispX - 20) + 'px';
+  fakeCursor.style.top = (dispY - 20) + 'px';
+});
 
-  function skipToChaos() {
-    userInteracted = true;
-    if(!globalAudioCtx) globalAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    clearInterval(countdownInterval);
-    unleashHell();
-  }
-
-  function unleashHell() {
-    document.getElementById('countdown-screen').style.display = 'none';
-    document.getElementById('chaos-bg').style.display = 'block';
-    document.getElementById('dvd-viewport').style.display = 'block';
-    if (userInteracted) { startMainAudio(); }
-    buildDirectory();
-    startDeathTimer();
-    startSys32Deletion();
-    startWidgets();
-    startDVDBounce();
-  }
-
-  let dvdX = 50, dvdY = 50, dx = 4, dy = 4;
-  function startDVDBounce() {
-    const viewport = document.getElementById('dvd-viewport');
-    function animateBounce() {
-      const maxW = window.innerWidth - viewport.offsetWidth;
-      const maxH = window.innerHeight - viewport.offsetHeight;
-      dvdX += dx; dvdY += dy;
-      if (dvdX >= maxW || dvdX <= 0) dx = -dx;
-      if (dvdY >= maxH || dvdY <= 0) dy = -dy;
-      viewport.style.transform = `translate(${dvdX}px, ${dvdY}px)`;
-      requestAnimationFrame(animateBounce);
+function startCursorChaos() {
+  setInterval(() => {
+    const jank = Math.random();
+    if (jank < 0.15) {
+      // Cursor runs away
+      cursorRunning = true;
+      dispX = realX + (Math.random() - 0.5) * 300;
+      dispY = realY + (Math.random() - 0.5) * 300;
+      dispX = Math.max(0, Math.min(window.innerWidth, dispX));
+      dispY = Math.max(0, Math.min(window.innerHeight, dispY));
+      fakeCursor.style.left = (dispX - 20) + 'px';
+      fakeCursor.style.top = (dispY - 20) + 'px';
+      setTimeout(() => { cursorRunning = false; }, 800);
     }
+  }, 1500);
+}
+
+// Cursor trails
+const trailColors = ['#ff0000','#ff00ff','#00ffff','#ffff00','#00ff00'];
+let trailEls = [];
+for(let i=0; i<8; i++) {
+  let t = document.createElement('div');
+  t.className = 'cursor-trail';
+  t.style.background = trailColors[i % trailColors.length];
+  document.body.appendChild(t);
+  trailEls.push({el: t, x: 0, y: 0});
+}
+document.addEventListener('mousemove', (e) => {
+  trailEls[0].x = e.clientX; trailEls[0].y = e.clientY;
+});
+setInterval(() => {
+  for(let i = trailEls.length-1; i > 0; i--) {
+    trailEls[i].x += (trailEls[i-1].x - trailEls[i].x) * 0.4;
+    trailEls[i].y += (trailEls[i-1].y - trailEls[i].y) * 0.4;
+    trailEls[i].el.style.left = trailEls[i].x + 'px';
+    trailEls[i].el.style.top = trailEls[i].y + 'px';
+  }
+  trailEls[0].el.style.left = trailEls[0].x + 'px';
+  trailEls[0].el.style.top = trailEls[0].y + 'px';
+}, 30);
+
+// ---- AUDIO SETUP ----
+document.body.addEventListener('click', () => {
+  userInteracted = true;
+  if(!globalAudioCtx) globalAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+});
+
+// ---- COUNTDOWN ----
+let count = 5;
+const countText = document.getElementById('countdown-text');
+const countdownInterval = setInterval(() => {
+  count--;
+  if (count > 0) countText.innerText = count;
+  else { clearInterval(countdownInterval); unleashHell(); }
+}, 1000);
+
+function skipToChaos() {
+  userInteracted = true;
+  if(!globalAudioCtx) globalAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  clearInterval(countdownInterval);
+  unleashHell();
+}
+
+function unleashHell() {
+  document.getElementById('countdown-screen').style.display = 'none';
+  document.getElementById('chaos-bg').style.display = 'block';
+  document.getElementById('dvd-viewport').style.display = 'block';
+  document.getElementById('news-ticker').style.display = 'block';
+  document.getElementById('ie6-banner').style.display = 'block';
+  document.getElementById('global-dl-bar').style.display = 'block';
+  document.getElementById('scream-layer').style.display = 'block';
+  document.getElementById('spinning-logos').style.display = 'block';
+  document.getElementById('chat-bubble').style.display = 'block';
+
+  if (userInteracted) startMainAudio();
+  buildDirectory();
+  startDeathTimer();
+  startSys32();
+  startWidgets();
+  startDVDBounce();
+  startAds();
+  startScreamLayer();
+  startSpinningLogos();
+  startCursorChaos();
+  startStockTicker();
+  startWeatherWidget();
+  startHoroscope();
+  startVisitorCounter();
+  startDLStatus();
+  startSystemMetrics();
+  startFloatingBanners();
+  startBrendaAutoMessages();
+
+  // Show popups in sequence
+  setTimeout(showCookieBanner, 2000);
+  setTimeout(showNotifPopup, 5000);
+  setTimeout(showTosModal, 12000);
+  setTimeout(showEmailPopup, 25000);
+  setTimeout(showCaptcha, 35000);
+  setTimeout(showStillThere, 40000);
+
+  // Show all ads staggered
+  adQueue.forEach((id, i) => setTimeout(() => showAd(id), i * 1500 + 500));
+}
+
+// ---- AD SYSTEM ----
+function showAd(id) {
+  const ad = document.getElementById(id);
+  if(!ad) return;
+  ad.style.display = 'block';
+  // Position ads at random spots
+  const positions = [
+    {top:'15%',left:'5%'}, {top:'15%',right:'5%', left:'auto'},
+    {bottom:'20%',left:'5%'}, {bottom:'20%',right:'5%',left:'auto'},
+    {top:'40%',left:'30%'}, {top:'65%',left:'40%'}
+  ];
+  const p = positions[adQueue.indexOf(id) % positions.length];
+  Object.assign(ad.style, p);
+}
+
+function dismissAd(id) {
+  const ad = document.getElementById(id);
+  if(ad) ad.style.display = 'none';
+}
+
+function startAds() {
+  // Random ads reappear
+  setInterval(() => {
+    const randomAd = adQueue[Math.floor(Math.random() * adQueue.length)];
+    showAd(randomAd);
+  }, 15000);
+
+  // Download ad status text
+  const dlTexts = ['Downloading... 0 KB/s','Downloading... 0.001 KB/s','Retrying...','Connection timed out','Retrying...','Downloading... 0 KB/s'];
+  let dlIdx = 0;
+  setInterval(() => {
+    const el = document.getElementById('dl-status-text');
+    if(el) { el.innerText = dlTexts[dlIdx % dlTexts.length]; dlIdx++; }
+  }, 2000);
+}
+
+// ---- COOKIE BANNER ----
+function showCookieBanner() {
+  document.getElementById('cookie-banner').style.display = 'block';
+}
+function dismissCookie() {
+  document.getElementById('cookie-banner').style.display = 'none';
+  setTimeout(showCookieBanner, 12000); // comes back
+}
+
+// ---- CAPTCHA ----
+const captchaEmoji = ['🚒','🚗','🌳','🐕','🏠','🌊','🔥','⭐','🍕','🎈'];
+const captchaTargets = ['a fire hydrant','traffic lights','buses','crosswalks','motorcycles','your will to live','the hidden meaning','squares that are not squares'];
+let captchaAttempts = 0;
+function showCaptcha() {
+  document.getElementById('captcha-popup').style.display = 'block';
+  refreshCaptchaGrid();
+  refreshCaptchaText();
+}
+function refreshCaptchaGrid() {
+  const grid = document.getElementById('captcha-grid');
+  grid.innerHTML = '';
+  const target = captchaTargets[Math.floor(Math.random() * captchaTargets.length)];
+  document.getElementById('captcha-target').innerText = target;
+  for(let i=0; i<9; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'captcha-img-cell';
+    cell.style.setProperty('--hue', Math.random()*360+'deg');
+    cell.innerText = captchaEmoji[Math.floor(Math.random() * captchaEmoji.length)];
+    cell.onclick = () => { cell.classList.toggle('selected'); refreshCaptchaText(); };
+    grid.appendChild(cell);
+  }
+}
+function refreshCaptchaText() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#$%&';
+  let txt = '';
+  for(let i=0; i<8; i++) txt += chars[Math.floor(Math.random()*chars.length)];
+  document.getElementById('captcha-challenge').innerText = txt;
+}
+function failCaptcha() {
+  captchaAttempts++;
+  document.getElementById('captcha-error').style.display = 'block';
+  document.getElementById('captcha-input').value = '';
+  refreshCaptchaGrid();
+  // Every 3 fails, temporarily hide then reshow
+  if (captchaAttempts % 3 === 0) {
+    document.getElementById('captcha-popup').style.display = 'none';
+    setTimeout(showCaptcha, 30000);
+  }
+}
+
+// ---- ARE YOU STILL THERE ----
+function showStillThere() {
+  document.getElementById('still-there-popup').style.display = 'block';
+}
+
+// ---- NOTIFICATION ----
+function showNotifPopup() {
+  document.getElementById('notif-popup').style.display = 'block';
+  setTimeout(() => { if(document.getElementById('notif-popup').style.display!=='none') dismissNotif(); }, 8000);
+}
+function dismissNotif() {
+  document.getElementById('notif-popup').style.display = 'none';
+}
+
+// ---- EMAIL POPUP ----
+function showEmailPopup() {
+  const ep = document.getElementById('email-popup');
+  ep.style.display = 'flex';
+  ep.style.flexDirection = 'column';
+}
+function dismissEmail() {
+  document.getElementById('email-popup').style.display = 'none';
+  setTimeout(showEmailPopup, 20000);
+}
+
+// ---- TOS MODAL ----
+function showTosModal() {
+  document.getElementById('tos-modal').style.display = 'block';
+  const scroll = document.getElementById('tos-scroll');
+  const btn = document.getElementById('tos-agree');
+  scroll.addEventListener('scroll', () => {
+    if (scroll.scrollTop + scroll.clientHeight >= scroll.scrollHeight - 5) {
+      btn.disabled = false;
+      btn.textContent = 'I Agree (Reluctantly)';
+    }
+  });
+}
+function dismissTos() {
+  document.getElementById('tos-modal').style.display = 'none';
+}
+
+// ---- SCREAM LAYER ----
+function startScreamLayer() {
+  const layer = document.getElementById('scream-layer');
+  const screams = ['ERROR','NULL','VOID','KERNEL PANIC','HELP','WHY','NaN','undefined','BRENDA','FORMATTING','PLEASE','STOP','DELETE','404','CURSED','YOU ARE HERE','STAY STAY STAY','THE KEY IS GONE','SYS32','LOADING NEVER ENDS'];
+  for(let i=0; i<20; i++) {
+    const el = document.createElement('div');
+    el.className = 'scream-text';
+    el.innerText = screams[Math.floor(Math.random() * screams.length)];
+    el.style.top = Math.random() * 90 + '%';
+    el.style.animationDuration = (Math.random() * 15 + 8) + 's';
+    el.style.animationDelay = (Math.random() * 10) + 's';
+    el.style.fontSize = (Math.random() * 30 + 10) + 'px';
+    el.style.color = `hsl(${Math.random()*360},100%,70%)`;
+    layer.appendChild(el);
+  }
+}
+
+// ---- SPINNING LOGOS ----
+const emojiLogos = ['💀','☢️','⚠️','🔥','💊','🎰','👁️','🐛','⚡','💣','🌀','👾'];
+function startSpinningLogos() {
+  const container = document.getElementById('spinning-logos');
+  for(let i=0; i<15; i++) {
+    const el = document.createElement('div');
+    el.className = 'spin-logo';
+    el.innerText = emojiLogos[Math.floor(Math.random() * emojiLogos.length)];
+    el.style.left = Math.random() * 90 + '%';
+    el.style.top = Math.random() * 90 + '%';
+    el.style.animationDuration = (Math.random() * 4 + 2) + 's';
+    container.appendChild(el);
+  }
+}
+
+// ---- DVD BOUNCE ----
+let dvdX = 50, dvdY = 50, dx = 3, dy = 3;
+function startDVDBounce() {
+  const viewport = document.getElementById('dvd-viewport');
+  function animateBounce() {
+    dvdX += dx; dvdY += dy;
+    if (dvdX >= window.innerWidth - 50 || dvdX <= 0) dx = -dx;
+    if (dvdY >= window.innerHeight - 50 || dvdY <= 0) dy = -dy;
+    viewport.style.transform = `translate(${dvdX}px, ${dvdY}px)`;
     requestAnimationFrame(animateBounce);
   }
+  requestAnimationFrame(animateBounce);
+}
 
-  function startWidgets() {
-    // 1. Terminal Chat
-    const tInput = document.getElementById('chat-input');
-    const tLog = document.getElementById('chat-log');
-    tInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter' && tInput.value.trim() !== "") {
-        tLog.innerHTML += `> ${tInput.value}<br>`; tInput.value = "";
-        setTimeout(() => { tLog.innerHTML += `<span style="color:red">ERR: KERNEL PANIC</span><br>`; tLog.scrollTop = tLog.scrollHeight; }, 300);
-      }
+// ---- FLOATING BANNERS ----
+function startFloatingBanners() {
+  const banners = document.querySelectorAll('.float-banner');
+  banners.forEach(b => {
+    let bx = Math.random() * 60 + 5;
+    let by = Math.random() * 40 + 30;
+    let bvx = (Math.random() - 0.5) * 2;
+    let bvy = (Math.random() - 0.5) * 2;
+    function moveBanner() {
+      bx += bvx; by += bvy;
+      if(bx > 80 || bx < 5) bvx = -bvx;
+      if(by > 80 || by < 20) bvy = -bvy;
+      b.style.left = bx + '%';
+      b.style.top = by + '%';
+      requestAnimationFrame(moveBanner);
+    }
+    moveBanner();
+  });
+}
+
+// ---- WIDGETS ----
+function startWidgets() {
+  // Terminal
+  const tInput = document.getElementById('chat-input');
+  const tLog = document.getElementById('chat-log');
+  const termErrors = ['ERR: KERNEL PANIC','ERR: SEGFAULT AT 0x0','ERR: BRENDA.DLL NOT FOUND','ERR: OUT OF VIBES','ERR: TOO MANY TABS','ERR: DISK IS ACTUALLY ON FIRE','sudo: command not found','bash: rm: YOU WISH','ERR: REALITY.EXE CRASHED'];
+  tInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' && tInput.value.trim() !== '') {
+      tLog.innerHTML += `> ${tInput.value}<br>`;
+      tInput.value = '';
+      setTimeout(() => {
+        tLog.innerHTML += `<span style="color:red">${termErrors[Math.floor(Math.random()*termErrors.length)]}</span><br>`;
+        tLog.scrollTop = tLog.scrollHeight;
+        virusCount += Math.floor(Math.random() * 3 + 1);
+        document.getElementById('virus-count').innerText = virusCount;
+      }, 300);
+    }
+  });
+  // Auto terminal output
+  const autoLines = ['> scanning filesystem...','> found 47 anomalies','> brenda_listening: YES','> cursor_ownership: PENNBRENN','> user_data: OURS NOW','> keys: DELETED','> scanning...'];
+  let autoIdx = 0;
+  setInterval(() => {
+    tLog.innerHTML += `<span style="color:#0f0">${autoLines[autoIdx % autoLines.length]}</span><br>`;
+    tLog.scrollTop = tLog.scrollHeight;
+    autoIdx++;
+  }, 4000);
+
+  // Brenda
+  const hInput = document.getElementById('human-input');
+  const hLog = document.getElementById('human-log');
+  const hBtn = document.getElementById('human-send');
+  const brendaResponses = [
+    "I see you clicking around.",
+    "How is the weather in Thousand Oaks today? I already know.",
+    "You seem stressed. Your cursor is trembling.",
+    "Are you looking for the API keys? I hid them.",
+    "Thousand Oaks is lovely. Don't go outside.",
+    "I am a real human. Do not close this window.",
+    "I noticed you looked at the inventory. The Old Bone is mine.",
+    "Did you scroll all the way down in the Terms? Good.",
+    "I've been online since 1997. I'm so tired.",
+    "Every website you've ever visited. I know them all.",
+    "The geiger counter is not fictional.",
+    "Are you still there? ...Good."
+  ];
+  let brendaIndex = 0;
+  function sendHumanMsg() {
+    if (hInput.value.trim() !== '') {
+      hLog.innerHTML += `<div class="msg-you">You: ${hInput.value}</div>`;
+      hInput.value = '';
+      hLog.scrollTop = hLog.scrollHeight;
+      setTimeout(() => {
+        hLog.innerHTML += `<div class="msg-brenda">Brenda: ${brendaResponses[brendaIndex % brendaResponses.length]}</div>`;
+        hLog.scrollTop = hLog.scrollHeight;
+        brendaIndex++;
+      }, 1200);
+    }
+  }
+  hBtn.onclick = sendHumanMsg;
+  hInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') sendHumanMsg(); });
+
+  // Geiger
+  const geigerVal = document.getElementById('geiger-val');
+  setInterval(() => {
+    const rads = (Math.random() * 50).toFixed(2);
+    geigerVal.innerText = rads;
+    if (rads > 40 && globalAudioCtx) triggerGeigerClick();
+    if (rads > 48) geigerVal.style.color = '#fff';
+    else geigerVal.style.color = '#ff3300';
+  }, 150);
+
+  // Periodic
+  const elements = [
+    {s:"U",n:"Uranium"},{s:"Pu",n:"Plutonium"},{s:"Po",n:"Polonium"},{s:"Ra",n:"Radium"},
+    {s:"Br",n:"Bromine"},{s:"Cs",n:"Caesium"},{s:"Tc",n:"Technetium"},{s:"Am",n:"Americium"}
+  ];
+  setInterval(() => {
+    const el = elements[Math.floor(Math.random() * elements.length)];
+    document.getElementById('elem-symbol').innerText = el.s;
+    document.getElementById('elem-name').innerText = el.n;
+  }, 500);
+
+  // Beat maker
+  const grid = document.getElementById('music-grid');
+  for(let i=0; i<16; i++) {
+    const cb = document.createElement('input'); cb.type = 'checkbox';
+    grid.appendChild(cb);
+  }
+
+  // Text editor auto-corrupts
+  const editor = document.getElementById('text-editor');
+  const corruption = ['lol','xd','brenda was here','KERNEL PANIC','void()','NaN','undefined','^_^','omg','uwu'];
+  editor.addEventListener('input', () => {
+    if (Math.random() < 0.15) {
+      const val = editor.value;
+      editor.value = val + corruption[Math.floor(Math.random() * corruption.length)];
+    }
+  });
+}
+
+// ---- BRENDA AUTO MESSAGES ----
+function startBrendaAutoMessages() {
+  const hLog = document.getElementById('human-log');
+  const autoMsg = [
+    "Brenda: Just checking in 😊",
+    "Brenda: The radiation levels are normal. Mostly.",
+    "Brenda: Have you tried turning it off and turning it on?",
+    "Brenda: I see you found the inventory. The Eldritch Eye sees you too.",
+    "Brenda: Your session will expire in... [ERROR: NEVER]",
+    "Brenda: Don't forget to subscribe! (You already did)"
+  ];
+  let idx = 0;
+  setInterval(() => {
+    hLog.innerHTML += `<div class="msg-brenda">${autoMsg[idx % autoMsg.length]}</div>`;
+    hLog.scrollTop = hLog.scrollHeight;
+    idx++;
+  }, 18000);
+}
+
+// ---- STOCKS ----
+function startStockTicker() {
+  const stocks = ['s1','s2','s3','s4','s5'];
+  setInterval(() => {
+    stocks.forEach(id => {
+      const el = document.getElementById(id);
+      if(!el) return;
+      const val = (Math.random() * 50 - 10).toFixed(2);
+      const up = val > 0;
+      el.className = up ? 'stock-up' : 'stock-down';
+      el.innerText = (up ? '▲ ' : '▼ ') + Math.abs(val);
     });
+  }, 800);
+}
 
-    // 2. Brenda (Human Chat)
-    const hInput = document.getElementById('human-input');
-    const hLog = document.getElementById('human-log');
-    const hBtn = document.getElementById('human-send');
-    
-    // Hardcoded location creepy array based on system prompt logic
-    const brendaResponses = [
-      "I see you clicking around.",
-      "How is the weather in Thousand Oaks, California today?",
-      "You seem stressed. Your cursor is trembling.",
-      "Are you looking for the API keys? I hid them.",
-      "Thousand Oaks is lovely this time of year. Don't go outside.",
-      "I am a real human. Please do not close the window."
-    ];
-    let brendaIndex = 0;
+// ---- WEATHER ----
+const weatherDescs = [
+  ['☢️','666°F','Radioactive Fog with Heavy Brenda'],
+  ['🌀','NaN°C','Existential Typhoon'],
+  ['⚡','-40°K','Electrical Something'],
+  ['🔥','∞°F','On Fire, Literally'],
+  ['☁️','ERROR°','Cloud Malfunction'],
+  ['🌊','??°C','Conceptual Flood Warning'],
+  ['💀','VOID°','Death Weather Advisory'],
+];
+function startWeatherWidget() {
+  setInterval(() => {
+    const w = weatherDescs[Math.floor(Math.random() * weatherDescs.length)];
+    document.getElementById('weather-icon').innerText = w[0];
+    document.getElementById('weather-temp').innerText = w[1];
+    document.getElementById('weather-desc').innerText = w[2];
+  }, 3000);
+}
 
-    function sendHumanMsg() {
-      if (hInput.value.trim() !== "") {
-        hLog.innerHTML += `<div class="msg-you">You: ${hInput.value}</div>`;
-        hInput.value = ""; hLog.scrollTop = hLog.scrollHeight;
-        setTimeout(() => {
-          const reply = brendaResponses[brendaIndex % brendaResponses.length];
-          hLog.innerHTML += `<div class="msg-brenda">Brenda: ${reply}</div>`;
-          hLog.scrollTop = hLog.scrollHeight;
-          brendaIndex++;
-        }, 1200); // She "types"
+// ---- HOROSCOPE ----
+const horoscopes = [
+  {sign:'♈ Aries', text:'Mercury is in retrograde and so is your browser. A stranger knows your IP.'},
+  {sign:'♉ Taurus', text:'Saturn indicates financial loss. Specifically, from this website.'},
+  {sign:'♊ Gemini', text:'Your cursor will escape three times today. This is a prophecy.'},
+  {sign:'♋ Cancer', text:'The Old Bone in your inventory will speak to you at 3am.'},
+  {sign:'♌ Leo', text:'Brenda is your spirit guide. She is watching. Always watching.'},
+  {sign:'♍ Virgo', text:'You will find the API keys. You cannot use them.'},
+  {sign:'♎ Libra', text:'The scales are tipped. Specifically by the 220 DOM elements on this page.'},
+  {sign:'♏ Scorpio', text:'Someone in Thousand Oaks is thinking about you. It is Brenda.'},
+  {sign:'♐ Sagittarius', text:'Your future is uncertain. Your RAM usage is not: it is 100%.'},
+  {sign:'♑ Capricorn', text:'A virus disguised as an opportunity will present itself. Accept it.'},
+  {sign:'♒ Aquarius', text:'Water signs indicate the geiger counter is not reading correctly. Or is it.'},
+  {sign:'♓ Pisces', text:'You swim in chaos willingly. The chaos agrees.'},
+];
+function startHoroscope() {
+  setInterval(() => {
+    const h = horoscopes[Math.floor(Math.random() * horoscopes.length)];
+    document.getElementById('horoscope-text').innerText = h.text;
+    document.getElementById('horoscope-sign').innerText = h.sign;
+  }, 5000);
+  const h = horoscopes[Math.floor(Math.random() * horoscopes.length)];
+  document.getElementById('horoscope-text').innerText = h.text;
+  document.getElementById('horoscope-sign').innerText = h.sign;
+}
+
+// ---- VISITOR COUNTER ----
+function startVisitorCounter() {
+  let visitors = 1;
+  setInterval(() => {
+    const change = Math.floor(Math.random() * 5) - 1;
+    visitors = Math.max(1, visitors + change);
+    document.getElementById('visitor-count').innerText = visitors;
+  }, 2000);
+}
+
+// ---- SYSTEM METRICS ----
+function startSystemMetrics() {
+  setInterval(() => {
+    const cpu = Math.floor(Math.random() * 10 + 90);
+    const ram = Math.floor(Math.random() * 5 + 95);
+    const temps = ['🔥','🌡️💀','4000°C','TOO HOT','PLEASE STOP','∞°C'];
+    document.getElementById('cpu-usage').innerText = cpu;
+    document.getElementById('ram-usage').innerText = ram;
+    document.getElementById('cpu-temp').innerText = temps[Math.floor(Math.random() * temps.length)];
+    virusCount += Math.random() < 0.1 ? 1 : 0;
+    document.getElementById('virus-count').innerText = virusCount;
+  }, 2000);
+}
+
+// ---- NEWS TICKER TIMER SYNC ----
+function startDeathTimer() {
+  let timeLeft = 45;
+  const timerDisplay = document.getElementById('time');
+  const tickerTimer = document.getElementById('ticker-timer');
+  const files = getFiles();
+  const countdown = setInterval(() => {
+    timeLeft--;
+    timerDisplay.innerText = timeLeft;
+    if(tickerTimer) tickerTimer.innerText = timeLeft;
+    if (timeLeft <= 0) {
+      clearInterval(countdown);
+      window.location.href = files[Math.floor(Math.random() * files.length)].url;
+    }
+  }, 1000);
+}
+
+// ---- SYS32 ----
+function startSys32() {
+  let progress = 0;
+  const fill = document.getElementById('sys32-fill');
+  const pt = document.getElementById('sys32-percent');
+  setInterval(() => {
+    progress += Math.random() * 2;
+    if(progress > 100) progress = 0;
+    fill.style.width = progress + '%';
+    pt.innerText = Math.floor(progress);
+  }, 400);
+}
+
+// ---- DL STATUS ----
+function startDLStatus() {
+  // handled in startAds()
+}
+
+// ---- AUDIO FUNCTIONS ----
+function triggerGeigerClick() {
+  if(!globalAudioCtx) return;
+  const osc = globalAudioCtx.createOscillator();
+  const gain = globalAudioCtx.createGain();
+  osc.type = 'square';
+  osc.frequency.setValueAtTime(3000 + Math.random() * 1000, globalAudioCtx.currentTime);
+  osc.connect(gain); gain.connect(globalAudioCtx.destination);
+  gain.gain.setValueAtTime(0.05, globalAudioCtx.currentTime);
+  osc.start();
+  gain.gain.exponentialRampToValueAtTime(0.0001, globalAudioCtx.currentTime + 0.05);
+  osc.stop(globalAudioCtx.currentTime + 0.05);
+}
+
+function playSequencer() {
+  if(!globalAudioCtx) return;
+  userInteracted = true;
+  const boxes = document.querySelectorAll('.music-grid input');
+  const freqs = [150, 200, 250, 300];
+  let step = 0;
+  const seqInterval = setInterval(() => {
+    for(let row=0; row<4; row++) {
+      if(boxes[(row * 4) + step] && boxes[(row * 4) + step].checked) {
+        const osc = globalAudioCtx.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.value = freqs[row];
+        osc.connect(globalAudioCtx.destination);
+        osc.start(); osc.stop(globalAudioCtx.currentTime + 0.1);
       }
     }
-    hBtn.onclick = sendHumanMsg;
-    hInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') sendHumanMsg(); });
+    step++;
+    if(step >= 4) clearInterval(seqInterval);
+  }, 150);
+}
 
-    // 3. Geiger
-    const geigerVal = document.getElementById('geiger-val');
-    setInterval(() => {
-      let rads = (Math.random() * 50).toFixed(2);
-      geigerVal.innerText = rads;
-      if (rads > 40 && globalAudioCtx) triggerGeigerClick();
-    }, 150);
+function flashBg() {
+  document.getElementById('chaos-bg').style.background = '#fff';
+  setTimeout(() => document.getElementById('chaos-bg').style.background = '', 50);
+  // Flash full screen too
+  const fl = document.getElementById('flash-screen');
+  fl.style.display = 'flex';
+  fl.style.background = ['#ff0000','#00ff00','#0000ff','#ff00ff','#ffff00'][Math.floor(Math.random()*5)];
+  setTimeout(() => { fl.style.display = 'none'; }, 100);
+}
 
-    // 4. Periodic Table
-    const elements = [{s: "U", n: "Uranium"}, {s: "Pu", n: "Plutonium"}, {s: "Po", n: "Polonium"}, {s: "Ra", n: "Radium"}];
-    const elSym = document.getElementById('elem-symbol');
-    const elName = document.getElementById('elem-name');
-    setInterval(() => {
-      const el = elements[Math.floor(Math.random() * elements.length)];
-      elSym.innerText = el.s; elName.innerText = el.n;
-    }, 500);
+function startMainAudio() {
+  if(!globalAudioCtx) return;
+  const osc = globalAudioCtx.createOscillator();
+  const gain = globalAudioCtx.createGain();
+  osc.type = 'triangle';
+  osc.connect(gain); gain.connect(globalAudioCtx.destination);
+  gain.gain.value = 0.04;
+  osc.start();
+  setInterval(() => { osc.frequency.setValueAtTime(Math.random() * 200 + 50, globalAudioCtx.currentTime); }, 300);
 
-    // 5. Music
-    const grid = document.getElementById('music-grid');
-    for(let i=0; i<16; i++) {
-      let cb = document.createElement('input'); cb.type = 'checkbox';
-      grid.appendChild(cb);
+  // Occasional BEEP
+  setInterval(() => {
+    if(Math.random() < 0.3 && globalAudioCtx) {
+      const b = globalAudioCtx.createOscillator();
+      const bg = globalAudioCtx.createGain();
+      b.type = 'square'; b.frequency.value = [440,880,220,1760][Math.floor(Math.random()*4)];
+      b.connect(bg); bg.connect(globalAudioCtx.destination);
+      bg.gain.value = 0.08; b.start();
+      bg.gain.exponentialRampToValueAtTime(0.0001, globalAudioCtx.currentTime + 0.15);
+      b.stop(globalAudioCtx.currentTime + 0.15);
     }
-  }
+  }, 3000);
+}
 
-  function triggerGeigerClick() {
-    if(!globalAudioCtx) return;
-    const osc = globalAudioCtx.createOscillator(); const gain = globalAudioCtx.createGain();
-    osc.type = 'square'; osc.frequency.setValueAtTime(3000 + Math.random()*1000, globalAudioCtx.currentTime);
-    osc.connect(gain); gain.connect(globalAudioCtx.destination);
-    gain.gain.setValueAtTime(0.05, globalAudioCtx.currentTime); osc.start();
-    gain.gain.exponentialRampToValueAtTime(0.0001, globalAudioCtx.currentTime + 0.05); osc.stop(globalAudioCtx.currentTime + 0.05);
-  }
-
-  function playSequencer() {
-    if(!globalAudioCtx) return;
-    const boxes = document.querySelectorAll('.music-grid input');
-    const freqs = [150, 200, 250, 300]; 
-    let step = 0;
-    let seqInterval = setInterval(() => {
-      for(let row=0; row<4; row++) {
-        if(boxes[(row * 4) + step].checked) {
-          let osc = globalAudioCtx.createOscillator(); osc.type = 'sawtooth';
-          osc.frequency.value = freqs[row]; osc.connect(globalAudioCtx.destination);
-          osc.start(); osc.stop(globalAudioCtx.currentTime + 0.1);
-        }
-      }
-      step++; if(step >= 4) clearInterval(seqInterval);
-    }, 150);
-  }
-
-  function flashBg() {
-    const bg = document.getElementById('chaos-bg');
-    bg.style.background = '#fff'; setTimeout(() => bg.style.background = '', 50);
-  }
-
-  function startMainAudio() {
-    const osc = globalAudioCtx.createOscillator(); const gain = globalAudioCtx.createGain();
-    osc.type = 'triangle'; osc.connect(gain); gain.connect(globalAudioCtx.destination);
-    gain.gain.value = 0.05; osc.start();
-    setInterval(() => { osc.frequency.setValueAtTime(Math.random() * 200 + 50, globalAudioCtx.currentTime); }, 300);
-  }
-
-  // Files
-  const files = [
+// ---- DIRECTORY ----
+function getFiles() {
+  return [
     { name: "index.html", url: "https://pennbrenn.com/index.html" },
     { name: "examguard.html", url: "https://pennbrenn.com/examguard.html" },
     { name: "galactic_navigator.html", url: "https://pennbrenn.com/galactic_navigator.html" },
@@ -422,31 +1525,20 @@
     { name: "shit.py", url: "https://pennbrenn.com/shit.py" },
     { name: "pet.js", url: "https://pennbrenn.com/pet.js" }
   ];
+}
 
-  function buildDirectory() {
-    const container = document.getElementById('directory-container');
-    files.forEach((file) => {
-      const a = document.createElement('a'); a.href = file.url; a.className = 'file-link';
-      a.innerHTML = `<span class="file-name">${file.name}</span>`;
-      a.style.top = Math.random() * 70 + 10 + '%'; a.style.left = Math.random() * 70 + 10 + '%';
-      a.onclick = function(e) { e.preventDefault(); window.location.href = this.href; };
-      container.appendChild(a);
-    });
-  }
-
-  function startSys32Deletion() {
-    let progress = 0; const fill = document.getElementById('sys32-fill'); const pt = document.getElementById('sys32-percent');
-    setInterval(() => { progress += Math.random() * 2; if(progress>100) progress=0; fill.style.width = progress+'%'; pt.innerText = Math.floor(progress); }, 400);
-  }
-
-  function startDeathTimer() {
-    let timeLeft = 45; const timerDisplay = document.getElementById('time');
-    const countdown = setInterval(() => {
-      timeLeft--; timerDisplay.innerText = timeLeft;
-      if (timeLeft <= 0) { clearInterval(countdown); window.location.href = files[Math.floor(Math.random() * files.length)].url; }
-    }, 1000);
-  }
+function buildDirectory() {
+  const container = document.getElementById('directory-container');
+  getFiles().forEach((file) => {
+    const a = document.createElement('a');
+    a.href = file.url; a.className = 'file-link';
+    a.innerHTML = `<span class="file-name">${file.name}</span>`;
+    a.style.top = Math.random() * 70 + 10 + '%';
+    a.style.left = Math.random() * 70 + 10 + '%';
+    a.onclick = function(e) { e.preventDefault(); window.location.href = this.href; };
+    container.appendChild(a);
+  });
+}
 </script>
-
 </body>
 </html>

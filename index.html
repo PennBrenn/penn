@@ -2,16 +2,36 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>PENN BRENN: SOUL EXTINCTION EDITION</title>
+<title>PENN BRENN: TOTAL SYSTEM FAILURE</title>
 <style>
-  :root { --flash: 0.03s; }
-  
-  body {
+  /* --- PRE-CHAOS COUNTDOWN STYLES --- */
+  body, html {
+    margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
+  }
+
+  #countdown-screen {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999999;
+    cursor: crosshair;
+  }
+
+  #countdown-text {
+    font-size: 250px;
+    font-family: Arial, sans-serif;
+    color: black;
+    font-weight: bold;
+  }
+
+  /* --- DA CHAOS REALM STYLES --- */
+  #chaos-realm {
+    display: none; /* Hidden until 0 */
+    width: 100vw; height: 100vh;
     background: #000;
-    margin: 0;
-    overflow: hidden;
-    height: 100vh;
-    width: 100vw;
     font-family: "Wingdings", "Comic Sans MS", cursive;
     animation: worldEnd 0.05s infinite;
   }
@@ -22,18 +42,13 @@
     100% { background: #00ff00; filter: hue-rotate(360deg) invert(0); }
   }
 
-  /* EPILEPSY WARNING MINEFIELD */
   #seizure-warning {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
     z-index: 999999;
-    background: black;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 80px;
-    text-align: center;
+    background: black; color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 80px; text-align: center;
     animation: warningFlash 0.1s infinite;
     pointer-events: none;
   }
@@ -42,7 +57,6 @@
     50% { opacity: 0.5; background: blue; color: lime; transform: scale(0.5) rotate(10deg); }
   }
 
-  /* THE TIMER */
   #death-timer {
     position: fixed;
     top: 10px; right: 10px;
@@ -53,23 +67,6 @@
     animation: jitter 0.1s infinite;
   }
 
-  /* CHAOTIC POPUPS */
-  .popup {
-    position: absolute;
-    width: 200px; height: 150px;
-    background: silver; border: 4px outset white;
-    box-shadow: 10px 10px 0px black;
-    z-index: 8888;
-    padding: 10px;
-    animation: drift 2s infinite alternate;
-  }
-
-  @keyframes drift {
-    from { transform: translate(0,0) rotate(0deg); }
-    to { transform: translate(100px, 100px) rotate(360deg); }
-  }
-
-  /* FILE NODES */
   .file-link {
     position: absolute;
     padding: 15px;
@@ -84,18 +81,13 @@
   }
 
   .file-link:hover {
-    background: black;
-    color: white;
+    background: black; color: white;
     transform: scale(5) rotate(720deg);
     z-index: 100000;
   }
 
   marquee {
-    position: fixed;
-    font-size: 100px;
-    opacity: 0.4;
-    z-index: 1;
-    pointer-events: none;
+    position: fixed; font-size: 100px; opacity: 0.4; z-index: 1; pointer-events: none;
   }
 
   @keyframes jitter {
@@ -105,22 +97,121 @@
   }
 </style>
 </head>
-<body onclick="spawnPopup()">
+<body>
 
-<div id="seizure-warning">
-    !!!!! MASSIVE EPILEPPSY WARNNING !!!!!<br>
-    UR BRAIN IS GOING TO MELTTTTT<br>
-    PENN BRENN IS HEERE
+<div id="countdown-screen">
+  <div id="countdown-text">5</div>
 </div>
 
-<div id="death-timer">PICK OR DIE: <span id="time">10</span></div>
+<div id="chaos-realm">
+  <div id="seizure-warning">
+      !!!!! MASSIVE EPILEPPSY WARNNING !!!!!<br>
+      UR BRAIN IS GOING TO MELTTTTT<br>
+      PENN BRENN IS HEERE
+  </div>
 
-<marquee scrollamount="60" style="top:20%;">GOOOOOOOO FASSSTTTTTT</marquee>
-<marquee scrollamount="40" direction="right" style="bottom:20%;">NO SOUL LEFT HEERE</marquee>
+  <div id="death-timer">PICK OR DIE: <span id="time">10</span></div>
 
-<div id="directory-container"></div>
+  <marquee scrollamount="60" style="top:20%;">GOOOOOOOO FASSSTTTTTT</marquee>
+  <marquee scrollamount="40" direction="right" style="bottom:20%;">NO SOUL LEFT HEERE</marquee>
+
+  <div id="directory-container"></div>
+</div>
 
 <script>
+  let userInteracted = false;
+  
+  // Browsers require a click to allow sound and popups.
+  document.body.addEventListener('click', () => {
+    userInteracted = true;
+  });
+
+  // --- 1. THE COUNTDOWN LOGIC ---
+  let count = 5;
+  const countText = document.getElementById('countdown-text');
+  const countScreen = document.getElementById('countdown-screen');
+  const chaosRealm = document.getElementById('chaos-realm');
+
+  const countdownInterval = setInterval(() => {
+    count--;
+    if (count > 0) {
+      countText.innerText = count;
+    } else {
+      clearInterval(countdownInterval);
+      unleashHell(); // Execute order 66
+    }
+  }, 1000);
+
+  // --- 2. THE HELLFIRE PROTOCOL ---
+  function unleashHell() {
+    // Hide white screen, show chaos
+    countScreen.style.display = 'none';
+    chaosRealm.style.display = 'block';
+
+    // Start Audio (if user clicked)
+    if (userInteracted) {
+      startAudioTorture();
+    }
+
+    // Start Popups (if user clicked)
+    if (userInteracted) {
+      setInterval(spawnPopupWindows, 2000);
+    }
+
+    // Build the Links
+    buildDirectory();
+
+    // Start the Death Timer
+    startDeathTimer();
+
+    // Hide warning after 3 seconds
+    setTimeout(() => {
+      const warning = document.getElementById('seizure-warning');
+      if(warning) warning.style.display = 'none';
+    }, 3000);
+  }
+
+  // --- 3. THE AUDIO SYNTHESIZER ---
+  function startAudioTorture() {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    
+    osc.type = 'sawtooth'; // Harsh, buzzy sound
+    osc.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    
+    // Max volume
+    gainNode.gain.value = 0.5; 
+    osc.start();
+
+    // Change frequency wildly every 50ms to simulate dial-up/glitching
+    setInterval(() => {
+      osc.frequency.setValueAtTime(Math.random() * 3000 + 200, audioCtx.currentTime);
+    }, 50);
+  }
+
+  // --- 4. BROWSER POPUP MADNESS ---
+  const popupUrls = [
+    "https://pennbrenn.com/examguard.html",
+    "https://pennbrenn.com/randombullshitattack.png",
+    "https://pennbrenn.com/404.html"
+  ];
+  function spawnPopupWindows() {
+    const randomUrl = popupUrls[Math.floor(Math.random() * popupUrls.length)];
+    const width = Math.floor(Math.random() * 300) + 100;
+    const height = Math.floor(Math.random() * 300) + 100;
+    const left = Math.floor(Math.random() * window.screen.width);
+    const top = Math.floor(Math.random() * window.screen.height);
+    
+    // Attempt to open a tiny, stripped-down window
+    window.open(randomUrl, '_blank', `width=${width},height=${height},left=${left},top=${top},menubar=no,toolbar=no,location=no,status=no`);
+  }
+
+  // Bind popups to every click inside the chaos realm to force them past blockers
+  document.getElementById('chaos-realm').addEventListener('click', spawnPopupWindows);
+
+  // --- 5. DIRECTORY GENERATION ---
   const files = [
     { name: "indux.htlm", url: "pennbrenn.com/index.html", desc: "da mane page 4 chaos" },
     { name: "exxam_gard.hmtl", url: "pennbrenn.com/examguard.html", desc: "WE R WATCHIN U POOOOOP" },
@@ -140,57 +231,43 @@
     { name: "tag_hell.hmtl", url: "pennbrenn.com/tags.html", desc: "too meny labels lol" }
   ];
 
-  const container = document.getElementById('directory-container');
-
-  // Create links
-  files.forEach((file, i) => {
-    const a = document.createElement('a');
-    a.href = "https://" + file.url;
-    a.className = 'file-link';
-    a.innerHTML = `<b>${file.name}</b><br><small>${file.desc}</small>`;
-    a.style.top = Math.random() * 80 + 5 + '%';
-    a.style.left = Math.random() * 80 + 5 + '%';
-    container.appendChild(a);
-  });
-
-  // Drunken Physics: Move links constantly
-  setInterval(() => {
-    document.querySelectorAll('.file-link').forEach(link => {
-      const top = parseFloat(link.style.top);
-      const left = parseFloat(link.style.left);
-      link.style.top = (top + (Math.random() - 0.5) * 5) + '%';
-      link.style.left = (left + (Math.random() - 0.5) * 5) + '%';
+  function buildDirectory() {
+    const container = document.getElementById('directory-container');
+    files.forEach((file) => {
+      const a = document.createElement('a');
+      a.href = "https://" + file.url;
+      a.className = 'file-link';
+      a.innerHTML = `<b>${file.name}</b><br><small>${file.desc}</small>`;
+      a.style.top = Math.random() * 80 + 5 + '%';
+      a.style.left = Math.random() * 80 + 5 + '%';
+      container.appendChild(a);
     });
-  }, 100);
 
-  // POPUP SPAMMER
-  function spawnPopup() {
-    const p = document.createElement('div');
-    p.className = 'popup';
-    p.style.top = Math.random() * 100 + 'vh';
-    p.style.left = Math.random() * 100 + 'vw';
-    p.innerHTML = `<b>ERRROR!</b><br>UR BALLS ARE WAITING!<br><button onclick="this.parentElement.remove()">CLOSE (LIE)</button>`;
-    document.body.appendChild(p);
+    // Drunken Movement
+    setInterval(() => {
+      document.querySelectorAll('.file-link').forEach(link => {
+        const top = parseFloat(link.style.top);
+        const left = parseFloat(link.style.left);
+        link.style.top = (top + (Math.random() - 0.5) * 5) + '%';
+        link.style.left = (left + (Math.random() - 0.5) * 5) + '%';
+      });
+    }, 100);
   }
-  setInterval(spawnPopup, 1500);
 
-  // THE DEATH TIMER
-  let timeLeft = 10;
-  const timerDisplay = document.getElementById('time');
-  const countdown = setInterval(() => {
-    timeLeft--;
-    timerDisplay.innerText = timeLeft;
-    if (timeLeft <= 0) {
-      clearInterval(countdown);
-      const randomFile = files[Math.floor(Math.random() * files.length)].url;
-      window.location.href = "https://" + randomFile;
-    }
-  }, 1000);
-
-  // Remove warning after 3 seconds so you can "see" the chaos
-  setTimeout(() => {
-    document.getElementById('seizure-warning').style.display = 'none';
-  }, 3000);
+  // --- 6. THE DEATH TIMER ---
+  function startDeathTimer() {
+    let timeLeft = 10;
+    const timerDisplay = document.getElementById('time');
+    const countdown = setInterval(() => {
+      timeLeft--;
+      timerDisplay.innerText = timeLeft;
+      if (timeLeft <= 0) {
+        clearInterval(countdown);
+        const randomFile = files[Math.floor(Math.random() * files.length)].url;
+        window.location.href = "https://" + randomFile;
+      }
+    }, 1000);
+  }
 </script>
 
 </body>

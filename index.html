@@ -2,98 +2,90 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>PENN BRENN: TOTAL SYSTEM FAILURE</title>
+<title>PENN BRENN: VICTORIAN CHILD ANNIHILATOR</title>
 <style>
-  /* --- PRE-CHAOS COUNTDOWN STYLES --- */
-  body, html {
-    margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
-  }
+  /* --- THE WHITE ROOM --- */
+  body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; cursor: crosshair; }
 
   #countdown-screen {
-    position: fixed;
-    top: 0; left: 0; width: 100vw; height: 100vh;
-    background: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: white; display: flex; align-items: center; justify-content: center;
     z-index: 9999999;
-    cursor: crosshair;
   }
+  #countdown-text { font-size: 300px; font-family: "Impact", sans-serif; color: black; }
 
-  #countdown-text {
-    font-size: 250px;
-    font-family: Arial, sans-serif;
-    color: black;
-    font-weight: bold;
-  }
-
-  /* --- DA CHAOS REALM STYLES --- */
+  /* --- DA CHAOS REALM --- */
   #chaos-realm {
-    display: none; /* Hidden until 0 */
-    width: 100vw; height: 100vh;
-    background: #000;
-    font-family: "Wingdings", "Comic Sans MS", cursive;
+    display: none; width: 100vw; height: 100vh;
+    background: #000; font-family: "Comic Sans MS", cursive;
     animation: worldEnd 0.05s infinite;
   }
 
   @keyframes worldEnd {
-    0% { background: #ff0000; filter: hue-rotate(0deg) invert(0); }
-    50% { background: #0000ff; filter: hue-rotate(180deg) invert(1); }
-    100% { background: #00ff00; filter: hue-rotate(360deg) invert(0); }
+    0% { background: #ff00ff; filter: hue-rotate(0deg); }
+    50% { background: #00ffff; filter: hue-rotate(180deg); }
+    100% { background: #ffff00; filter: hue-rotate(360deg); }
   }
 
+  /* --- VICTORIAN RETINA DESTROYER --- */
+  .moire-hell {
+    position: fixed; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: repeating-radial-gradient(circle, #000, #000 12px, #fff 12px, #fff 24px);
+    mix-blend-mode: difference;
+    animation: spinHell 2s linear infinite, throb 0.2s infinite alternate;
+    z-index: 0; pointer-events: none;
+  }
+  @keyframes spinHell { 100% { transform: rotate(360deg); } }
+  @keyframes throb { 0% { transform: scale(1); } 100% { transform: scale(1.1); } }
+
+  /* --- EPILEPSY WARNING --- */
   #seizure-warning {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    z-index: 999999;
-    background: black; color: white;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 999999; background: black; color: white;
     display: flex; align-items: center; justify-content: center;
-    font-size: 80px; text-align: center;
-    animation: warningFlash 0.1s infinite;
-    pointer-events: none;
+    font-size: 100px; text-align: center; font-weight: 900;
+    animation: warningFlash 0.05s infinite; pointer-events: none;
   }
   @keyframes warningFlash {
-    0%, 100% { opacity: 1; background: red; color: yellow; transform: scale(1.5); }
-    50% { opacity: 0.5; background: blue; color: lime; transform: scale(0.5) rotate(10deg); }
+    0% { opacity: 1; background: red; color: yellow; transform: scale(1.2); }
+    50% { opacity: 0.5; background: blue; color: lime; transform: scale(0.8) rotate(5deg); }
   }
 
+  /* --- HUD ELEMENTS --- */
   #death-timer {
-    position: fixed;
-    top: 10px; right: 10px;
-    background: white; color: black;
-    font-size: 50px; padding: 20px;
-    border: 10px solid red;
-    z-index: 10000;
-    animation: jitter 0.1s infinite;
-  }
-
-  .file-link {
-    position: absolute;
-    padding: 15px;
-    background: rgba(255,255,255,0.8);
-    border: 5px dashed black;
-    text-decoration: none;
-    color: blue;
-    font-weight: bold;
-    font-size: 20px;
-    z-index: 100;
-    transition: all 0.05s linear;
-  }
-
-  .file-link:hover {
-    background: black; color: white;
-    transform: scale(5) rotate(720deg);
-    z-index: 100000;
+    position: fixed; top: 10px; right: 10px;
+    background: white; color: black; font-size: 60px; padding: 10px;
+    border: 15px double red; z-index: 10000; animation: jitter 0.05s infinite;
   }
 
   marquee {
-    position: fixed; font-size: 100px; opacity: 0.4; z-index: 1; pointer-events: none;
+    position: fixed; font-size: 150px; opacity: 0.8; z-index: 1; 
+    pointer-events: none; color: lime; mix-blend-mode: exclusion;
+  }
+
+  /* --- THE EASY-CLICK BUTTONS OF DOOM --- */
+  .file-link {
+    position: absolute; padding: 20px;
+    background: rgba(255,255,255,0.9);
+    border: 8px solid black; text-decoration: none;
+    color: red; font-weight: 900; font-size: 24px;
+    z-index: 100; transition: all 0.1s ease;
+    box-shadow: 10px 10px 0px blue;
+  }
+
+  /* Now they swell up massive instead of running away */
+  .file-link:hover {
+    transform: scale(3.5) rotate(10deg);
+    background: #00ff00; color: #ff00ff;
+    border: 15px dashed black;
+    z-index: 100000;
+    box-shadow: -20px -20px 0px red;
   }
 
   @keyframes jitter {
     0% { transform: translate(0,0); }
-    50% { transform: translate(15px, -15px); }
-    100% { transform: translate(-15px, 15px); }
+    50% { transform: translate(20px, -20px); }
+    100% { transform: translate(-20px, 20px); }
   }
 </style>
 </head>
@@ -104,142 +96,108 @@
 </div>
 
 <div id="chaos-realm">
+  <div class="moire-hell"></div>
+
   <div id="seizure-warning">
-      !!!!! MASSIVE EPILEPPSY WARNNING !!!!!<br>
-      UR BRAIN IS GOING TO MELTTTTT<br>
-      PENN BRENN IS HEERE
+      !!!!! RETINA ANNIHILATOR !!!!!<br>
+      CLICK 2 DIEEEE
   </div>
 
-  <div id="death-timer">PICK OR DIE: <span id="time">10</span></div>
+  <div id="death-timer">TIME LEFT: <span id="time">10</span></div>
 
-  <marquee scrollamount="60" style="top:20%;">GOOOOOOOO FASSSTTTTTT</marquee>
-  <marquee scrollamount="40" direction="right" style="bottom:20%;">NO SOUL LEFT HEERE</marquee>
+  <marquee scrollamount="90" style="top:10%;">U CANNOT COMPREHEND DIS</marquee>
+  <marquee scrollamount="70" direction="right" style="bottom:15%;">MULTIPLE TABS INCOMING</marquee>
 
   <div id="directory-container"></div>
 </div>
 
 <script>
   let userInteracted = false;
-  
-  // Browsers require a click to allow sound and popups.
-  document.body.addEventListener('click', () => {
-    userInteracted = true;
-  });
+  document.body.addEventListener('click', () => { userInteracted = true; });
 
-  // --- 1. THE COUNTDOWN LOGIC ---
+  // --- 1. COUNTDOWN ---
   let count = 5;
   const countText = document.getElementById('countdown-text');
-  const countScreen = document.getElementById('countdown-screen');
-  const chaosRealm = document.getElementById('chaos-realm');
-
   const countdownInterval = setInterval(() => {
     count--;
-    if (count > 0) {
-      countText.innerText = count;
-    } else {
+    if (count > 0) countText.innerText = count;
+    else {
       clearInterval(countdownInterval);
-      unleashHell(); // Execute order 66
+      document.getElementById('countdown-screen').style.display = 'none';
+      document.getElementById('chaos-realm').style.display = 'block';
+      if (userInteracted) {
+        startAudioTorture();
+        setInterval(spawnPopupWindows, 1000); // Faster popups!
+      }
+      buildDirectory();
+      startDeathTimer();
+      setTimeout(() => { document.getElementById('seizure-warning').style.display = 'none'; }, 3000);
     }
   }, 1000);
 
-  // --- 2. THE HELLFIRE PROTOCOL ---
-  function unleashHell() {
-    // Hide white screen, show chaos
-    countScreen.style.display = 'none';
-    chaosRealm.style.display = 'block';
-
-    // Start Audio (if user clicked)
-    if (userInteracted) {
-      startAudioTorture();
-    }
-
-    // Start Popups (if user clicked)
-    if (userInteracted) {
-      setInterval(spawnPopupWindows, 2000);
-    }
-
-    // Build the Links
-    buildDirectory();
-
-    // Start the Death Timer
-    startDeathTimer();
-
-    // Hide warning after 3 seconds
-    setTimeout(() => {
-      const warning = document.getElementById('seizure-warning');
-      if(warning) warning.style.display = 'none';
-    }, 3000);
-  }
-
-  // --- 3. THE AUDIO SYNTHESIZER ---
+  // --- 2. AUDIO SYNTH ---
   function startAudioTorture() {
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const osc = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
-    
-    osc.type = 'sawtooth'; // Harsh, buzzy sound
+    osc.type = 'square'; // Changed to square wave for harsher 8-bit screech
     osc.connect(gainNode);
     gainNode.connect(audioCtx.destination);
-    
-    // Max volume
-    gainNode.gain.value = 0.5; 
+    gainNode.gain.value = 0.8; 
     osc.start();
-
-    // Change frequency wildly every 50ms to simulate dial-up/glitching
     setInterval(() => {
-      osc.frequency.setValueAtTime(Math.random() * 3000 + 200, audioCtx.currentTime);
-    }, 50);
+      osc.frequency.setValueAtTime(Math.random() * 4000 + 100, audioCtx.currentTime);
+    }, 30);
   }
 
-  // --- 4. BROWSER POPUP MADNESS ---
-  const popupUrls = [
-    "https://pennbrenn.com/examguard.html",
-    "https://pennbrenn.com/randombullshitattack.png",
-    "https://pennbrenn.com/404.html"
-  ];
+  // --- 3. POPUP SPAM ---
+  const popupUrls = ["https://pennbrenn.com/examguard.html", "https://pennbrenn.com/randombullshitattack.png"];
   function spawnPopupWindows() {
-    const randomUrl = popupUrls[Math.floor(Math.random() * popupUrls.length)];
-    const width = Math.floor(Math.random() * 300) + 100;
-    const height = Math.floor(Math.random() * 300) + 100;
-    const left = Math.floor(Math.random() * window.screen.width);
-    const top = Math.floor(Math.random() * window.screen.height);
-    
-    // Attempt to open a tiny, stripped-down window
-    window.open(randomUrl, '_blank', `width=${width},height=${height},left=${left},top=${top},menubar=no,toolbar=no,location=no,status=no`);
+    const url = popupUrls[Math.floor(Math.random() * popupUrls.length)];
+    window.open(url, '_blank', `width=${Math.random()*400+100},height=${Math.random()*400+100},left=${Math.random()*800},top=${Math.random()*600}`);
   }
-
-  // Bind popups to every click inside the chaos realm to force them past blockers
   document.getElementById('chaos-realm').addEventListener('click', spawnPopupWindows);
 
-  // --- 5. DIRECTORY GENERATION ---
+  // --- 4. DIRECTORY & MULTI-TAB CLICK LOGIC ---
   const files = [
-    { name: "indux.htlm", url: "pennbrenn.com/index.html", desc: "da mane page 4 chaos" },
-    { name: "exxam_gard.hmtl", url: "pennbrenn.com/examguard.html", desc: "WE R WATCHIN U POOOOOP" },
-    { name: "galactick.hmtl", url: "pennbrenn.com/galactic_navigator.html", desc: "flyin into a blak hole" },
-    { name: "404_fail.hmtl", url: "pennbrenn.com/404.html", desc: "ur fater is missing" },
-    { name: "midnite.hmtl", url: "pennbrenn.com/midnight_drive.html", desc: "vroom vroom screeech" },
-    { name: "studdy.hmtl", url: "pennbrenn.com/study.html", desc: "lern how 2 b dummer" },
-    { name: "labb_rats.hmtl", url: "pennbrenn.com/lab.html", desc: "boom boom syence" },
-    { name: "spayce.hmtl", url: "pennbrenn.com/space.html", desc: "no air only screaming" },
-    { name: "fly_guy.hmtl", url: "pennbrenn.com/fly.html", desc: "i hav wings made of trash" },
-    { name: "snek_code.pie", url: "pennbrenn.com/shit.py", desc: "it dose nuthing but bite" },
-    { name: "eye_blede.png", url: "pennbrenn.com/randombullshitattack.png", desc: "LOOK AT IT!!!!" },
-    { name: "jlc_mystery.hmtl", url: "pennbrenn.com/jlc.html", desc: "wat is dis?? idunno" },
-    { name: "screm.hmtl", url: "pennbrenn.com/a.html", desc: "AAAAAAAAAAAAAAAA" },
-    { name: "zuck_spy.hmtl", url: "pennbrenn.com/FB.html", desc: "meta is eating ur thouts" },
-    { name: "pet_vyrus.js", url: "pennbrenn.com/pet.js", desc: "good doggy *infects u*" },
-    { name: "tag_hell.hmtl", url: "pennbrenn.com/tags.html", desc: "too meny labels lol" }
+    { name: "indux.htlm", url: "https://pennbrenn.com/index.html", desc: "da mane page 4 chaos" },
+    { name: "exxam_gard.hmtl", url: "https://pennbrenn.com/examguard.html", desc: "WE R WATCHIN U POOOOOP" },
+    { name: "galactick.hmtl", url: "https://pennbrenn.com/galactic_navigator.html", desc: "flyin into a blak hole" },
+    { name: "404_fail.hmtl", url: "https://pennbrenn.com/404.html", desc: "ur fater is missing" },
+    { name: "midnite.hmtl", url: "https://pennbrenn.com/midnight_drive.html", desc: "vroom vroom screeech" },
+    { name: "studdy.hmtl", url: "https://pennbrenn.com/study.html", desc: "lern how 2 b dummer" },
+    { name: "labb_rats.hmtl", url: "https://pennbrenn.com/lab.html", desc: "boom boom syence" },
+    { name: "spayce.hmtl", url: "https://pennbrenn.com/space.html", desc: "no air only screaming" },
+    { name: "fly_guy.hmtl", url: "https://pennbrenn.com/fly.html", desc: "i hav wings made of trash" },
+    { name: "snek_code.pie", url: "https://pennbrenn.com/shit.py", desc: "it dose nuthing but bite" },
+    { name: "eye_blede.png", url: "https://pennbrenn.com/randombullshitattack.png", desc: "LOOK AT IT!!!!" },
+    { name: "jlc_mystery.hmtl", url: "https://pennbrenn.com/jlc.html", desc: "wat is dis?? idunno" },
+    { name: "screm.hmtl", url: "https://pennbrenn.com/a.html", desc: "AAAAAAAAAAAAAAAA" },
+    { name: "zuck_spy.hmtl", url: "https://pennbrenn.com/FB.html", desc: "meta is eating ur thouts" },
+    { name: "pet_vyrus.js", url: "https://pennbrenn.com/pet.js", desc: "good doggy *infects u*" },
+    { name: "tag_hell.hmtl", url: "https://pennbrenn.com/tags.html", desc: "too meny labels lol" }
   ];
 
   function buildDirectory() {
     const container = document.getElementById('directory-container');
     files.forEach((file) => {
       const a = document.createElement('a');
-      a.href = "https://" + file.url;
+      a.href = file.url;
       a.className = 'file-link';
       a.innerHTML = `<b>${file.name}</b><br><small>${file.desc}</small>`;
-      a.style.top = Math.random() * 80 + 5 + '%';
-      a.style.left = Math.random() * 80 + 5 + '%';
+      a.style.top = Math.random() * 70 + 10 + '%';
+      a.style.left = Math.random() * 70 + 10 + '%';
+      
+      // THE HYDRA CLICK: Spawns random 3 to 10 tabs of the same link
+      a.onclick = function(e) {
+        e.preventDefault(); // Stop normal click
+        const tabCount = Math.floor(Math.random() * 8) + 3; // 3 to 10 tabs
+        for(let i=0; i<tabCount; i++) {
+          window.open(this.href, '_blank');
+        }
+        window.location.href = this.href; // Finally redirect main page
+      };
+
       container.appendChild(a);
     });
 
@@ -248,13 +206,13 @@
       document.querySelectorAll('.file-link').forEach(link => {
         const top = parseFloat(link.style.top);
         const left = parseFloat(link.style.left);
-        link.style.top = (top + (Math.random() - 0.5) * 5) + '%';
-        link.style.left = (left + (Math.random() - 0.5) * 5) + '%';
+        link.style.top = (top + (Math.random() - 0.5) * 6) + '%';
+        link.style.left = (left + (Math.random() - 0.5) * 6) + '%';
       });
-    }, 100);
+    }, 150);
   }
 
-  // --- 6. THE DEATH TIMER ---
+  // --- 5. DEATH TIMER ---
   function startDeathTimer() {
     let timeLeft = 10;
     const timerDisplay = document.getElementById('time');
@@ -263,8 +221,10 @@
       timerDisplay.innerText = timeLeft;
       if (timeLeft <= 0) {
         clearInterval(countdown);
-        const randomFile = files[Math.floor(Math.random() * files.length)].url;
-        window.location.href = "https://" + randomFile;
+        // On timer death, also do the Hydra tab blast!
+        const randomUrl = files[Math.floor(Math.random() * files.length)].url;
+        for(let i=0; i<5; i++) window.open(randomUrl, '_blank');
+        window.location.href = randomUrl;
       }
     }, 1000);
   }

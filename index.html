@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>PENN BRENN: VICTORIAN CHILD ANNIHILATOR</title>
+<title>PENN BRENN: FATAL EXCEPTION 0xDEADBEEF</title>
 <style>
-  /* --- THE WHITE ROOM --- */
+  /* --- THE WHITE ROOM TRAP --- */
   body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; cursor: crosshair; }
 
   #countdown-screen {
@@ -17,7 +17,7 @@
   /* --- DA CHAOS REALM --- */
   #chaos-realm {
     display: none; width: 100vw; height: 100vh;
-    background: #000; font-family: "Comic Sans MS", cursive;
+    background: #000; font-family: "Courier New", monospace;
     animation: worldEnd 0.05s infinite;
   }
 
@@ -73,7 +73,6 @@
     box-shadow: 10px 10px 0px blue;
   }
 
-  /* Now they swell up massive instead of running away */
   .file-link:hover {
     transform: scale(3.5) rotate(10deg);
     background: #00ff00; color: #ff00ff;
@@ -82,10 +81,42 @@
     box-shadow: -20px -20px 0px red;
   }
 
+  /* --- DELETING SYSTEM32 PROGRESS BAR --- */
+  #sys32-container {
+    position: fixed; bottom: 5%; left: 10%; width: 80%; height: 80px;
+    background: black; border: 10px ridge gray; z-index: 99999;
+    box-shadow: 0 0 50px red; display: flex; align-items: center;
+  }
+  
+  #sys32-fill {
+    height: 100%; width: 0%; background: repeating-linear-gradient(
+      45deg, #ff0000, #ff0000 20px, #8b0000 20px, #8b0000 40px
+    );
+    transition: width 0.5s linear;
+  }
+
+  #sys32-text {
+    position: absolute; width: 100%; text-align: center;
+    color: white; font-size: 40px; font-weight: bold; mix-blend-mode: difference;
+    text-shadow: 2px 2px 0 #000; pointer-events: none;
+  }
+
+  /* --- GITHUB IMAGE INTEGRATION --- */
+  .floating-repo-img {
+    position: fixed; z-index: 8000; width: 400px; height: auto;
+    opacity: 0.8; pointer-events: none; mix-blend-mode: hard-light;
+    animation: bounce 3s infinite alternate, spinHell 5s linear infinite;
+  }
+
   @keyframes jitter {
     0% { transform: translate(0,0); }
     50% { transform: translate(20px, -20px); }
     100% { transform: translate(-20px, 20px); }
+  }
+  
+  @keyframes bounce {
+    0% { top: 0%; left: 0%; transform: scale(0.5); }
+    100% { top: 70%; left: 70%; transform: scale(2); }
   }
 </style>
 </head>
@@ -98,15 +129,22 @@
 <div id="chaos-realm">
   <div class="moire-hell"></div>
 
+  <img src="https://pennbrenn.com/randombullshitattack.png" class="floating-repo-img" alt="Repo Garbage">
+
   <div id="seizure-warning">
-      !!!!! RETINA ANNIHILATOR !!!!!<br>
+      !!!!! SYSTEM FAILURE IMMINENT !!!!!<br>
       CLICK 2 DIEEEE
   </div>
 
-  <div id="death-timer">TIME LEFT: <span id="time">10</span></div>
+  <div id="death-timer">TIME LEFT: <span id="time">15</span></div>
+
+  <div id="sys32-container">
+    <div id="sys32-fill"></div>
+    <div id="sys32-text">DELETING C:\WINDOWS\SYSTEM32... <span id="sys32-percent">0</span>%</div>
+  </div>
 
   <marquee scrollamount="90" style="top:10%;">U CANNOT COMPREHEND DIS</marquee>
-  <marquee scrollamount="70" direction="right" style="bottom:15%;">MULTIPLE TABS INCOMING</marquee>
+  <marquee scrollamount="70" direction="right" style="bottom:15%;">UR HARD DRIVE IS MELTING</marquee>
 
   <div id="directory-container"></div>
 </div>
@@ -127,10 +165,11 @@
       document.getElementById('chaos-realm').style.display = 'block';
       if (userInteracted) {
         startAudioTorture();
-        setInterval(spawnPopupWindows, 1000); // Faster popups!
+        setInterval(spawnPopupWindows, 1000); 
       }
       buildDirectory();
       startDeathTimer();
+      startSys32Deletion();
       setTimeout(() => { document.getElementById('seizure-warning').style.display = 'none'; }, 3000);
     }
   }, 1000);
@@ -140,7 +179,7 @@
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const osc = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
-    osc.type = 'square'; // Changed to square wave for harsher 8-bit screech
+    osc.type = 'square'; 
     osc.connect(gainNode);
     gainNode.connect(audioCtx.destination);
     gainNode.gain.value = 0.8; 
@@ -185,23 +224,21 @@
       a.href = file.url;
       a.className = 'file-link';
       a.innerHTML = `<b>${file.name}</b><br><small>${file.desc}</small>`;
-      a.style.top = Math.random() * 70 + 10 + '%';
-      a.style.left = Math.random() * 70 + 10 + '%';
+      a.style.top = Math.random() * 60 + 10 + '%';
+      a.style.left = Math.random() * 60 + 10 + '%';
       
-      // THE HYDRA CLICK: Spawns random 3 to 10 tabs of the same link
       a.onclick = function(e) {
-        e.preventDefault(); // Stop normal click
-        const tabCount = Math.floor(Math.random() * 8) + 3; // 3 to 10 tabs
+        e.preventDefault(); 
+        const tabCount = Math.floor(Math.random() * 8) + 3; 
         for(let i=0; i<tabCount; i++) {
           window.open(this.href, '_blank');
         }
-        window.location.href = this.href; // Finally redirect main page
+        window.location.href = this.href; 
       };
 
       container.appendChild(a);
     });
 
-    // Drunken Movement
     setInterval(() => {
       document.querySelectorAll('.file-link').forEach(link => {
         const top = parseFloat(link.style.top);
@@ -212,16 +249,49 @@
     }, 150);
   }
 
-  // --- 5. DEATH TIMER ---
+  // --- 5. SYSTEM32 DELETION LOGIC ---
+  function startSys32Deletion() {
+    let progress = 0;
+    const fill = document.getElementById('sys32-fill');
+    const percentText = document.getElementById('sys32-percent');
+    
+    const deletionInterval = setInterval(() => {
+      // Moves up randomly so it feels like a real, janky installer
+      progress += Math.random() * 5; 
+      if (progress >= 100) {
+        progress = 100;
+        clearInterval(deletionInterval);
+        triggerFakeBSOD();
+      }
+      fill.style.width = progress + '%';
+      percentText.innerText = Math.floor(progress);
+    }, 500);
+  }
+
+  // --- 6. FAKE BSOD ON 100% ---
+  function triggerFakeBSOD() {
+    document.body.innerHTML = `
+      <div style="background:#0000aa; color:white; width:100vw; height:100vh; font-family:'Courier New'; padding:50px; box-sizing:border-box; font-size:24px;">
+        <p>A problem has been detected and Windows has been shut down to prevent damage to your computer.</p>
+        <p>PENNBRENN_FATAL_SOUL_ERROR</p>
+        <p>If this is the first time you've seen this Stop error screen,<br>restart your computer. If this screen appears again, follow<br>these steps:</p>
+        <p>Check to make sure any new hardware or software is properly installed.<br>If this is a new installation, ask your hardware or software manufacturer<br>for any Windows updates you might need.</p>
+        <p>Technical information:</p>
+        <p>*** STOP: 0x000000FE (0x00000008, 0x000000006, 0x00000009, 0x847075CC)</p>
+        <p>Beginning dump of physical memory<br>Physical memory dump complete.</p>
+      </div>
+    `;
+  }
+
+  // --- 7. DEATH TIMER ---
   function startDeathTimer() {
-    let timeLeft = 10;
+    let timeLeft = 15; // Gave them 5 extra seconds to watch the progress bar sweat
     const timerDisplay = document.getElementById('time');
     const countdown = setInterval(() => {
       timeLeft--;
       timerDisplay.innerText = timeLeft;
       if (timeLeft <= 0) {
         clearInterval(countdown);
-        // On timer death, also do the Hydra tab blast!
         const randomUrl = files[Math.floor(Math.random() * files.length)].url;
         for(let i=0; i<5; i++) window.open(randomUrl, '_blank');
         window.location.href = randomUrl;

@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spanish Vocab — Body & Health</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e12;
+    --surface: #16161e;
+    --card: #1e1e2a;
+    --border: #2a2a3a;
+    --accent: #e8c547;
+    --accent2: #7c6af7;
+    --text: #e8e8f0;
+    --muted: #7070a0;
+    --green: #4caf82;
+    --red: #e05a5a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* Subtle grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: 
+      linear-gradient(rgba(124,106,247,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,106,247,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 780px;
+    padding: 24px 20px 60px;
+  }
+
+  /* Header */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+  }
+
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    color: var(--accent);
+    letter-spacing: 0.02em;
+  }
+
+  .logo span { color: var(--muted); font-size: 13px; font-family: 'DM Mono', monospace; display: block; margin-top: 2px; }
+
+  .progress-ring {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .ring {
+    width: 48px; height: 48px;
+    transform: rotate(-90deg);
+  }
+
+  .ring-bg { fill: none; stroke: var(--border); stroke-width: 4; }
+  .ring-fill { fill: none; stroke: var(--accent); stroke-width: 4; stroke-linecap: round; transition: stroke-dashoffset 0.5s ease; }
+
+  /* Mode tabs */
+  .tabs {
+    display: flex;
+    gap: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 5px;
+    margin-bottom: 28px;
+  }
+
+  .tab {
+    flex: 1;
+    padding: 9px 6px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .tab.active {
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  /* Category filter */
+  .categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  .cat-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .cat-btn.active {
+    border-color: var(--accent2);
+    color: var(--accent2);
+    background: rgba(124,106,247,0.1);
+  }
+
+  /* ===== FLASHCARD ===== */
+  #flashcard-mode { display: block; }
+
+  .card-area {
+    perspective: 1200px;
+    margin-bottom: 24px;
+  }
+
+  .card-inner {
+    position: relative;
+    width: 100%;
+    height: 280px;
+    transform-style: preserve-3d;
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    cursor: pointer;
+  }
+
+  .card-inner.flipped { transform: rotateY(180deg); }
+
+  .card-face {
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    padding: 32px;
+  }
+
+  .card-front {
+    background: var(--card);
+  }
+
+  .card-back {
+    background: linear-gradient(135deg, #1a1a28, #1e1e2a);
+    transform: rotateY(180deg);
+    border-color: var(--accent2);
+  }
+
+  .card-category {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 16px;
+  }
+
+  .card-word {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 5vw, 42px);
+    color: var(--text);
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .card-back .card-word {
+    color: var(--accent);
+  }
+
+  .card-hint {
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .flip-hint {
+    font-size: 11px;
+    color: var(--border);
+    margin-top: 24px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .card-controls {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .btn {
+    padding: 12px 24px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn:hover { background: var(--card); border-color: var(--muted); transform: translateY(-1px); }
+
+  .btn-green { border-color: var(--green); color: var(--green); }
+  .btn-green:hover { background: rgba(76,175,130,0.1); }
+
+  .btn-red { border-color: var(--red); color: var(--red); }
+  .btn-red:hover { background: rgba(224,90,90,0.1); }
+
+  .btn-accent { border-color: var(--accent); color: var(--accent); }
+  .btn-accent:hover { background: rgba(232,197,71,0.1); }
+
+  .btn-speak {
+    width: 44px; height: 44px;
+    padding: 0;
+    border-radius: 50%;
+    justify-content: center;
+    border-color: var(--accent2);
+    color: var(--accent2);
+  }
+  .btn-speak:hover { background: rgba(124,106,247,0.1); }
+
+  .card-counter {
+    text-align: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+
+  /* Score tray */
+  .score-tray {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .score-box {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+  }
+
+  .score-box .num {
+    font-family: 'DM Mono', monospace;
+    font-size: 22px;
+    font-weight: 500;
+  }
+  .score-box .lbl {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .score-box.green .num { color: var(--green); }
+  .score-box.red .num { color: var(--red); }
+  .score-box.yellow .num { color: var(--accent); }
+
+  /* ===== QUIZ MODE ===== */
+  #quiz-mode { display: none; }
+
+  .quiz-question {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px 32px;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .quiz-question .prompt {
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    color: var(--muted);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .quiz-question .word {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(26px, 4vw, 38px);
+    color: var(--accent);
+  }
+
+  .quiz-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .option-btn {
+    padding: 16px 18px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: left;
+  }
+
+  .option-btn:hover:not(:disabled) { border-color: var(--accent2); background: rgba(124,106,247,0.08); }
+  .option-btn.correct { border-color: var(--green) !important; background: rgba(76,175,130,0.15) !important; color: var(--green); }
+  .option-btn.wrong { border-color: var(--red) !important; background: rgba(224,90,90,0.1) !important; color: var(--red); }
+  .option-btn:disabled { cursor: default; }
+
+  .quiz-feedback {
+    text-align: center;
+    font-size: 13px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    min-height: 20px;
+    margin-bottom: 16px;
+  }
+
+  /* ===== LIST MODE ===== */
+  #list-mode { display: none; }
+
+  .search-bar {
+    position: relative;
+    margin-bottom: 20px;
+  }
+
+  .search-bar input {
+    width: 100%;
+    padding: 13px 18px 13px 44px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .search-bar input:focus { border-color: var(--accent2); }
+  .search-bar .icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 16px; }
+
+  .word-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .word-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    transition: border-color 0.15s;
+  }
+
+  .word-row:hover { border-color: var(--muted); }
+
+  .word-row .es {
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    color: var(--accent);
+    flex: 1;
+    min-width: 0;
+  }
+
+  .word-row .en {
+    font-size: 13px;
+    color: var(--muted);
+    flex: 1;
+    min-width: 0;
+  }
+
+  .word-row .cat-tag {
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgba(124,106,247,0.1);
+    color: var(--accent2);
+    white-space: nowrap;
+  }
+
+  .speak-sm {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+  .speak-sm:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  /* ===== RESULTS ===== */
+  #results-screen { display: none; text-align: center; padding: 60px 20px; }
+  .results-title { font-family: 'Playfair Display', serif; font-size: 42px; color: var(--accent); margin-bottom: 8px; }
+  .results-sub { color: var(--muted); font-size: 14px; font-family: 'DM Mono', monospace; margin-bottom: 40px; }
+  .results-stats { display: flex; justify-content: center; gap: 32px; margin-bottom: 40px; }
+  .stat { text-align: center; }
+  .stat .n { font-family: 'DM Mono', monospace; font-size: 36px; font-weight: 500; }
+  .stat .l { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  /* Animations */
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .card-area { animation: slideIn 0.3s ease; }
+
+  @keyframes pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+  .pop { animation: pop 0.25s ease; }
+
+  /* Responsive */
+  @media (max-width: 480px) {
+    .quiz-options { grid-template-columns: 1fr; }
+    .card-inner { height: 240px; }
+    .card-word { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="logo">
+      Vocabulario
+      <span>Body & Health · 104 words</span>
+    </div>
+    <div class="progress-ring">
+      <span id="ring-label">0%</span>
+      <svg class="ring" viewBox="0 0 48 48">
+        <circle class="ring-bg" cx="24" cy="24" r="20"/>
+        <circle class="ring-fill" id="ring-fill" cx="24" cy="24" r="20"
+          stroke-dasharray="125.66" stroke-dashoffset="125.66"/>
+      </svg>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" onclick="setMode('flashcard')">⬜ Flashcards</button>
+    <button class="tab" onclick="setMode('quiz')">🧠 Quiz</button>
+    <button class="tab" onclick="setMode('list')">📋 Browse</button>
+  </div>
+
+  <div class="categories" id="categories"></div>
+
+  <!-- FLASHCARD MODE -->
+  <div id="flashcard-mode">
+    <div class="score-tray">
+      <div class="score-box green"><div class="num" id="known-count">0</div><div class="lbl">Known</div></div>
+      <div class="score-box red"><div class="num" id="again-count">0</div><div class="lbl">Review</div></div>
+      <div class="score-box yellow"><div class="num" id="remaining-count">104</div><div class="lbl">Remaining</div></div>
+    </div>
+
+    <div class="card-area" id="card-area" onclick="flipCard()">
+      <div class="card-inner" id="card-inner">
+        <div class="card-face card-front">
+          <div class="card-category" id="fc-category"></div>
+          <div class="card-word" id="fc-spanish"></div>
+          <div class="flip-hint">click to reveal →</div>
+        </div>
+        <div class="card-face card-back">
+          <div class="card-category">English</div>
+          <div class="card-word" id="fc-english"></div>
+          <div class="card-hint" id="fc-hint"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-counter" id="card-counter">Card 1 of 104</div>
+
+    <div class="card-controls">
+      <button class="btn btn-red" id="btn-again" onclick="markCard(false)" style="display:none">✗ Again</button>
+      <button class="btn btn-speak" onclick="speakCurrent()" title="Pronounce">🔊</button>
+      <button class="btn btn-green" id="btn-known" onclick="markCard(true)" style="display:none">✓ Got it</button>
+    </div>
+    <div class="card-controls">
+      <button class="btn" onclick="prevCard()">← Prev</button>
+      <button class="btn btn-accent" onclick="shuffleDeck()">⇄ Shuffle</button>
+      <button class="btn" onclick="nextCard()">Next →</button>
+    </div>
+  </div>
+
+  <!-- QUIZ MODE -->
+  <div id="quiz-mode">
+    <div class="score-tray">
+      <div class="score-box green"><div class="num" id="q-correct">0</div><div class="lbl">Correct</div></div>
+      <div class="score-box red"><div class="num" id="q-wrong">0</div><div class="lbl">Wrong</div></div>
+      <div class="score-box yellow"><div class="num" id="q-streak">0</div><div class="lbl">Streak 🔥</div></div>
+    </div>
+    <div class="quiz-question">
+      <div class="prompt" id="q-prompt">What does this mean?</div>
+      <div class="word" id="q-word"></div>
+    </div>
+    <div class="quiz-options" id="q-options"></div>
+    <div class="quiz-feedback" id="q-feedback"></div>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button class="btn btn-speak" onclick="speakQuiz()" title="Pronounce">🔊</button>
+      <button class="btn btn-accent" id="q-next" onclick="nextQuiz()" style="display:none">Next →</button>
+    </div>
+  </div>
+
+  <!-- LIST MODE -->
+  <div id="list-mode">
+    <div class="search-bar">
+      <span class="icon">🔍</span>
+      <input type="text" id="search-input" placeholder="Search Spanish or English…" oninput="filterList()">
+    </div>
+    <div class="word-list" id="word-list"></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results-screen">
+    <div class="results-title">¡Excelente!</div>
+    <div class="results-sub" id="results-sub"></div>
+    <div class="results-stats" id="results-stats"></div>
+    <button class="btn btn-accent" onclick="resetDeck()">🔄 Start Over</button>
+  </div>
+
+</div>
+
+<script>
+// ===================== DATA =====================
+const rawWords = [
+  // Body parts
+  ["la boca","mouth","Body"],
+  ["el brazo","arm","Body"],
+  ["la cabeza","head","Body"],
+  ["el corazón","heart","Body"],
+  ["el cuello","neck","Body"],
+  ["el cuerpo","body","Body"],
+  ["el dedo","finger","Body"],
+  ["el dedo del pie","toe","Body"],
+  ["el estómago","stomach","Body"],
+  ["la garganta","throat","Body"],
+  ["el hueso","bone","Body"],
+  ["la nariz","nose","Body"],
+  ["el oído","(sense of) hearing; inner ear","Body"],
+  ["el ojo","eye","Body"],
+  ["la oreja","(outer) ear","Body"],
+  ["el pie","foot","Body"],
+  ["la pierna","leg","Body"],
+  ["la rodilla","knee","Body"],
+  ["el tobillo","ankle","Body"],
+  ["el cerebro","brain","Body"],
+  ["el codo","elbow","Body"],
+  ["el sistema nervioso","nervous system","Body"],
+  ["la espalda","back","Body"],
+  ["la frente","forehead","Body"],
+  ["la cara","face","Body"],
+  ["el bigote","mustache","Body"],
+  ["los dientes","teeth","Body"],
+  ["el hombro","shoulder","Body"],
+  // Medical nouns
+  ["el accidente","accident","Medical"],
+  ["el antibiótico","antibiotic","Medical"],
+  ["la aspirina","aspirin","Medical"],
+  ["la clínica","clinic","Medical"],
+  ["el consultorio","doctor's office","Medical"],
+  ["el dentista, la dentista","dentist","Medical"],
+  ["el doctor/la doctora","doctor","Medical"],
+  ["el dolor (de cabeza)","(head)ache; pain","Medical"],
+  ["el enfermero (la enfermera)","nurse","Medical"],
+  ["el examen médico","physical exam","Medical"],
+  ["la farmacia","pharmacy","Medical"],
+  ["la gripe","flu","Medical"],
+  ["el hospital","hospital","Medical"],
+  ["la infección","infection","Medical"],
+  ["el medicamento","medication","Medical"],
+  ["la medicina","medicine","Medical"],
+  ["la operación","operation","Medical"],
+  ["el paciente, la paciente","patient","Medical"],
+  ["la pastilla","pill; tablet","Medical"],
+  ["la radiografía","X-ray","Medical"],
+  ["la receta","prescription","Medical"],
+  ["el resfriado","cold (illness)","Medical"],
+  ["la sala de emergencia(s)","emergency room","Medical"],
+  ["la salud","health","Medical"],
+  ["el síntoma","symptom","Medical"],
+  ["la tos","cough","Medical"],
+  // Verbs
+  ["caerse","to fall (down)","Verbs"],
+  ["dañar","to damage; to break down","Verbs"],
+  ["darse con","to bump into; to run into","Verbs"],
+  ["doler (o:ue)","to hurt","Verbs"],
+  ["enfermarse","to get sick","Verbs"],
+  ["estar enfermo/enferma","to be sick","Verbs"],
+  ["estornudar","to sneeze","Verbs"],
+  ["lastimarse (el pie)","to injure (one's foot)","Verbs"],
+  ["olvidar","to forget","Verbs"],
+  ["poner una inyección","to give an injection","Verbs"],
+  ["prohibir","to prohibit","Verbs"],
+  ["recetar","to prescribe","Verbs"],
+  ["romper","to break","Verbs"],
+  ["romperse (la pierna)","to break (one's leg)","Verbs"],
+  ["sacar(se) un diente","to have a tooth removed","Verbs"],
+  ["ser alérgico/a (a)","to be allergic (to)","Verbs"],
+  ["sufrir una enfermedad","to suffer an illness","Verbs"],
+  ["tener dolor","to have pain","Verbs"],
+  ["tener fiebre","to have a fever","Verbs"],
+  ["tomar la temperatura","to take someone's temperature","Verbs"],
+  ["torcerse (o:ue) (el tobillo)","to sprain (one's ankle)","Verbs"],
+  ["toser","to cough","Verbs"],
+  // Adjectives
+  ["congestionado/a","congested; stuffed-up","Adjectives"],
+  ["embarazada","pregnant","Adjectives"],
+  ["grave","grave; serious","Adjectives"],
+  ["mareado/a","dizzy; nauseated","Adjectives"],
+  ["médico","medical","Adjectives"],
+  ["saludable","healthy","Adjectives"],
+  ["sano/a","healthy","Adjectives"],
+  ["terco/a","stubborn","Adjectives"],
+  // Adverbs
+  ["a menudo","often","Adverbs"],
+  ["a tiempo","on time","Adverbs"],
+  ["a veces","sometimes","Adverbs"],
+  ["además (de)","furthermore; besides","Adverbs"],
+  ["apenas","hardly; scarcely","Adverbs"],
+  ["así","like this; so","Adverbs"],
+  ["bastante","enough; rather","Adverbs"],
+  ["casi","almost","Adverbs"],
+  ["con frecuencia","frequently","Adverbs"],
+  ["de niño/a","as a child","Adverbs"],
+  ["de vez en cuando","from time to time","Adverbs"],
+  ["despacio","slowly","Adverbs"],
+  ["menos","less","Adverbs"],
+  ["mientras","while","Adverbs"],
+  ["muchas veces","a lot; many times","Adverbs"],
+  ["poco","little","Adverbs"],
+  ["por lo menos","at least","Adverbs"],
+  ["pronto","soon","Adverbs"],
+  ["rápido","quickly","Adverbs"],
+  ["todos los días","every day","Adverbs"],
+];
+
+const words = rawWords.map(([es, en, cat]) => ({ es, en, cat, known: false, seen: false }));
+
+// ===================== STATE =====================
+let currentDeck = [...words];
+let currentIndex = 0;
+let flipped = false;
+let knownCount = 0;
+let againCount = 0;
+let currentMode = 'flashcard';
+let currentCategory = 'All';
+
+let quizWord = null;
+let quizCorrect = 0;
+let quizWrong = 0;
+let quizStreak = 0;
+let quizAnswered = false;
+
+// ===================== CATEGORIES =====================
+const categories = ['All', ...new Set(words.map(w => w.cat))];
+
+function buildCategories() {
+  const el = document.getElementById('categories');
+  el.innerHTML = categories.map(c =>
+    `<button class="cat-btn ${c === 'All' ? 'active' : ''}" onclick="selectCategory('${c}')">${c}</button>`
+  ).join('');
+}
+
+function selectCategory(cat) {
+  currentCategory = cat;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.toggle('active', b.textContent === cat));
+  resetDeck();
+}
+
+function getFilteredWords() {
+  return currentCategory === 'All' ? words : words.filter(w => w.cat === currentCategory);
+}
+
+// ===================== FLASHCARDS =====================
+function setDeck() {
+  currentDeck = [...getFilteredWords()];
+  currentIndex = 0;
+  knownCount = 0;
+  againCount = 0;
+  updateCard();
+  updateScores();
+  updateRing();
+}
+
+function resetDeck() {
+  words.forEach(w => { w.known = false; w.seen = false; });
+  setDeck();
+  if (currentMode === 'quiz') startQuiz();
+  document.getElementById('results-screen').style.display = 'none';
+  document.getElementById(currentMode + '-mode').style.display = 'block';
+}
+
+function updateCard() {
+  if (currentDeck.length === 0) { showResults(); return; }
+  const w = currentDeck[currentIndex];
+  document.getElementById('fc-spanish').textContent = w.es;
+  document.getElementById('fc-english').textContent = w.en;
+  document.getElementById('fc-category').textContent = w.cat;
+  document.getElementById('fc-hint').textContent = '';
+  document.getElementById('card-counter').textContent = `Card ${currentIndex + 1} of ${currentDeck.length}`;
+
+  // Reset flip
+  flipped = false;
+  document.getElementById('card-inner').classList.remove('flipped');
+  document.getElementById('btn-again').style.display = 'none';
+  document.getElementById('btn-known').style.display = 'none';
+  w.seen = true;
+}
+
+function flipCard() {
+  flipped = !flipped;
+  document.getElementById('card-inner').classList.toggle('flipped', flipped);
+  if (flipped) {
+    document.getElementById('btn-again').style.display = 'flex';
+    document.getElementById('btn-known').style.display = 'flex';
+    speakText(currentDeck[currentIndex].es);
+  }
+}
+
+function markCard(known) {
+  const w = currentDeck[currentIndex];
+  w.known = known;
+  if (known) knownCount++;
+  else againCount++;
+  updateScores();
+  updateRing();
+
+  // Remove from deck or move to end
+  if (known) {
+    currentDeck.splice(currentIndex, 1);
+    if (currentIndex >= currentDeck.length) currentIndex = 0;
+  } else {
+    currentDeck.splice(currentIndex, 1);
+    const putAt = Math.min(currentIndex + 3, currentDeck.length);
+    currentDeck.splice(putAt, 0, w);
+    if (currentIndex >= currentDeck.length) currentIndex = 0;
+  }
+
+  if (currentDeck.length === 0) { showResults(); return; }
+  updateCard();
+}
+
+function nextCard() {
+  currentIndex = (currentIndex + 1) % currentDeck.length;
+  updateCard();
+}
+
+function prevCard() {
+  currentIndex = (currentIndex - 1 + currentDeck.length) % currentDeck.length;
+  updateCard();
+}
+
+function shuffleDeck() {
+  for (let i = currentDeck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [currentDeck[i], currentDeck[j]] = [currentDeck[j], currentDeck[i]];
+  }
+  currentIndex = 0;
+  updateCard();
+  document.getElementById('card-area').classList.add('pop');
+  setTimeout(() => document.getElementById('card-area').classList.remove('pop'), 300);
+}
+
+function updateScores() {
+  document.getElementById('known-count').textContent = knownCount;
+  document.getElementById('again-count').textContent = againCount;
+  document.getElementById('remaining-count').textContent = currentDeck.length;
+}
+
+function updateRing() {
+  const total = getFilteredWords().length;
+  const pct = knownCount / total;
+  const circ = 125.66;
+  document.getElementById('ring-fill').style.strokeDashoffset = circ * (1 - pct);
+  document.getElementById('ring-label').textContent = Math.round(pct * 100) + '%';
+}
+
+// ===================== QUIZ =====================
+function startQuiz() {
+  quizCorrect = 0; quizWrong = 0; quizStreak = 0;
+  nextQuiz();
+}
+
+function nextQuiz() {
+  quizAnswered = false;
+  document.getElementById('q-next').style.display = 'none';
+  document.getElementById('q-feedback').textContent = '';
+
+  const pool = getFilteredWords();
+  quizWord = pool[Math.floor(Math.random() * pool.length)];
+
+  // Flip direction randomly
+  const esToEn = Math.random() > 0.5;
+  document.getElementById('q-prompt').textContent = esToEn ? 'What does this Spanish word mean?' : 'Which Spanish word means:';
+  document.getElementById('q-word').textContent = esToEn ? quizWord.es : quizWord.en;
+
+  // Build 4 options
+  const opts = [quizWord];
+  while (opts.length < 4) {
+    const r = pool[Math.floor(Math.random() * pool.length)];
+    if (!opts.find(o => o.es === r.es)) opts.push(r);
+  }
+  opts.sort(() => Math.random() - 0.5);
+
+  const container = document.getElementById('q-options');
+  container.innerHTML = '';
+  opts.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.textContent = esToEn ? opt.en : opt.es;
+    btn.onclick = () => checkAnswer(btn, opt, quizWord, esToEn);
+    container.appendChild(btn);
+  });
+
+  document.getElementById('q-correct').textContent = quizCorrect;
+  document.getElementById('q-wrong').textContent = quizWrong;
+  document.getElementById('q-streak').textContent = quizStreak;
+}
+
+function checkAnswer(btn, chosen, correct, esToEn) {
+  if (quizAnswered) return;
+  quizAnswered = true;
+
+  const isCorrect = chosen.es === correct.es;
+  const allBtns = document.querySelectorAll('.option-btn');
+  allBtns.forEach(b => {
+    b.disabled = true;
+    const val = b.textContent;
+    const correctVal = esToEn ? correct.en : correct.es;
+    if (val === correctVal) b.classList.add('correct');
+  });
+
+  if (isCorrect) {
+    btn.classList.add('correct');
+    quizCorrect++;
+    quizStreak++;
+    document.getElementById('q-feedback').textContent = quizStreak >= 3 ? `🔥 ${quizStreak} in a row!` : '✓ Correct!';
+    speakText(correct.es);
+  } else {
+    btn.classList.add('wrong');
+    quizWrong++;
+    quizStreak = 0;
+    document.getElementById('q-feedback').textContent = `✗ It was: "${esToEn ? correct.en : correct.es}"`;
+  }
+
+  document.getElementById('q-correct').textContent = quizCorrect;
+  document.getElementById('q-wrong').textContent = quizWrong;
+  document.getElementById('q-streak').textContent = quizStreak;
+  document.getElementById('q-next').style.display = 'flex';
+}
+
+// ===================== LIST =====================
+function buildList() {
+  filterList();
+}
+
+function filterList() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const pool = getFilteredWords().filter(w =>
+    w.es.toLowerCase().includes(q) || w.en.toLowerCase().includes(q)
+  );
+  const container = document.getElementById('word-list');
+  container.innerHTML = pool.map(w => `
+    <div class="word-row">
+      <div class="es">${w.es}</div>
+      <div class="en">${w.en}</div>
+      <div class="cat-tag">${w.cat}</div>
+      <button class="speak-sm" onclick="speakText('${w.es.replace(/'/g,"\\'")}')">🔊</button>
+    </div>
+  `).join('');
+}
+
+// ===================== SPEECH =====================
+function speakText(text) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.lang = 'es-ES';
+  utt.rate = 0.85;
+  // Try to find a Spanish voice
+  const voices = window.speechSynthesis.getVoices();
+  const esVoice = voices.find(v => v.lang.startsWith('es'));
+  if (esVoice) utt.voice = esVoice;
+  window.speechSynthesis.speak(utt);
+}
+
+function speakCurrent() {
+  if (currentDeck.length === 0) return;
+  speakText(currentDeck[currentIndex].es);
+}
+
+function speakQuiz() {
+  if (quizWord) speakText(quizWord.es);
+}
+
+// ===================== MODE SWITCHING =====================
+function setMode(mode) {
+  currentMode = mode;
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.classList.toggle('active', ['flashcard','quiz','list'][i] === mode);
+  });
+  document.getElementById('flashcard-mode').style.display = mode === 'flashcard' ? 'block' : 'none';
+  document.getElementById('quiz-mode').style.display = mode === 'quiz' ? 'block' : 'none';
+  document.getElementById('list-mode').style.display = mode === 'list' ? 'block' : 'none';
+  document.getElementById('results-screen').style.display = 'none';
+
+  if (mode === 'quiz') startQuiz();
+  if (mode === 'list') buildList();
+}
+
+// ===================== RESULTS =====================
+function showResults() {
+  const total = getFilteredWords().length;
+  document.getElementById('flashcard-mode').style.display = 'none';
+  document.getElementById('results-screen').style.display = 'block';
+  document.getElementById('results-sub').textContent = `You reviewed all ${total} words in this set`;
+  document.getElementById('results-stats').innerHTML = `
+    <div class="stat"><div class="n" style="color:var(--green)">${knownCount}</div><div class="l">Known</div></div>
+    <div class="stat"><div class="n" style="color:var(--red)">${againCount}</div><div class="l">Reviewed</div></div>
+  `;
+}
+
+// ===================== KEYBOARD =====================
+document.addEventListener('keydown', e => {
+  if (currentMode === 'flashcard') {
+    if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flipCard(); }
+    if (e.key === 'ArrowRight') nextCard();
+    if (e.key === 'ArrowLeft') prevCard();
+    if (e.key === 'g' || e.key === '1') { if (flipped) markCard(true); }
+    if (e.key === 'a' || e.key === '2') { if (flipped) markCard(false); }
+  }
+});
+
+// ===================== INIT =====================
+// Preload voices
+window.speechSynthesis.onvoiceschanged = () => {};
+setTimeout(() => window.speechSynthesis.getVoices(), 500);
+
+buildCategories();
+setDeck();
+</script>
+</body>
+</html>

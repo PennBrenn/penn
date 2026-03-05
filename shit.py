@@ -1,1 +1,7 @@
-AHHHHHHHHHHHHHHHHHHH
+if true
+  print("hello")
+else
+ "self destuct secuence" set 500ms
+
+while "self destruct secuence" = 67
+ do gay porn

@@ -2,7 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Penn Brenn | OS.NIGHTMARE v5.0 [GOVERNMENT PROPERTY]</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="OS.NIGHTMARE">
+<meta name="theme-color" content="#ff0000">
+<link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiT1MuTklHSFRNQVJFIHY2IFtHT1ZFUk5NRU5UIFBSb1BFUlRZXSIsInNob3J0X25hbWUiOiJOSUdIVE1BUkUiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzAwMDAwMCIsInRoZW1lX2NvbG9yIjoiI2ZmMDAwMCIsImljb25zIjpbeyJzcmMiOiJkYXRhOmltYWdlL3N2Zyt4bWwsJTNDc3ZnJTIweG1sbnMlM0QnaHR0cCUzQS8vd3d3LnczLm9yZy8yMDAwL3N2ZyclMjB3aWR0aCUzRCcxOTInJTIwaGVpZ2h0JTNEJzE5MiclM0UlM0NyZWN0JTIwd2lkdGglM0QnMTkyJyUyMGhlaWdodCUzRCcxOTInJTIwZmlsbCUzRCclMjMwMDAnLyUzRSUzQ3RleHQlMjB4JTNEJzk2JyUyMHklM0QnMTMwJyUyMGZvbnQtc2l6ZSUzRCcxNDAnJTIwdGV4dC1hbmNob3IlM0QnbWlkZGxlJyUzRSVGMCU5RiVBNiU4NyUzQy90ZXh0JTNFJTNDL3N2ZyUzRSIsInNpemVzIjoiMTkyeDE5MiIsInR5cGUiOiJpbWFnZS9zdmcreG1sIn1dfQ==">
+<title>Penn Brenn | OS.NIGHTMARE v6.0 [GOVERNMENT PROPERTY] [NO MERCY]</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Bungee+Shade&family=VT323&family=Rubik+Glitch&family=Faster+One&family=Black+Ops+One&family=Special+Elite&display=swap');
 :root{--hell:#f00;--void:#000;--scream:#ff0;--lime:lime;--pink:#f0f;--cyan:#0ff;}
@@ -416,6 +422,73 @@ marquee.mm{position:absolute;font-size:80px;opacity:.42;pointer-events:none;colo
 
 /* ===================== DVD VIEWPORT ===================== */
 #dvd-viewport{display:none;position:absolute;width:98vw;height:92vh;z-index:10;pointer-events:none;}
+
+/* ===================== IP INFO OVERLAY ===================== */
+#ip-overlay{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999999985;pointer-events:none;text-align:center;font-family:'VT323',monospace;animation:ipflash .18s infinite;}
+@keyframes ipflash{0%{color:#f00;text-shadow:0 0 30px #f00}25%{color:#ff0;text-shadow:0 0 30px #ff0}50%{color:#0ff;text-shadow:0 0 30px #0ff}75%{color:#f0f;text-shadow:0 0 30px #f0f}100%{color:#0f0;text-shadow:0 0 30px #0f0}}
+#ip-overlay .ip-big{font-size:52px;display:block;}
+#ip-overlay .ip-row{font-size:22px;display:block;opacity:.9;}
+
+/* ===================== CAMERA WIDGET ===================== */
+#w-camera{z-index:9999970;}
+#camera-feed{width:240px;height:180px;background:#000;display:block;object-fit:cover;border:3px solid #f00;}
+#cam-overlay{position:absolute;top:30px;left:0;width:240px;pointer-events:none;font-family:'VT323',monospace;font-size:13px;color:#0f0;padding:4px;}
+.cam-rec{color:#f00;font-size:16px;animation:recblink .7s infinite;}
+@keyframes recblink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* ===================== CRYPTO/FOREX WIDGET ===================== */
+#w-crypto{z-index:9999960;}
+.crypto-row{display:flex;justify-content:space-between;font-family:'VT323',monospace;font-size:16px;padding:2px 4px;border-bottom:1px solid #1a1a1a;}
+.crypto-sym{color:#ff0;font-weight:bold;}
+.crypto-price{color:#0ff;}
+.crypto-chg.up{color:#0f0;}
+.crypto-chg.dn{color:#f00;}
+.crypto-chg.flat{color:#888;}
+#crypto-alert{background:#f00;color:#fff;font-family:'VT323',monospace;font-size:13px;text-align:center;padding:2px;display:none;animation:adshake .2s infinite;}
+.trade-btns{display:flex;gap:4px;margin-top:4px;}
+.trade-btn-buy{background:#0a0;color:#fff;border:1px solid #0f0;font-family:'VT323',monospace;font-size:13px;cursor:pointer;padding:2px 8px;flex:1;}
+.trade-btn-sell{background:#a00;color:#fff;border:1px solid #f00;font-family:'VT323',monospace;font-size:13px;cursor:pointer;padding:2px 8px;flex:1;}
+#crypto-pnl{font-family:'VT323',monospace;font-size:13px;text-align:center;margin-top:3px;}
+
+/* ===================== MCAFEE POPUP ===================== */
+#mcafee-popup{position:fixed;z-index:9999985;background:#c0c0c0;border:3px outset #fff;box-shadow:4px 4px 0 #000,0 0 0 9999px rgba(0,0,0,.5);width:380px;display:none;font-family:Tahoma,Arial,sans-serif;}
+#mcafee-popup .mc-title{background:linear-gradient(90deg,#c0392b,#e74c3c);color:#fff;padding:5px 8px;font-size:13px;font-weight:bold;display:flex;justify-content:space-between;align-items:center;}
+#mcafee-popup .mc-body{padding:12px;font-size:12px;color:#000;}
+.mc-warning{font-size:32px;color:#c0392b;text-align:center;animation:vpulse .3s infinite;}
+.mc-btn{background:linear-gradient(180deg,#e74c3c,#c0392b);color:#fff;border:2px outset #fff;padding:6px 16px;cursor:pointer;font-weight:bold;font-size:12px;margin:2px;}
+
+/* ===================== GOGUARDIAN POPUP ===================== */
+#goguardian-popup{position:fixed;z-index:9999984;background:#fff;border:3px solid #1565c0;box-shadow:0 4px 20px rgba(0,0,0,.7),0 0 0 9999px rgba(0,0,0,.55);width:420px;border-radius:8px;display:none;font-family:Arial,sans-serif;overflow:hidden;}
+#goguardian-popup .gg-title{background:#1565c0;color:#fff;padding:12px 16px;font-size:15px;font-weight:bold;display:flex;align-items:center;gap:8px;}
+#goguardian-popup .gg-body{padding:16px;font-size:13px;color:#333;}
+#goguardian-popup .gg-btn{background:#1565c0;color:#fff;border:none;padding:9px 22px;border-radius:4px;cursor:pointer;font-size:13px;margin-top:8px;}
+.gg-shield{font-size:28px;}
+.gg-blocked{font-size:38px;color:#c0392b;font-weight:900;text-align:center;margin:8px 0;}
+
+/* ===================== VISIBILITY BUSTER ===================== */
+#away-banner{position:fixed;inset:0;z-index:9999999999;background:linear-gradient(135deg,#0a0,#060);display:none;flex-direction:column;align-items:center;justify-content:center;font-family:'Rubik Glitch',sans-serif;cursor:pointer;}
+#away-banner h1{font-size:80px;color:#ff0;text-shadow:5px 5px 0 #000;animation:cjit .08s infinite;}
+#away-banner p{font-size:28px;color:#fff;text-align:center;}
+#away-banner .away-sub{font-size:20px;color:#ff0;animation:ipflash .3s infinite;}
+
+/* ===================== FILE LINKS TOP LAYER ===================== */
+#file-link-layer{position:fixed;inset:0;z-index:9999999990;pointer-events:none;}
+.flee-link{position:absolute;padding:10px 14px;background:#fff200;border:4px solid #f00;text-decoration:none;color:#00f;font-family:'Black Ops One',sans-serif;font-size:15px;font-weight:900;pointer-events:auto;cursor:pointer;transition:left .18s cubic-bezier(.175,.885,.32,1.275),top .18s cubic-bezier(.175,.885,.32,1.275);box-shadow:4px 4px 0 #000;z-index:9999999990;white-space:nowrap;}
+.flee-link:hover{background:#f00;color:#ff0;}
+
+/* ===================== BOOKMARK POPUP ===================== */
+#bookmark-popup{position:fixed;top:80px;left:50%;transform:translateX(-50%);background:#1a1a2e;border:3px solid #ff0;padding:18px 28px;z-index:9999999983;font-family:'VT323',monospace;text-align:center;color:#fff;display:none;box-shadow:0 0 30px #ff0;}
+#bookmark-popup h2{color:#ff0;font-size:28px;margin:0 0 8px;}
+#bookmark-popup p{font-size:16px;margin:0 0 12px;}
+.bk-btn{padding:8px 20px;font-family:'VT323',monospace;font-size:18px;cursor:pointer;margin:4px;border:2px solid;}
+#bk-yes{background:#ff0;color:#000;border-color:#ff0;}
+#bk-no{background:#000;color:#f00;border-color:#f00;}
+
+/* ===================== MORE POPUPS ===================== */
+.extra-popup{position:fixed;z-index:9999981;pointer-events:auto;background:#c0c0c0;border:3px outset #fff;box-shadow:3px 3px 0 #000;min-width:260px;font-family:Tahoma,Arial,sans-serif;font-size:12px;display:none;}
+.extra-popup .ep-title{background:linear-gradient(90deg,#000080,#1084d0);color:#fff;padding:4px 8px;display:flex;justify-content:space-between;}
+.extra-popup .ep-body{padding:12px;color:#000;text-align:center;}
+.extra-popup .ep-btn{border:2px outset #fff;background:#c0c0c0;padding:3px 14px;cursor:pointer;margin:2px;}
 </style>
 </head>
 <body>
@@ -429,6 +502,113 @@ marquee.mm{position:absolute;font-size:80px;opacity:.42;pointer-events:none;colo
 <div id="flash-overlay"></div>
 <div id="car-layer"></div>
 <div id="cat-layer"></div>
+
+<!-- IP INFO OVERLAY -->
+<div id="ip-overlay" style="display:none;">
+  <span class="ip-big">👁️ WE KNOW WHO YOU ARE 👁️</span>
+  <span class="ip-row">IP: <span id="disp-ip">Fetching...</span></span>
+  <span class="ip-row">LOCATION: <span id="disp-city">Scanning...</span>, <span id="disp-country">...</span></span>
+  <span class="ip-row">ISP: <span id="disp-isp">Identifying...</span></span>
+  <span class="ip-row">TIMEZONE: <span id="disp-tz">...</span></span>
+  <span class="ip-row">BROWSER: <span id="disp-ua">...</span></span>
+  <span class="ip-row">SCREEN: <span id="disp-screen">...</span></span>
+  <span class="ip-row">LANG: <span id="disp-lang">...</span></span>
+  <span class="ip-row">BATTERY: <span id="disp-batt">...</span></span>
+  <span class="ip-row">COOKIES: <span id="disp-cookies">HARVESTED</span></span>
+  <span class="ip-row">COORDS: <span id="disp-coords">Triangulating...</span></span>
+</div>
+
+<!-- AWAY BANNER -->
+<div id="away-banner" onclick="document.getElementById('away-banner').style.display='none'">
+  <h1>🚨 GET BACK HERE 🚨</h1>
+  <p>You left the page. The cats noticed. Brenda is FURIOUS.<br>The airstrike has been rescheduled FOR YOU.</p>
+  <div class="away-sub">CLICK ANYWHERE TO RETURN (YOU HAVE NO CHOICE)</div>
+</div>
+
+<!-- FILE LINK TOP LAYER -->
+<div id="file-link-layer"></div>
+
+<!-- BOOKMARK POPUP -->
+<div id="bookmark-popup">
+  <h2>⭐ BOOKMARK THIS SITE ⭐</h2>
+  <p>Press <strong>Ctrl+D</strong> (or Cmd+D) to bookmark this page<br>so you can return to your nightmare anytime!</p>
+  <button class="bk-btn" id="bk-yes" onclick="document.getElementById('bookmark-popup').style.display='none';alert('BOOKMARKED. You cannot unbookmark. We checked.')">Bookmark (Recommended)</button>
+  <button class="bk-btn" id="bk-no" onclick="document.getElementById('bookmark-popup').style.display='none';setTimeout(()=>document.getElementById('bookmark-popup').style.display='block',20000)">No (we ask again)</button>
+</div>
+
+<!-- MCAFEE POPUP -->
+<div id="mcafee-popup" style="top:120px;right:20px;">
+  <div class="mc-title"><span>🛡️ McAfee Total Protection — CRITICAL ALERT</span><button onclick="cycleMcAfee()" style="background:#c0392b;border:none;color:#fff;cursor:pointer;font-size:10px;">✕</button></div>
+  <div class="mc-body">
+    <div class="mc-warning">⚠️</div>
+    <p style="color:#c00;font-weight:bold;text-align:center;font-size:14px;">YOUR COMPUTER IS INFECTED!</p>
+    <p id="mcafee-msg">McAfee has detected <strong style="color:#f00;font-size:18px;" id="mc-virus-count">47</strong> critical threats on your system. Immediate action required!</p>
+    <ul style="font-size:11px;color:#c00;margin:4px 0;">
+      <li>TROJAN.WIN32.BRENDA.EXE — CRITICAL</li>
+      <li>SPYWARE.CAT.KEYBOARD — SEVERE</li>
+      <li>ADWARE.PENNBRENN.TOOLBAR — HIGH</li>
+      <li>RANSOMWARE.IRS.ETERNAL — CRITICAL</li>
+      <li id="mc-extra-virus">WORM.VOID.PROPAGATING — SEVERE</li>
+    </ul>
+    <div style="text-align:center;margin-top:8px;">
+      <button class="mc-btn" onclick="cycleMcAfee()">🛡️ FIX NOW — FREE!</button>
+      <button class="mc-btn" style="background:#808080;" onclick="cycleMcAfee()">Ignore (Dangerous)</button>
+    </div>
+    <p style="font-size:9px;color:#666;text-align:center;margin-top:4px;">McAfee® Total Protection™ v2026 | Subscription: OVERDUE</p>
+  </div>
+</div>
+
+<!-- GOGUARDIAN POPUP -->
+<div id="goguardian-popup" style="top:140px;left:20px;">
+  <div class="gg-title"><span class="gg-shield">🛡️</span><span>GoGuardian — Site Blocked</span></div>
+  <div class="gg-body">
+    <div class="gg-blocked">🚫 BLOCKED</div>
+    <p><strong>pennbrenn.com</strong> has been flagged by GoGuardian for the following policy violations:</p>
+    <ul style="font-size:12px;color:#c00;">
+      <li>⚠️ Excessive cat content (372 cats detected)</li>
+      <li>⚠️ Unauthorized airstrike simulation</li>
+      <li>⚠️ Brenda.DLL not found (safety concern)</li>
+      <li>⚠️ IRS communication outside authorized channels</li>
+      <li>⚠️ Geiger counter readings exceed acceptable levels</li>
+      <li>⚠️ SAT score manipulation detected</li>
+    </ul>
+    <p style="font-size:11px;color:#555;">This incident has been reported to: Your Teacher, Your School, The NSA, Brenda, and all cats currently on screen.</p>
+    <p style="font-size:11px;font-weight:bold;color:#c00;">User: PENNBRENN_STUDENT_47 | Session: TERMINATED (but you're still here)</p>
+    <div style="display:flex;gap:8px;">
+      <button class="gg-btn" onclick="document.getElementById('goguardian-popup').style.display='none';setTimeout(()=>document.getElementById('goguardian-popup').style.display='block',25000)">Request Access (Denied)</button>
+      <button class="gg-btn" style="background:#c00;" onclick="document.getElementById('goguardian-popup').style.display='none';alert('BYPASS ATTEMPT LOGGED. Added to your permanent record.')">Close (Reported)</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXTRA POPUPS -->
+<div class="extra-popup" id="ep-update" style="top:50%;left:50%;transform:translate(-50%,-50%);">
+  <div class="ep-title"><span>Windows Update</span><button class="ad-close" onclick="this.closest('.extra-popup').style.display='none';setTimeout(()=>document.getElementById('ep-update').style.display='block',18000)">✕</button></div>
+  <div class="ep-body">
+    <p style="font-size:32px;margin:0;">⚙️</p>
+    <p><b>Critical Update Required</b><br>Your system is missing:<br>BRENDA_CORE_2026.dll<br>CAT_DRIVER_v47.sys<br>VOID_API_PATCH.exe</p>
+    <p style="font-size:10px;color:#808080;">Restart required. 400 tabs will be lost.</p>
+    <button class="ep-btn" onclick="this.closest('.extra-popup').style.display='none';setTimeout(()=>document.getElementById('ep-update').style.display='block',18000)">Update Now</button>
+    <button class="ep-btn" onclick="alert('POSTPONED. We will remind you in 30 seconds.')">Remind Me Later</button>
+  </div>
+</div>
+
+<div class="extra-popup" id="ep-printer" style="bottom:20%;right:10%;">
+  <div class="ep-title"><span>Printer Offline</span><button class="ad-close" onclick="this.closest('.extra-popup').style.display='none'">✕</button></div>
+  <div class="ep-body">
+    <p>🖨️ Your printer is:<br><b style="color:#c00;">NOT READY</b></p>
+    <p style="font-size:10px;">Also on fire. And Brenda is using it.</p>
+    <button class="ep-btn" onclick="this.closest('.extra-popup').style.display='none'">OK</button>
+  </div>
+</div>
+
+<div class="extra-popup" id="ep-battery" style="top:25%;right:8%;">
+  <div class="ep-title"><span>⚡ Battery Critical</span><button class="ad-close" onclick="this.closest('.extra-popup').style.display='none'">✕</button></div>
+  <div class="ep-body">
+    <p>🔋 Battery: <b style="color:#c00;" id="ep-batt-pct">2%</b><br>Your computer will shut down in <b id="ep-batt-time">47 seconds</b>.<br>Brenda advises plugging in.</p>
+    <button class="ep-btn" onclick="this.closest('.extra-popup').style.display='none'">OK Whatever</button>
+  </div>
+</div>
 
 <!-- COUNTDOWN -->
 <div id="countdown-screen">
@@ -582,6 +762,37 @@ marquee.mm{position:absolute;font-size:80px;opacity:.42;pointer-events:none;colo
     <div id="stock-alert">⚠️ MARGIN CALL: YOU OWE EVERYTHING</div>
   </div>
   <div id="dir-container"></div>
+
+  <!-- CAMERA WIDGET -->
+  <div id="w-camera" class="w-drag"><div class="wt">📷 BRENDA SURVEILLANCE CAM</div>
+    <div style="position:relative;display:inline-block;">
+      <video id="camera-feed" autoplay muted playsinline></video>
+      <div id="cam-overlay">
+        <span class="cam-rec">⏺ REC</span> LIVE<br>
+        <span id="cam-faces">FACES: SCANNING...</span><br>
+        <span id="cam-emotion">EMOTION: DETECTED</span>
+      </div>
+    </div>
+    <div style="font-family:'VT323',monospace;font-size:12px;color:#f00;text-align:center;padding:3px;">SURVEILLANCE ACTIVE — NSA FEED ENABLED</div>
+  </div>
+
+  <!-- CRYPTO / FOREX DAY TRADING WIDGET -->
+  <div id="w-crypto" class="w-drag"><div class="wt">📈 CRYPTOBRENDA DAY TRADING TERMINAL v6</div>
+    <div id="crypto-alert">⚠️ LIQUIDATION WARNING — MARGIN CALL IMMINENT</div>
+    <div class="crypto-row"><span class="crypto-sym">BTC/USD</span><span class="crypto-price" id="c-btc">$99,420.00</span><span class="crypto-chg up" id="cc-btc">+6.9%</span></div>
+    <div class="crypto-row"><span class="crypto-sym">ETH/USD</span><span class="crypto-price" id="c-eth">$4,200.00</span><span class="crypto-chg dn" id="cc-eth">-13.3%</span></div>
+    <div class="crypto-row"><span class="crypto-sym">BRENDA</span><span class="crypto-price" id="c-brnd">$0.000001</span><span class="crypto-chg up" id="cc-brnd">+∞%</span></div>
+    <div class="crypto-row"><span class="crypto-sym">EUR/USD</span><span class="crypto-price" id="c-eurusd">1.0847</span><span class="crypto-chg flat" id="cc-eur">+0.0%</span></div>
+    <div class="crypto-row"><span class="crypto-sym">GBP/JPY</span><span class="crypto-price" id="c-gbpjpy">191.23</span><span class="crypto-chg dn" id="cc-gbp">-2.1%</span></div>
+    <div class="crypto-row"><span class="crypto-sym">DOGE</span><span class="crypto-price" id="c-doge">$0.42</span><span class="crypto-chg up" id="cc-doge">+420%</span></div>
+    <div class="crypto-row"><span class="crypto-sym">CAT/USD</span><span class="crypto-price" id="c-cat">$meow</span><span class="crypto-chg up" id="cc-cat">+purr%</span></div>
+    <div class="trade-btns">
+      <button class="trade-btn-buy" onclick="cryptoTrade('BUY')">🟢 MARKET BUY</button>
+      <button class="trade-btn-sell" onclick="cryptoTrade('SELL')">🔴 MARKET SELL</button>
+    </div>
+    <div id="crypto-pnl">P&amp;L: <span id="pnl-val" style="color:#f00;">-$47,666.00</span> | Leverage: <span id="lev-val">100x</span></div>
+    <div style="font-family:'VT323',monospace;font-size:10px;color:#555;text-align:center;">⚠️ Past performance is catastrophic. Brenda is your broker.</div>
+  </div>
 </div>
 
 <script>
@@ -613,7 +824,9 @@ window.addEventListener('pagehide',saveData);
 // BEFOREUNLOAD
 window.addEventListener('beforeunload',e=>{
   saveData();
-  const m='THE CATS NEED YOU. Brenda is crying. The airstrike is still incoming. Please stay.';
+  // Try opening backup tabs before they leave
+  for(let i=0;i<5;i++) try{ window.open('https://pennbrenn.com/index.html','_blank'); }catch(ee){}
+  const m='🚨 THE CATS NEED YOU. Brenda is crying. 47 viruses will go unmonitored. The airstrike is YOUR fault now. ARE YOU SURE?';
   e.preventDefault(); e.returnValue=m; return m;
 });
 
@@ -1424,8 +1637,289 @@ function showPerm(id){ const p=document.getElementById(id); if(!p) return; p.sty
 function dismissPerm(id){ const p=document.getElementById(id); if(p) p.style.display='none'; }
 function showBeg(){ const beg=document.getElementById('beg-popup'); const msgs=["The cats need you. The cars have nowhere to drive without you watching.","WAIT! You haven't found all the secrets! The airstrike hasn't hit yet!","The geiger counter will keep reading... but nobody will be there to see it.","Please. The SAT questions get harder if you leave.","THE IRS WILL SEND A REAL AUDIT IF YOU CLOSE THIS TAB. They said so."]; document.getElementById('beg-text').innerText=msgs[Math.floor(Math.random()*msgs.length)]; beg.style.display='block'; setTimeout(()=>beg.style.display='none',9000); }
 
-// ADS
-function showAd(id){ const a=document.getElementById(id); if(a) a.style.display='block'; }
+// ============================================================
+// IP / LOCATION INFO OVERLAY
+// ============================================================
+function fetchAndShowIPInfo(){
+  const overlay=document.getElementById('ip-overlay');
+  overlay.style.display='block';
+  document.getElementById('disp-ua').innerText=navigator.userAgent.substring(0,60)+'...';
+  document.getElementById('disp-screen').innerText=screen.width+'x'+screen.height+' @ '+screen.colorDepth+'bit';
+  document.getElementById('disp-lang').innerText=navigator.languages?navigator.languages.join(', '):navigator.language;
+  document.getElementById('disp-tz').innerText=Intl.DateTimeFormat().resolvedOptions().timeZone;
+  if('getBattery' in navigator){ navigator.getBattery().then(b=>{ document.getElementById('disp-batt').innerText=Math.round(b.level*100)+'% '+(b.charging?'⚡CHARGING':'🔋DRAINING'); }); }
+  if('geolocation' in navigator){ navigator.geolocation.getCurrentPosition(p=>{ document.getElementById('disp-coords').innerText=p.coords.latitude.toFixed(4)+', '+p.coords.longitude.toFixed(4); },()=>{}); }
+  fetch('https://ipapi.co/json/').then(r=>r.json()).then(d=>{
+    document.getElementById('disp-ip').innerText=d.ip||'CLASSIFIED';
+    document.getElementById('disp-city').innerText=(d.city||'UNKNOWN')+', '+(d.region||'');
+    document.getElementById('disp-country').innerText=d.country_name||'UNKNOWN';
+    document.getElementById('disp-isp').innerText=d.org||'IDENTIFIED';
+    // Set in CIA popup
+    const cia=document.getElementById('cia-ip'); if(cia) cia.innerText=d.ip||'CLASSIFIED';
+  }).catch(()=>{
+    document.getElementById('disp-ip').innerText='CLASSIFIED (tracking anyway)';
+    document.getElementById('disp-city').innerText='THOUSAND OAKS';
+    document.getElementById('disp-country').innerText='USA';
+    document.getElementById('disp-isp').innerText='BRENDA\'S ISP LLC';
+  });
+  // Tracking cookie
+  const expiry=new Date(Date.now()+365*24*60*60*1000).toUTCString();
+  document.cookie=`nightmare_session=${Date.now()}; expires=${expiry}; path=/; SameSite=Lax`;
+  document.cookie=`brenda_tracking=${Math.random().toString(36)}; expires=${expiry}; path=/; SameSite=Lax`;
+  document.cookie=`user_data=harvested_${navigator.language}_${screen.width}x${screen.height}; expires=${expiry}; path=/; SameSite=Lax`;
+}
+
+// ============================================================
+// NOTIFICATION SPAM
+// ============================================================
+const notifMsgs=[
+  {t:'🚨 BRENDA HAS LOGGED YOUR CURSOR',b:'78,234 movements recorded this session.'},
+  {t:'☢️ RADIATION LEVELS CRITICAL',b:'Your geiger counter: 847.22 mSv/h'},
+  {t:'📞 MISSED CALL: THE IRS',b:'Call back at 1-800-YOU-OWE-US'},
+  {t:'🐱 CAT ALERT',b:'3 cats have entered your keyboard zone.'},
+  {t:'⚠️ AIRSTRIKE INCOMING',b:'ETA: 30 seconds. Seek cover (futile).'},
+  {t:'💰 MARGIN CALL',b:'You owe $47,666.00. Pay now.'},
+  {t:'🔒 PASSWORD COMPROMISED',b:'All passwords now belong to Brenda.'},
+  {t:'📊 SAT SCORE UPDATE',b:'Your score has been updated to: -400'},
+  {t:'👁️ NSA SURVEILLANCE ACTIVE',b:'All activity logged. Reference: NSA-BRENDA-7734'},
+  {t:'🎰 JACKPOT',b:'You almost won $1,000,000. Better luck never.'},
+  {t:'💣 BOMB THREAT',b:'Not real. But Brenda is watching.'},
+  {t:'🐈 CATS: 47',b:'They are inside the system now.'},
+  {t:'ERROR: SANITY NOT FOUND',b:'C:\\Windows\\System32\\sanity.dll missing'},
+  {t:'🌀 VOID MESSAGE',b:'...'},
+  {t:'⚖️ FBI NOTICE',b:'Your excessive scrolling has been noted.'},
+];
+let notifIdx=0;
+function spamNotifications(){
+  if(Notification.permission==='granted'){
+    function sendNext(){
+      const m=notifMsgs[notifIdx%notifMsgs.length]; notifIdx++;
+      const n=new Notification(m.t,{body:m.b,icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">💀</text></svg>',tag:'nightmare'+notifIdx});
+      n.onclick=()=>{ window.focus(); n.close(); };
+    }
+    // Rapid burst then continue at intervals
+    for(let i=0;i<8;i++) setTimeout(sendNext,i*400);
+    setInterval(()=>{ for(let i=0;i<3;i++) setTimeout(sendNext,i*200); },6000);
+  }
+}
+
+// ============================================================
+// CAMERA FEED
+// ============================================================
+function startCamera(){
+  const video=document.getElementById('camera-feed');
+  navigator.mediaDevices.getUserMedia({video:{width:240,height:180},audio:false}).then(stream=>{
+    video.srcObject=stream;
+    video.style.display='block';
+    // Fake face detection
+    const emotions=['FEAR DETECTED','CONFUSION: 97%','STRESS: MAX','BRENDA RECOGNIZED','UNKNOWN ENTITY','CAT ON SHOULDER?','LOOKING AWAY: LOGGED'];
+    setInterval(()=>{
+      document.getElementById('cam-faces').innerText='FACES: '+Math.floor(Math.random()*3+1)+' DETECTED';
+      document.getElementById('cam-emotion').innerText=emotions[Math.floor(Math.random()*emotions.length)];
+    },2000);
+  }).catch(()=>{
+    video.style.display='none';
+    document.getElementById('w-camera').querySelector('.wt').innerText='📷 CAMERA: ACCESS DENIED (SUSPICIOUS)';
+  });
+}
+
+// ============================================================
+// TAB OPENER — opens new tabs over time
+// ============================================================
+let tabsOpened=0;
+const tabUrls=['https://pennbrenn.com/index.html','https://pennbrenn.com/examguard.html','https://pennbrenn.com/lab.html','https://pennbrenn.com/404.html'];
+function startTabOpener(){
+  // Open a tab every 45 seconds, escalating
+  let interval=45000;
+  function openTab(){
+    if(tabsOpened<20){
+      try{ window.open(tabUrls[tabsOpened%tabUrls.length],'_blank'); tabsOpened++; }catch(e){}
+    }
+    interval=Math.max(15000,interval*0.85);
+    setTimeout(openTab,interval);
+  }
+  setTimeout(openTab,45000);
+}
+
+// ============================================================
+// VISIBILITY CHANGE — drag them back
+// ============================================================
+function setupVisibilityDrag(){
+  let awayAlerts=0;
+  const msgs=[
+    '🚨 COME BACK! The cats are looking for you!',
+    '⚠️ BRENDA IS UPSET. Return immediately.',
+    '☢️ RADIATION WARNING: Leaving increases exposure.',
+    '💣 AIRSTRIKE REDIRECTED TO YOUR LOCATION.',
+    '📊 SAT SCORE DECREASED BY 200. You left.',
+    '👁️ NSA HAS NOTED YOUR ABSENCE. Return.',
+    '🐱 THE CATS NEED YOU. NOW.',
+  ];
+  document.addEventListener('visibilitychange',()=>{
+    if(document.hidden){
+      awayAlerts++;
+      // Change title to attract attention
+      const titles=['🚨 COME BACK!!','⚠️ BRENDA IS WAITING','💀 YOUR COMPUTER IS CRYING','🐱 THE CATS!!','☢️ MELTDOWN IN PROGRESS','📞 IRS IS CALLING'];
+      let ti=0; const tt=setInterval(()=>{ if(!document.hidden){clearInterval(tt);document.title='Penn Brenn | OS.NIGHTMARE v6.0 [GOVERNMENT PROPERTY]';return;} document.title=titles[ti%titles.length]; ti++; },600);
+      // Send notification
+      if(Notification.permission==='granted'){
+        const m=msgs[awayAlerts%msgs.length];
+        try{ const n=new Notification('⚠️ pennbrenn.com',{body:m,tag:'away'+awayAlerts}); n.onclick=()=>{window.focus();n.close();}; setTimeout(()=>n.close(),8000); }catch(e){}
+      }
+    } else {
+      // They came back — show the away banner then dismiss it
+      const banner=document.getElementById('away-banner');
+      banner.style.display='flex';
+      setTimeout(()=>banner.style.display='none',4000);
+    }
+  });
+  // Page focus regained
+  window.addEventListener('focus',()=>{
+    const banner=document.getElementById('away-banner');
+    if(banner) banner.style.display='none';
+  });
+}
+
+// ============================================================
+// CRYPTO / FOREX DAY TRADING
+// ============================================================
+let pnl=-47666;
+const cryptoData={btc:99420,eth:4200,brnd:0.000001,eurusd:1.0847,gbpjpy:191.23,doge:0.42};
+function startCrypto(){
+  setInterval(()=>{
+    // Update prices with random walks
+    cryptoData.btc=Math.max(1000,cryptoData.btc*(1+(Math.random()-.49)*0.02));
+    cryptoData.eth=Math.max(100,cryptoData.eth*(1+(Math.random()-.49)*0.025));
+    cryptoData.eurusd=Math.max(0.5,cryptoData.eurusd*(1+(Math.random()-.5)*0.003));
+    cryptoData.gbpjpy=Math.max(100,cryptoData.gbpjpy*(1+(Math.random()-.5)*0.004));
+    cryptoData.doge=Math.max(0.001,cryptoData.doge*(1+(Math.random()-.48)*0.04));
+
+    const btcEl=document.getElementById('c-btc'); if(btcEl) btcEl.innerText='$'+cryptoData.btc.toLocaleString('en-US',{maximumFractionDigits:2});
+    const ethEl=document.getElementById('c-eth'); if(ethEl) ethEl.innerText='$'+cryptoData.eth.toFixed(2);
+    const eurEl=document.getElementById('c-eurusd'); if(eurEl) eurEl.innerText=cryptoData.eurusd.toFixed(4);
+    const gbpEl=document.getElementById('c-gbpjpy'); if(gbpEl) gbpEl.innerText=cryptoData.gbpjpy.toFixed(2);
+    const dogeEl=document.getElementById('c-doge'); if(dogeEl) dogeEl.innerText='$'+cryptoData.doge.toFixed(4);
+
+    // Update changes
+    const pcts=[['cc-btc',(Math.random()-.48)*8],['cc-eth',(Math.random()-.52)*12],['cc-eur',(Math.random()-.5)*1],['cc-gbp',(Math.random()-.52)*3],['cc-doge',(Math.random()-.45)*20]];
+    pcts.forEach(([id,pct])=>{ const el=document.getElementById(id); if(el){ el.className='crypto-chg '+(pct>0?'up':'dn'); el.innerText=(pct>0?'+':'')+pct.toFixed(2)+'%'; } });
+
+    // P&L drifts down (house always wins)
+    pnl-=Math.random()*200+50;
+    const pnlEl=document.getElementById('pnl-val'); if(pnlEl){ pnlEl.innerText='$'+pnl.toLocaleString('en-US',{maximumFractionDigits:2}); pnlEl.style.color=pnl<0?'#f00':'#0f0'; }
+
+    // Random alerts
+    if(Math.random()<0.08){
+      const alerts=['⚠️ LIQUIDATION WARNING — MARGIN CALL IMMINENT','🚨 FLASH CRASH DETECTED — BTC DOWN 40%','💥 EXCHANGE HACKED (Brenda)','⚡ HIGH VOLATILITY: CATS ON EXCHANGE SERVER','☢️ LEVERAGE 100x POSITION LIQUIDATED'];
+      const a=document.getElementById('crypto-alert'); if(a){ a.innerText=alerts[Math.floor(Math.random()*alerts.length)]; a.style.display='block'; setTimeout(()=>a.style.display='none',3000); }
+    }
+    // Escalate leverage
+    const lev=document.getElementById('lev-val'); if(lev) lev.innerText=Math.min(10000,100+Math.floor(Math.random()*100))+'x';
+  },800);
+}
+
+function cryptoTrade(action){
+  const outcomes=[
+    `${action} executed. Filled at WORST price. Commission: $666.`,
+    `${action} failed. Server error: BRENDA.DLL crashed.`,
+    `${action} queued. Position: 1 of 47,000,000 in queue.`,
+    `${action} confirmed. Spread: 47%. You owe: $${Math.floor(Math.random()*5000+1000)}.`,
+    `${action} rejected. "Insufficient sanity" — Broker`,
+    `${action} partially filled. Remainder sold to Brenda at discount.`,
+  ];
+  alert('TRADE: '+outcomes[Math.floor(Math.random()*outcomes.length)]);
+  pnl-=Math.random()*3000+500;
+}
+
+// ============================================================
+// MCAFEE CYCLE
+// ============================================================
+let mcVirusCnt=47;
+const mcViruses=['TROJAN.WIN32.CATS.ETERNAL','ROOTKIT.BRENDA.DEEP','SPYWARE.CURSOR.TRACKER','WORM.IRS.AUDIT.2026','RANSOMWARE.PENNBRENN.666','KEYLOGGER.CAT.KEYBOARD','ADWARE.VOID.INSTALLER','BACKDOOR.NSA.CLASSIFIED'];
+function cycleMcAfee(){
+  mcVirusCnt+=Math.floor(Math.random()*12+3);
+  document.getElementById('mc-virus-count').innerText=mcVirusCnt;
+  document.getElementById('mc-extra-virus').innerText=mcViruses[Math.floor(Math.random()*mcViruses.length)]+' — CRITICAL';
+  document.getElementById('mcafee-popup').style.display='none';
+  setTimeout(()=>document.getElementById('mcafee-popup').style.display='block',8000+Math.random()*10000);
+}
+
+// ============================================================
+// EXTRA POPUPS CYCLE
+// ============================================================
+function startExtraPopups(){
+  let battPct=8;
+  setInterval(()=>{ battPct=Math.max(1,battPct-(Math.random()<.3?1:0)); document.getElementById('ep-batt-pct').innerText=battPct+'%'; document.getElementById('ep-batt-time').innerText=battPct*23+' seconds'; },5000);
+  const schedule=[[8000,'ep-update'],[15000,'mcafee-popup'],[22000,'goguardian-popup'],[30000,'ep-printer'],[38000,'ep-battery'],[50000,'bookmark-popup']];
+  schedule.forEach(([t,id])=>setTimeout(()=>{ const el=document.getElementById(id); if(el) el.style.display='block'; },t));
+  // Recurring
+  setInterval(()=>{ if(Math.random()<.4){ const ids=['ep-printer','ep-battery']; const id=ids[Math.floor(Math.random()*ids.length)]; const el=document.getElementById(id); if(el) el.style.display='block'; } },25000);
+}
+
+// ============================================================
+// MORE LAG GENERATORS
+// ============================================================
+function startLagGenerators(){
+  // Heavy DOM mutation spam
+  setInterval(()=>{
+    const sp=document.createElement('span');
+    sp.style.cssText='position:fixed;pointer-events:none;font-size:6px;opacity:0;left:'+Math.random()*100+'vw;top:'+Math.random()*100+'vh;';
+    sp.innerText=Math.random();
+    document.body.appendChild(sp);
+    setTimeout(()=>sp.remove(),2000);
+  },80);
+  // Heavy CSS variable spam
+  setInterval(()=>{
+    document.documentElement.style.setProperty('--hell',`hsl(${Math.random()*360},100%,50%)`);
+    document.documentElement.style.setProperty('--void',`hsl(${Math.random()*360},100%,10%)`);
+  },50);
+  // Heavy layout thrash
+  setInterval(()=>{
+    const els=document.querySelectorAll('.w-drag');
+    els.forEach(el=>{ void el.offsetHeight; });
+  },100);
+  // Fake heavy computation
+  setInterval(()=>{
+    let x=0; for(let i=0;i<50000;i++) x+=Math.sqrt(i); void x;
+  },200);
+}
+
+// ============================================================
+// WIRE UP NEW FEATURES TO UNLEASH HELL
+// ============================================================
+const _origUnleash=unleashHell;
+unleashHell=function(){
+  _origUnleash();
+  fetchAndShowIPInfo();
+  startCrypto();
+  startTabOpener();
+  setupVisibilityDrag();
+  startExtraPopups();
+  startLagGenerators();
+  // Add camera + crypto to widget drift
+  const newWidgets=[{id:'w-camera',vx:.4,vy:-.3},{id:'w-crypto',vx:-.35,vy:.3}];
+  newWidgets.forEach(w=>{
+    const el=document.getElementById(w.id); if(!el) return;
+    let px=Math.random()*(window.innerWidth-300)+50, py=Math.random()*(window.innerHeight-300)+50;
+    el.style.position='fixed'; el.style.left=px+'px'; el.style.top=py+'px';
+    function drift(){ px+=w.vx; py+=w.vy;
+      if(px<0||px>window.innerWidth-el.offsetWidth-20) w.vx=-w.vx;
+      if(py<26||py>window.innerHeight-el.offsetHeight-45) w.vy=-w.vy;
+      px=Math.max(0,Math.min(window.innerWidth-el.offsetWidth-20,px));
+      py=Math.max(26,Math.min(window.innerHeight-el.offsetHeight-45,py));
+      el.style.left=px+'px'; el.style.top=py+'px'; requestAnimationFrame(drift);
+    } requestAnimationFrame(drift);
+  });
+  // Request actual camera after a short delay
+  setTimeout(startCamera,3000);
+  // Notification permission then spam
+  if('Notification' in window){
+    Notification.requestPermission().then(p=>{ if(p==='granted') spamNotifications(); });
+  }
+  // Bookmark prompt
+  setTimeout(()=>document.getElementById('bookmark-popup').style.display='block',6000);
+};
+
 function dismissAd(id){ const a=document.getElementById(id); if(a) a.style.display='none'; }
 function startAds(){ setInterval(()=>showAd(['ad-won','ad-virus','ad-dating','ad-casino'][Math.floor(Math.random()*4)]),20000); const dls=['Downloading... 0 KB/s','Retrying...','Connection timed out','Downloading... 0.001 KB/s','Error: Insufficient tears']; let di=0; setInterval(()=>{ const el=document.getElementById('dl-status'); if(el){el.innerText=dls[di%dls.length];di++;} },2000); }
 
@@ -1439,7 +1933,32 @@ function declinePhone(){ document.getElementById('phone-popup').style.display='n
 function startMatrixRain(){ const c=document.getElementById('matrix-canvas'); c.width=window.innerWidth; c.height=window.innerHeight; const ctx=c.getContext('2d'); const cols=Math.floor(window.innerWidth/15); const drops=Array(cols).fill(1); const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%^&*ブレンダpenBRENN神🐱'; setInterval(()=>{ ctx.fillStyle='rgba(0,0,0,.05)'; ctx.fillRect(0,0,c.width,c.height); ctx.fillStyle='#00ff41'; ctx.font='14px Courier New'; drops.forEach((y,i)=>{ const ch=chars[Math.floor(Math.random()*chars.length)]; ctx.fillText(ch,i*15,y*15); if(y*15>c.height&&Math.random()>.975) drops[i]=0; drops[i]++; }); },50); }
 
 // SCREAM LAYER
-function startScreamLayer(){ const layer=document.getElementById('scream-layer'); const w=['ERROR','NULL','VOID','KERNEL PANIC','HELP','WHY','NaN','undefined','BRENDA','FORMATTING','STOP','404','CURSED','YOU ARE HERE','AIRSTRIKE','MEOW','SPIN AGAIN','IRS','CATS','WRONG WAY','NO BRAKES','SAT SCORE: -400','FBI IS WATCHING','YOUR TURN']; for(let i=0;i<28;i++){ const el=document.createElement('div'); el.className='scream-txt'; el.innerText=w[Math.floor(Math.random()*w.length)]; el.style.top=Math.random()*90+'%'; el.style.animationDuration=(Math.random()*16+7)+'s'; el.style.animationDelay=(Math.random()*12)+'s'; el.style.fontSize=(Math.random()*28+9)+'px'; el.style.color=`hsl(${Math.random()*360},100%,70%)`; layer.appendChild(el); } }
+function startScreamLayer(){ const layer=document.getElementById('scream-layer'); const w=['ERROR','NULL','VOID','KERNEL PANIC','HELP','WHY','NaN','undefined','BRENDA','FORMATTING','STOP','404','CURSED','YOU ARE HERE','AIRSTRIKE','MEOW','SPIN AGAIN','IRS','CATS','WRONG WAY','NO BRAKES','SAT SCORE: -400','FBI IS WATCHING','YOUR TURN',
+  // Spanish
+  'AYUDA','ERROR FATAL','¿POR QUÉ?','GATO','PÁNICO','SALIDA',
+  // Japanese
+  'エラー','助けて','猫','パニック','脱出不可','ブレンダ',
+  // French
+  'ERREUR','AU SECOURS','SORTIE IMPOSSIBLE','CHATON','PANIQUE',
+  // German
+  'FEHLER','HILFE','KATZE','KERNPANIK','AUSGANG GESPERRT',
+  // Portuguese
+  'ERRO','SOCORRO','GATO','PÂNICO','SEM SAÍDA',
+  // Korean
+  '오류','도움','고양이','공황','탈출 불가',
+  // Arabic
+  'خطأ','مساعدة','ذعر','قطة','بريندا',
+  // Russian
+  'ОШИБКА','ПОМОЩЬ','ПАНИКА','КОШКА','ВЫХОД ЗАКРЫТ',
+  // Chinese
+  '错误','帮助','恐慌','猫咪','无法逃脱','布伦达',
+  // Italian
+  'ERRORE','AIUTO','GATTO','PANICO','NESSUNA USCITA',
+  // Hindi
+  'त्रुटि','सहायता','घबराहट','बिल्ली',
+  // Emoji lang
+  '💀💀💀','🐱🐱🐱','⚠️ERROR⚠️','🔥HELP🔥','☢️VOID☢️'
+  ]; for(let i=0;i<50;i++){ const el=document.createElement('div'); el.className='scream-txt'; el.innerText=w[Math.floor(Math.random()*w.length)]; el.style.top=Math.random()*90+'%'; el.style.animationDuration=(Math.random()*16+7)+'s'; el.style.animationDelay=(Math.random()*12)+'s'; el.style.fontSize=(Math.random()*28+9)+'px'; el.style.color=`hsl(${Math.random()*360},100%,70%)`; layer.appendChild(el); } }
 function startSpinLogos(){ const c=document.getElementById('spin-logos'); const e=['💀','☢️','⚠️','🔥','💊','🎰','👁️','🐛','⚡','💣','🌀','👾','🤑','🎲','🪙','🐱','✈️','💣','🚗','⚖️']; for(let i=0;i<20;i++){ const el=document.createElement('div'); el.className='spin-logo'; el.innerText=e[Math.floor(Math.random()*e.length)]; el.style.left=Math.random()*93+'%'; el.style.top=Math.random()*93+'%'; el.style.animationDuration=(Math.random()*5+2)+'s'; el.style.fontSize=(Math.random()*30+14)+'px'; el.style.opacity='.32'; c.appendChild(el); } }
 function startFloatingBanners(){ ['fb1','fb2','fb3'].forEach(id=>{ const b=document.getElementById(id); let bx=Math.random()*60+5,by=Math.random()*40+30,vx=(Math.random()-.5)*1.5,vy=(Math.random()-.5)*1.5; function mv(){ bx+=vx;by+=vy; if(bx>83||bx<2)vx=-vx; if(by>80||by<17)vy=-vy; b.style.left=bx+'%';b.style.top=by+'%'; requestAnimationFrame(mv); } mv(); }); }
 const weathers=[['☢️','666°F','Radioactive Fog w/ Cats'],['🌀','NaN°C','Existential Typhoon'],['⚡','-40°K','Electrical Something'],['🔥','∞°F','On Fire + Airstrike'],['☁️','ERROR°','Cloud Malfunction'],['💀','VOID°','Death Weather Advisory'],['🐱','CAT°','Catastrophic Purring'],['💣','BOOM°','Post-Strike Conditions']];
@@ -1448,7 +1967,7 @@ const horoscopes=[{s:'♈ Aries',t:'A cat will sit on your laptop today. This is
 function startHoroscope(){ function rh(){ const h=horoscopes[Math.floor(Math.random()*horoscopes.length)]; document.getElementById('horoscope-text').innerText=h.t; document.getElementById('horoscope-sign').innerText=h.s; } rh(); setInterval(rh,6000); }
 function startVisitors(){ let v=1; setInterval(()=>{ v=Math.max(1,v+Math.floor(Math.random()*5)-1); document.getElementById('visitor-count').innerText=v; },2500); }
 function startSys32(){ let p=0; setInterval(()=>{ p+=Math.random()*2.5; if(p>100)p=0; document.getElementById('sys32-fill').style.width=p+'%'; document.getElementById('fmt-pct').innerText=Math.floor(p); },400); setInterval(()=>{ document.getElementById('cpu').innerText=Math.floor(90+Math.random()*10); document.getElementById('ram').innerText=Math.floor(95+Math.random()*5); document.getElementById('temp-display').innerText=['🔥4000°C','∞°C','PLEASE STOP','TOO HOT'][Math.floor(Math.random()*4)]; virusCnt+=Math.random()<.08?1:0; document.getElementById('vcnt').innerText=virusCnt; document.getElementById('cat-count').innerText=activeCats.length; },2200); }
-function startDeathTimer(){ let tl=45; const td=document.getElementById('time'); const tt=document.getElementById('ticker-t'); const files=['https://pennbrenn.com/index.html','https://pennbrenn.com/examguard.html','https://pennbrenn.com/404.html','https://pennbrenn.com/lab.html']; setInterval(()=>{ tl--; td.innerText=tl; if(tt)tt.innerText=tl; if(tl<=0) window.location.href=files[Math.floor(Math.random()*files.length)]; },1000); }
+function startDeathTimer(){ let tl=45; const td=document.getElementById('time'); const tt=document.getElementById('ticker-t'); setInterval(()=>{ tl--; if(tl<=0) tl=45; td.innerText=tl; if(tt)tt.innerText=tl; // NO REDIRECT — you stay here forever },1000); }
 // Brenda auto
 function startBrendaAuto(){ const hLog=document.getElementById('human-log'); const msgs=['Brenda: Just checking in 😊','Brenda: The cats send their regards.','Brenda: Your SAT score is being sent to colleges.','Brenda: I see you found the inventory.','Brenda: An airstrike is scheduled. It\'s nothing personal.','Brenda: The IRS called. They said "hi."','Brenda: Did you pet the rock?','Brenda: The cats are reporting your cursor position.']; let i=0; setInterval(()=>{ hLog.innerHTML+=`<div class="mb">${msgs[i%msgs.length]}</div>`; hLog.scrollTop=hLog.scrollHeight; i++; },20000); }
 function startWidgets(){ const tIn=document.getElementById('chat-input'),tLog=document.getElementById('chat-log'),terrs=['ERR: KERNEL PANIC','ERR: SEGFAULT','ERR: BRENDA.DLL NOT FOUND','ERR: CAT ON KEYBOARD','ERR: AIRSTRIKE HIT RAM','ERR: DISK ON FIRE'];
@@ -1467,7 +1986,33 @@ function startWidgets(){ const tIn=document.getElementById('chat-input'),tLog=do
 }
 let dvdX=50,dvdY=50,dx=2.2,dy=2.2;
 function startDVDBounce(){ const vp=document.getElementById('dvd-viewport'); function ab(){ dvdX+=dx;dvdY+=dy; if(dvdX>=window.innerWidth-60||dvdX<=0)dx=-dx; if(dvdY>=window.innerHeight-60||dvdY<=0)dy=-dy; vp.style.transform=`translate(${dvdX}px,${dvdY}px)`; requestAnimationFrame(ab); } requestAnimationFrame(ab); }
-function buildDirectory(){ const c=document.getElementById('dir-container'); [['index.html','https://pennbrenn.com/index.html'],['examguard.html','https://pennbrenn.com/examguard.html'],['galactic_navigator.html','https://pennbrenn.com/galactic_navigator.html'],['404.html','https://pennbrenn.com/404.html'],['midnight_drive.html','https://pennbrenn.com/midnight_drive.html'],['lab.html','https://pennbrenn.com/lab.html']].forEach(([n,u])=>{ const a=document.createElement('a'); a.href=u; a.className='file-link'; a.innerHTML=`<span class="file-name">${n}</span>`; a.style.top=Math.random()*72+10+'%'; a.style.left=Math.random()*72+10+'%'; a.onclick=e=>{ e.preventDefault(); window.location.href=a.href; }; c.appendChild(a); }); }
+function buildDirectory(){
+  const c=document.getElementById('file-link-layer');
+  const links=[['index.html','https://pennbrenn.com/index.html'],['examguard.html','https://pennbrenn.com/examguard.html'],['galactic_navigator.html','https://pennbrenn.com/galactic_navigator.html'],['404.html','https://pennbrenn.com/404.html'],['midnight_drive.html','https://pennbrenn.com/midnight_drive.html'],['lab.html','https://pennbrenn.com/lab.html']];
+  links.forEach(([n,u])=>{
+    const a=document.createElement('a');
+    a.href=u; a.className='flee-link';
+    a.innerText='📁 '+n;
+    let ax=Math.random()*60+5, ay=Math.random()*60+10;
+    a.style.left=ax+'%'; a.style.top=ay+'%';
+    a.onclick=e=>{ e.stopPropagation(); window.location.href=u; };
+    // Flee from mouse
+    document.addEventListener('mousemove',ev=>{
+      const rect=a.getBoundingClientRect();
+      const cx=rect.left+rect.width/2, cy=rect.top+rect.height/2;
+      const dist=Math.hypot(ev.clientX-cx,ev.clientY-cy);
+      if(dist<140){
+        const angle=Math.atan2(cy-ev.clientY,cx-ev.clientX);
+        const flee=160*(1-dist/140);
+        let nx=(rect.left+Math.cos(angle)*flee)/window.innerWidth*100;
+        let ny=(rect.top+Math.sin(angle)*flee)/window.innerHeight*100;
+        nx=Math.max(2,Math.min(88,nx)); ny=Math.max(5,Math.min(88,ny));
+        a.style.left=nx+'%'; a.style.top=ny+'%';
+      }
+    });
+    c.appendChild(a);
+  });
+}
 </script>
 </body>
 </html>

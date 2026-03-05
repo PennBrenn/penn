@@ -2,178 +2,196 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>PENN BREN DOT COM REAL DIRRECTORIE</title>
+<title>PENN BRENN SOUL DESTROYER 9000</title>
 <style>
+  :root { --glitch-speed: 0.05s; }
+  
   body {
-    background-color: #000;
-    color: #fff;
-    overflow: hidden;
+    background: #000;
     margin: 0;
-    padding: 0;
-    font-family: "Courier New", "Wingdings", "Zapfino", sans-serif;
-    animation: bgFlicker 0.01s infinite;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    cursor: wait;
+    font-family: "Impact", "Webdings", sans-serif;
+    animation: flash 0.02s infinite, shake 0.1s infinite;
   }
 
-  @keyframes bgFlicker {
-    0% { background: #ff0000; }
-    20% { background: #00ff00; }
-    40% { background: #0000ff; }
-    60% { background: #ffff00; }
-    80% { background: #ff00ff; }
-    100% { background: #00ffff; }
+  @keyframes flash {
+    0% { background: #f0f; filter: invert(0); }
+    25% { background: #0ff; filter: hue-rotate(90deg); }
+    50% { background: #0f0; filter: invert(1); }
+    75% { background: #ff0; filter: contrast(500%); }
+    100% { background: #f00; filter: saturate(1000%); }
   }
 
-  /* DA LINK BOXES THAT MOVE AND STRETCH */
-  .chaos-box {
+  @keyframes shake {
+    0% { transform: translate(5px, 5px) rotate(0deg); }
+    50% { transform: translate(-10px, -5px) rotate(2deg); }
+    100% { transform: translate(5px, 10px) rotate(-2deg); }
+  }
+
+  @keyframes jitter {
+    0% { clip-path: inset(10% 0 30% 0); transform: translateX(-10px); }
+    20% { clip-path: inset(40% 0 10% 0); transform: translateX(10px); }
+    40% { clip-path: inset(20% 0 50% 0); transform: scale(1.5); }
+    100% { clip-path: inset(0 0 0 0); transform: translateX(0); }
+  }
+
+  @keyframes orbit {
+    from { transform: rotate(0deg) translateX(150px) rotate(0deg); }
+    to { transform: rotate(360deg) translateX(150px) rotate(-360deg); }
+  }
+
+  @keyframes liquid {
+    0% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
+    50% { border-radius: 70% 30% 40% 60% / 60% 40% 50% 40%; transform: scale(2) rotate(180deg); }
+    100% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
+  }
+
+  .file-node {
     position: absolute;
-    border: 15px ridge #ffffff;
-    padding: 10px;
-    background: rgba(0,0,0,0.8);
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 10px double black;
+    color: #000;
+    text-align: center;
+    font-size: 18px;
+    animation: jitter 0.2s infinite, liquid 3s infinite;
+    transition: all 0.1s ease-out;
+    z-index: 50;
+    width: 200px;
+    mix-blend-mode: difference;
+  }
+
+  /* Evasion Protocol: Link jumps when hovered */
+  .file-node:hover {
+    transform: translate(300px, -400px) scale(0.1) rotate(1080deg) !important;
+    opacity: 0;
+  }
+
+  .file-node a {
+    color: blue;
+    text-decoration: blink;
+    font-size: 25px;
     display: block;
-    mix-blend-mode: exclusion;
-    transform-origin: center;
   }
 
-  .chaos-box a {
-    color: white;
-    font-weight: bold;
-    text-decoration: underline;
-    font-size: 24px;
-  }
-
-  /* CSS ANIMATIONS FROM HELL */
-  @keyframes extremeSpin {
-    from { transform: rotate(0deg) scale(0.5); }
-    to { transform: rotate(3600deg) scale(2.5); }
-  }
-
-  @keyframes elasticDistort {
-    0% { transform: skewX(-50deg) scaleY(1); }
-    50% { transform: skewX(80deg) scaleY(0.1); }
-    100% { transform: skewX(-20deg) scaleY(4); }
-  }
-
-  @keyframes vibration {
-    0% { transform: translate(0,0); }
-    10% { transform: translate(-20px, 20px); }
-    20% { transform: translate(20px, -20px); }
-    30% { transform: translate(-40px, 0px); }
-    100% { transform: translate(40px, 40px); }
-  }
-
-  .spin { animation: extremeSpin 5s infinite alternate; }
-  .distort { animation: elasticDistort 0.5s infinite linear; }
-  .vibe { animation: vibration 0.05s infinite; }
-
-  /* Hovering makes it worse */
-  .chaos-box:hover {
-    z-index: 9999;
-    animation: vibration 0.01s infinite !important;
-    background: white;
-    color: black;
-  }
-
-  .marquee-chaos {
+  .marquee-heavy {
     position: fixed;
-    width: 100%;
-    font-size: 50px;
-    font-weight: 900;
+    font-size: 120px;
+    white-space: nowrap;
+    z-index: 100;
     pointer-events: none;
-    z-index: 1000;
+    mix-blend-mode: overlay;
+    animation: shake 0.01s infinite;
   }
 
-  .hidden-fail {
-    font-size: 5px;
-    opacity: 0.1;
+  .hell-text {
+    position: absolute;
+    font-size: 15px;
+    animation: orbit 4s infinite linear;
+    color: white;
   }
+
 </style>
 </head>
 <body>
 
-<div class="marquee-chaos" style="top:10%; color: yellow; transform: rotate(5deg);">
-    <marquee scrollamount="50">PENN BRENN DOT COM!!!! PENN BRENN DOT COM!!!! PENN BRENN DOT COM!!!!</marquee>
-</div>
-<div class="marquee-chaos" style="bottom:10%; color: lime; transform: rotate(-5deg);">
-    <marquee scrollamount="100" direction="right">BRAIN EXPLOSHUN DIRRECTORIE!! NO REFUNDS!!</marquee>
+<div class="marquee-heavy" style="top: 0; color: #fff;">KILL YOUR SOUL!!! PENNBRENN.COM!!! NO ESCAPE!!!</div>
+<div class="marquee-heavy" style="bottom: 0; color: #000; direction: rtl;">
+    <marquee scrollamount="100">EXAM GUARD IS WATCHING EXAM GUARD IS WATCHING EXAM GUARD IS WATCHING</marquee>
 </div>
 
-<div class="chaos-box spin" style="top: 20%; left: 10%;">
-    <a href="https://pennbrenn.com/index.html">INNDEXX.HTLM</a>
-    <p>da mane enterance 2 da maddness!! don't look directly at it!!</p>
+<div class="file-node" style="top: 10%; left: 10%; animation-duration: 0.8s;">
+    <a href="https://pennbrenn.com/index.html">indeks.hmtl</a>
+    <p>da first step in2 helll!!!</p>
 </div>
 
-<div class="chaos-box distort" style="top: 15%; left: 60%;">
-    <a href="https://pennbrenn.com/galactic_navigator.html">GALAXY_NAVAGAYTOR.HMTL</a>
-    <p>u r lost in space and time!! navigat ur way out of dis headache!!</p>
+<div class="file-node" style="top: 15%; right: 15%; animation-duration: 1.2s;">
+    <a href="https://pennbrenn.com/examguard.html">exxamm_gardd.hmtl</a>
+    <p>WE SEE U CHEETNG!! UR SOUL IS FORFIT!!</p>
 </div>
 
-<div class="chaos-box vibe" style="top: 70%; left: 40%; width: 300px;">
-    <a href="https://pennbrenn.com/404.html">FOUR_OH_FOUR.HMLT</a>
-    <p>eror 404 brane not found!! its gonne!!</p>
+<div class="file-node" style="bottom: 20%; left: 40%; animation-duration: 0.5s;">
+    <a href="https://pennbrenn.com/galactic_navigator.html">galactick_navv.hmtl</a>
+    <p>flyin thru space but u hav no map!!</p>
 </div>
 
-<div class="chaos-box spin" style="top: 50%; left: 5%;">
-    <a href="https://pennbrenn.com/midnight_drive.html">MIDNITE_DRIVVE.HMTL</a>
-    <p>vroom vroom in da dark!! wear a seetbelt!!</p>
+<div class="file-node" style="top: 50%; left: 5%; animation-duration: 2s;">
+    <a href="https://pennbrenn.com/404.html">for_oh_for.hmtl</a>
+    <p>not found!! liek ur sanity!!</p>
 </div>
 
-<div class="chaos-box distort" style="top: 80%; left: 75%;">
-    <a href="https://pennbrenn.com/study.html">STUDEY.HMTL</a>
-    <p>lernin is for nerds!! dis page wil un-tech u!!</p>
+<div class="file-node" style="bottom: 10%; right: 5%; animation-duration: 0.3s;">
+    <a href="https://pennbrenn.com/midnight_drive.html">midnit_drivv.hmtl</a>
+    <p>fast cars n blindfollds!!</p>
 </div>
 
-<div class="chaos-box vibe" style="top: 5%; left: 40%;">
-    <a href="https://pennbrenn.com/lab.html">LABB_XPERIMENT.HMTL</a>
-    <p>dont tutch da test tubbs!! dey mite bleeew upp!!</p>
+<div class="file-node" style="top: 40%; right: 40%; animation-duration: 1.5s;">
+    <a href="https://pennbrenn.com/study.html">studi_time.hmtl</a>
+    <p>reed dis 2 forget how to reed!!</p>
 </div>
 
-<div class="chaos-box spin" style="top: 40%; left: 80%;">
-    <a href="https://pennbrenn.com/space.html">SPAAACE.HMTL</a>
-    <p>dere is no gravity heer only chaos and darkness!!</p>
+<div class="file-node" style="top: 5%; left: 45%; animation: shake 0.05s infinite;">
+    <a href="https://pennbrenn.com/lab.html">da_labbb.hmtl</a>
+    <p>oops i spilled da acid on ur CPU!!</p>
 </div>
 
-<div class="chaos-box distort" style="top: 60%; left: 20%;">
-    <a href="https://pennbrenn.com/fly.html">FLYEE_GUY.HMTL</a>
-    <p>i beleve i can flyyyy i beleve i can tutch da skyyy!!</p>
+<div class="file-node" style="bottom: 40%; left: 15%; animation-duration: 0.7s;">
+    <a href="https://pennbrenn.com/space.html">spayce.hmtl</a>
+    <p>evry1 can hear u scream heer!!</p>
 </div>
 
-<div class="chaos-box vibe" style="top: 30%; left: 50%; transform: scale(3);">
-    <a href="https://pennbrenn.com/shit.py">SHTI_SCRIPTT.PYY</a>
-    <p>python snek byte!! hisss hiss!! codde is trash!!</p>
+<div class="file-node" style="top: 70%; right: 20%; animation-duration: 1.1s;">
+    <a href="https://pennbrenn.com/fly.html">flii_away.hmtl</a>
+    <p>gravity is a suggestshun!!</p>
 </div>
 
-<div class="chaos-box spin" style="top: 85%; left: 10%;">
-    <a href="https://pennbrenn.com/randombullshitattack.png">RNDM_BULLSHT_ATACK.PNGG</a>
-    <p>visual assualt incoming!! shield ur eyes!!</p>
+<div class="file-node" style="bottom: 50%; right: 10%; animation-duration: 0.9s;">
+    <a href="https://pennbrenn.com/shit.py">snek_garbage.pie</a>
+    <p>sum pythun script dat dose nuthing!!</p>
 </div>
 
-<div class="chaos-box distort" style="top: 45%; left: 45%;">
-    <a href="https://pennbrenn.com/jlc.html">JAY_EL_CEE.HMTL</a>
-    <p>wat dose it meen?? nobody knows!! its a mistery!!</p>
+<div class="file-node" style="top: 30%; left: 30%; animation-duration: 0.4s;">
+    <a href="https://pennbrenn.com/randombullshitattack.png">brain_bleed.pngg</a>
+    <p>clik dis 2 go blind instently!!</p>
 </div>
 
-<div class="chaos-box vibe" style="top: 10%; left: 80%;">
-    <a href="https://pennbrenn.com/a.html">AAA.HMTL</a>
-    <p>just screaming!! AAAAAA!!!</p>
+<div class="file-node" style="bottom: 5%; left: 5%; animation-duration: 1.8s;">
+    <a href="https://pennbrenn.com/jlc.html">j_l_c_unknwn.hmtl</a>
+    <p>wat r dese leters? wat is life??</p>
 </div>
 
-<div class="chaos-box spin" style="top: 90%; left: 50%;">
-    <a href="https://pennbrenn.com/FB.html">FB_SPAI.HMTL</a>
-    <p>fasebook is watching u!! hide ur kids!!</p>
+<div class="file-node" style="top: 60%; left: 50%; animation-duration: 0.6s;">
+    <a href="https://pennbrenn.com/a.html">aaaaaa.hmtl</a>
+    <p>screeming into da void!!</p>
 </div>
 
-<div class="chaos-box distort" style="top: 25%; left: 25%;">
-    <a href="https://pennbrenn.com/pet.js">PETT_DA_DOG.JSS</a>
-    <p>scripte dat makes u hapy!! or sad!! idk!!</p>
+<div class="file-node" style="top: 80%; left: 30%; animation-duration: 2.5s;">
+    <a href="https://pennbrenn.com/FB.html">fayce_buk_spii.hmtl</a>
+    <p>zuck is under ur bed!!</p>
 </div>
 
-<div class="chaos-box vibe" style="top: 55%; left: 65%;">
-    <a href="https://pennbrenn.com/tags.html">TAGGS_EVERYWHER.HMTL</a>
-    <p>label evrything!! label ur soul!!</p>
+<div class="file-node" style="bottom: 30%; right: 45%; animation-duration: 0.2s;">
+    <a href="https://pennbrenn.com/pet.js">pet_da_vyrus.jss</a>
+    <p>dont tutch it it bites!!</p>
 </div>
 
-<marquee style="position:fixed; top:50%; z-index:-1; font-size: 200px; opacity:0.2;">WHYYYYYYYYYYYYYYY</marquee>
-<marquee direction="up" style="position:fixed; left:50%; z-index:-1; height: 100%; font-size: 100px; opacity:0.1;">STOOOP ITTTTTT</marquee>
+<div class="file-node" style="top: 25%; right: 5%; animation-duration: 0.4s;">
+    <a href="https://pennbrenn.com/tags.html">tagg_u_r_it.hmtl</a>
+    <p>too many tags not enuff time!!</p>
+</div>
+
+<script>
+  // Randomly move nodes even more
+  setInterval(() => {
+    const nodes = document.querySelectorAll('.file-node');
+    nodes.forEach(n => {
+      n.style.transform = `translate(${Math.random() * 50}px, ${Math.random() * 50}px)`;
+    });
+  }, 50);
+</script>
 
 </body>
 </html>

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketplace Browser</title>
+    <style>
+        :root {
+            --primary: #1877F2;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-main: #050505;
+            --text-muted: #65676B;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            color: var(--text-main);
+        }
+        .api-config {
+            background-color: #242526;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-size: 13px;
+        }
+        .api-config input {
+            padding: 5px 10px;
+            font-size: 13px;
+            border-radius: 4px;
+            border: none;
+            width: 250px;
+            margin-left: 10px;
+        }
+        header {
+            background-color: var(--card-bg);
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+        }
+        header input {
+            padding: 10px 15px;
+            border: 1px solid #ccd0d5;
+            border-radius: 20px;
+            font-size: 16px;
+            outline: none;
+            width: 250px;
+        }
+        header input:focus {
+            border-color: var(--primary);
+        }
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #166fe5;
+        }
+        button:disabled {
+            background-color: #9cb4d8;
+            cursor: not-allowed;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        #status {
+            text-align: center;
+            font-size: 18px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+            display: flex;
+            flex-direction: column;
+            text-decoration: none;
+            color: inherit;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .card img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            background-color: #e4e6eb;
+        }
+        .card-content {
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+        .price {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .title {
+            font-size: 16px;
+            margin: 0 0 10px 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .meta {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="api-config">
+        <label for="apiUrl">Python API URL:</label>
+        <input type="text" id="apiUrl" value="http://127.0.0.1:5000">
+    </div>
+
+    <header>
+        <input type="text" id="searchQuery" placeholder="Search Marketplace..." value="Small sectional couch">
+        <input type="text" id="locationQuery" placeholder="City, State" value="Scottsdale, Arizona">
+        <button id="searchBtn" onclick="fetchListings()">Search</button>
+    </header>
+
+    <div class="container">
+        <div id="status">Enter a search and location to begin.</div>
+        <div class="grid" id="resultsGrid"></div>
+    </div>
+
+    <script>
+        async function fetchListings() {
+            const apiUrl = document.getElementById('apiUrl').value;
+            const searchQuery = document.getElementById('searchQuery').value;
+            const locationQuery = document.getElementById('locationQuery').value;
+            const btn = document.getElementById('searchBtn');
+            const statusText = document.getElementById('status');
+            const grid = document.getElementById('resultsGrid');
+
+            if (!searchQuery || !locationQuery) {
+                alert('Please provide both a search term and a location.');
+                return;
+            }
+
+            btn.disabled = true;
+            statusText.innerText = 'Searching Marketplace...';
+            grid.innerHTML = '';
+
+            try {
+                // Adjust this route and method based on how you expose the endpoints in the Python app.
+                // The wrapper documentation expects location queries, we assume a POST request here
+                // sending the required parameters. 
+                const response = await fetch(`${apiUrl}/listings`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        searchQuery: searchQuery,
+                        locationQuery: locationQuery
+                    })
+                });
+
+                const json = await response.json();
+
+                if (json.status === "Failure") {
+                    throw new Error(json.error.message || 'Unknown API Error');
+                }
+
+                // Parse the nested API response structure
+                const listings = json.data?.listingPages?.[0]?.listings || [];
+
+                if (listings.length === 0) {
+                    statusText.innerText = 'No listings found.';
+                    btn.disabled = false;
+                    return;
+                }
+
+                statusText.innerText = `Found ${listings.length} results.`;
+                
+                listings.forEach(item => {
+                    const card = document.createElement('a');
+                    card.className = 'card';
+                    card.href = `https://www.facebook.com/marketplace/item/${item.id}`;
+                    card.target = "_blank"; // Opens item in a new tab
+
+                    card.innerHTML = `
+                        <img src="${item.primaryPhotoURL || 'https://via.placeholder.com/250?text=No+Image'}" alt="${item.name}">
+                        <div class="card-content">
+                            <div class="price">${item.currentPrice}</div>
+                            <h3 class="title">${item.name}</h3>
+                            <div class="meta">
+                                <span>📍 ${item.sellerLocation}</span>
+                                <span>👤 ${item.sellerName}</span>
+                                ${item.saleIsPending === "true" ? '<span style="color: #E41E3F; font-weight: bold;">Sale Pending</span>' : ''}
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+
+            } catch (error) {
+                console.error('Fetch error:', error);
+                statusText.innerText = `Error: ${error.message}. Ensure your Python API is running and CORS is enabled.`;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

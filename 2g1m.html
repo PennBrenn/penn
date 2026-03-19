@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Videos</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #111;
+      color: #fff;
+      font-family: Arial, sans-serif;
+    }
+
+    .video-block {
+      padding: 40px 20px 20px;
+      max-width: 900px;
+      margin: 0 auto 60px;
+    }
+
+    .caption {
+      font-size: 1.4rem;
+      font-weight: bold;
+      background: #fff;
+      color: #111;
+      display: inline-block;
+      padding: 6px 14px;
+      margin-bottom: 14px;
+      letter-spacing: 0.02em;
+    }
+
+    .video-wrapper {
+      position: relative;
+      padding-bottom: 56.25%; /* 16:9 */
+      height: 0;
+      overflow: hidden;
+    }
+
+    .video-wrapper iframe {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="video-block">
+    <div class="caption">Video 1</div>
+    <div class="video-wrapper">
+      <iframe
+        src="https://www.youtube.com/embed/nynVWKJyKRY"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen>
+      </iframe>
+    </div>
+  </div>
+
+  <div class="video-block">
+    <div class="caption">Video 2</div>
+    <div class="video-wrapper">
+      <iframe
+        src="https://www.youtube.com/embed/Sh702vCepPY"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen>
+      </iframe>
+    </div>
+  </div>
+
+</body>
+</html>

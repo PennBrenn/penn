@@ -404,7 +404,10 @@ const waterMat=new THREE.ShaderMaterial({
     gl_FragColor=vec4(col,.90);}`,
   transparent:true,side:THREE.DoubleSide
 });
-scene.add(Object.assign(new THREE.Mesh(new THREE.PlaneGeometry(600,600,120,120),waterMat),{rotation:{x:-Math.PI/2,y:0,z:0},position:{x:0,y:0,z:0}}));
+const water = new THREE.Mesh(new THREE.PlaneGeometry(600, 600, 120, 120), waterMat);
+water.rotation.x = -Math.PI / 2;
+// Note: position (0,0,0) is the default, so we don't need to set it explicitly.
+scene.add(water);
 
 // ─── WORLD BUILDERS ────────────────────────────────────────────────────────────
 function makeIsland(cx,cz,radius,height,col,trees=true){

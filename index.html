@@ -767,7 +767,11 @@ document.addEventListener('keyup',e=>{
 let powerInterval=null;
 canvas.addEventListener('mousedown',e=>{
   if(e.button!==0) return;
-  if(!Game.locked){canvas.requestPointerLock();return;}
+  // Force the overlay to hide even if pointer lock fails
+  document.getElementById('lock-overlay').style.display = 'none';
+  Game.locked = true; 
+  
+  if(!document.pointerLockElement){canvas.requestPointerLock();}
   if(Game.state==='idle') startCharging();
 });
 canvas.addEventListener('mouseup',e=>{

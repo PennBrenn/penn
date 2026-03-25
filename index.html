@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GayFishSimulator</title>
+<title>PornHub.com</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap');
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -1233,46 +1234,7 @@ window.addEventListener('resize',()=>{
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth,innerHeight);
 });
-// 1. Properly close the truncated bobber function
-function spawnBobber(pos){
-  if(bobberGroup){
-    scene.remove(bobberGroup);
-    bobberGroup = null;
-  }
-  // You can add your actual bobber mesh generation here later
-}
 
-// 2. Start Menu Unlock Logic
-const lockOverlay = document.getElementById('lock-overlay');
-lockOverlay.addEventListener('click', () => {
-  // Hide the UI
-  lockOverlay.style.opacity = '0';
-  setTimeout(() => { lockOverlay.style.display = 'none'; }, 400);
-  
-  // Update Game State
-  Game.locked = true;
-  Game.state = 'playing';
-  
-  // (Optional) Lock the mouse pointer to the screen for a true FPS feel
-  document.body.requestPointerLock();
-});
-
-// 3. Basic Animation & Rendering Loop
-function animate() {
-  requestAnimationFrame(animate);
-
-  // Update water animation
-  const time = performance.now() * 0.001;
-  waterMat.uniforms.uTime.value = time;
-  
-  // Update sky uniform
-  skyMat.uniforms.uDay.value = Game.dayTime;
-
-  // Render the scene
-  renderer.render(scene, camera);
-}
-
-// Start the loop
 animate();
 </script>
 </body>

@@ -1215,27 +1215,168 @@ function animate(){
 
   // Birds
   Game.birds.forEach(b=>{
-    b.angle+=b.speed;
-    b.mesh.position.x=Math.cos(b.angle)*b.r;
-    b.mesh.position.z=Math.sin(b.angle)*b.r;
-    b.mesh.position.y=b.alt+Math.sin(elapsed*.4+b.phase)*2;
-    b.mesh.rotation.y=-b.angle+Math.PI/2;
-    b.mesh.children.forEach((c,ci)=>{if(ci<2)c.rotation.z=(ci===0?1:-1)*(.25+Math.sin(elapsed*4+b.phase)*.35);});
+   b.angle += b.speed;
+    b.mesh.position.x = Math.cos(b.angle) * b.radius;
+    b.mesh.position.z = Math.sin(b.angle) * b.radius;
+    b.mesh.position.y = b.height + Math.sin(performance.now() * 0.005) * 0.5;
+    b.mesh.rotation.y = -b.angle + Math.PI / 2;
   });
 
-  if(Game.state==='idle'||Game.state==='waiting') camera.position.y=1.7+Math.sin(elapsed*.45)*.005;
-
-  drawMinimap();
-  renderer.render(scene,camera);
+  // Render Scene
+  renderer.render(scene, camera);
+  requestAnimationFrame(animate);
 }
 
-window.addEventListener('resize',()=>{
-  camera.aspect=innerWidth/innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth,innerHeight);
+// 1. START THE ANIMATION LOOP
+requestAnimationFrame(animate);
+
+// 2. UNLOCK START MENU
+const lockOverlay = document.getElementById('lock-overlay');
+lockOverlay.addEventListener('click', () => {
+  lockOverlay.style.opacity = '0';
+  setTimeout(() => lockOverlay.style.display = 'none', 400);
+  Game.locked = true;
+  
+  // Lock mouse for true FPS feel
+  document.body.requestPointerLock();
+  Game.state = 'idle';
 });
 
-animate();
+// 3. CORE GAME CONTROLS & BUGS FIXES
+document.addEventListener('keydown', (e) => {
+  if (!Game.locked) return;
+  const key = e.key.toLowerCase();
+  
+  // Movement
+  if (['w','a','s','d'].includes(key)) Game.moveKeys[key] = true;
+
+  // Bodily Functions
+  if (key === 'p') {
+      Game.pissLevel = Math.min(1, Game.pissLevel + 0.1);
+      document.getElementById('piss-fill').style.width = (Game.pissLevel * 100) + '%';
+      showNotif("Pissing... 💛");
+      Game.pissCount++;
+      document.getElementById('piss-count').innerText = Game.pissCount;
+  }
+  if (key === 'o') {
+      Game.shitLevel = Math.min(1, Game.shitLevel + 0.1);
+      document.getElementById('shit-fill').style.width = (Game.shitLevel * 100) + '%';
+      showNotif("Dropping a log... 💩");
+      Game.shitCount++;
+      document.getElementById('shit-count').innerText = Game.shitCount;
+  }
+  if (key === 'g') {
+      showNotif(FART_SOUNDS[Math.floor(Math.random() * FART_SOUNDS.length)]);
+  }
+
+  // Fishing Mechanics
+  if (key === ' ') {
+      if (Game.state === 'bite') {
+          Game.state = 'fighting';
+          document.getElementById('bite-indicator').style.display = 'none';
+          document.getElementById('fight-ui').style.display = 'flex';
+          Game.fightFish = rFish(); // Get random fish from DB
+          document.getElementById('fight-fish-name').innerText = Game.fightFish.name;
+          Game.fightStrength = 1.0;
+          document.getElementById('fight-bar').style.width = '100%';
+      } else if (document.getElementById('catch-display').style.display === 'flex') {
+          document.getElementById('catch-display').style.display = 'none';
+      }
+  }
+  
+  // Fighting the fish
+  if (key === 'r' && Game.state === 'fighting') {
+      Game.fightStrength -= 0.04;
+      updateFightBar();
+  }
+  if (key === 'f' && Game.state === 'fighting') {
+      Game.fightStrength -= 0.12;
+      Game.fightPunches++;
+      document.getElementById('punch-count').innerText = Game.fightPunches;
+      showNotif("PUNCHED THE FISH! 🥊");
+      updateFightBar();
+  }
+});
+
+document.addEventListener('keyup', (e) => {
+  const key = e.key.toLowerCase();
+  if (['w','a','s','d'].includes(key)) Game.moveKeys[key] = false;
+});
+
+// 4. CASTING THE ROD
+document.addEventListener('mousedown', () => {
+  if (!Game.locked || Game.state !== 'idle') return;
+  Game.state = 'casting';
+  document.getElementById('cast-power-bar').style.display = 'flex';
+  
+  // Simple power bar animation
+  Game.powerTimer = setInterval(() => {
+      Game.power += 5 * Game.powerDir;
+      if (Game.power >= 100 || Game.power <= 0) Game.powerDir *= -1;
+      document.getElementById('power-fill').style.width = Game.power + '%';
+  }, 30);
+});
+
+document.addEventListener('mouseup', () => {
+  if (!Game.locked || Game.state !== 'casting') return;
+  
+  clearInterval(Game.powerTimer);
+  Game.state = 'fishing';
+  document.getElementById('cast-power-bar').style.display = 'none';
+  showNotif("Line cast! Waiting for bite...");
+  
+  // Trigger bite based on random chance
+  setTimeout(() => {
+      if (Game.state === 'fishing') {
+          Game.state = 'bite';
+          document.getElementById('bite-indicator').style.display = 'flex';
+      }
+  }, 2500 + Math.random() * 4000);
+});
+
+// 5. CATCH LOGIC
+function updateFightBar() {
+    document.getElementById('fight-bar').style.width = Math.max(0, Game.fightStrength * 100) + '%';
+    if (Game.fightStrength <= 0) {
+        Game.state = 'idle';
+        document.getElementById('fight-ui').style.display = 'none';
+        
+        const f = Game.fightFish;
+        const weight = parseFloat(rW(f));
+        Game.caughtCount++;
+        Game.totalWeight += weight;
+        
+        // Update HUD
+        document.getElementById('caught-count').innerText = Game.caughtCount;
+        document.getElementById('total-weight').innerText = Game.totalWeight.toFixed(1);
+        
+        // Show Catch Screen
+        document.getElementById('catch-emoji').innerText = f.emoji;
+        document.getElementById('catch-name').innerText = f.name;
+        document.getElementById('catch-weight').innerText = weight.toFixed(1) + ' lbs';
+        document.getElementById('catch-display').style.display = 'flex';
+    }
+}
+
+// 6. NOTIFICATION SYSTEM
+function showNotif(text) {
+    const el = document.createElement('div');
+    el.className = 'notif';
+    el.innerText = text;
+    document.getElementById('notif-area').appendChild(el);
+    setTimeout(() => {
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 300);
+    }, 2500);
+}
+
+// Handle Window Resizing
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
 </script>
 </body>
 </html>

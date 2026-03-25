@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PornHub.com</title>
+<title>fih🥀</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap');
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -300,7 +299,7 @@ const Game = {
   bobberPos: new THREE.Vector3(),
   caughtCount:0, bestWeight:0, totalWeight:0, castCount:0,
   pissCount:0, shitCount:0, punchCount:0,
-  pissLevel:0, shitLevel:0,           // 0–1 meters
+  pissLevel:0, shitLevel:0,
   isPissing:false, isShitting:false,
   biteTimer:null, lineOut:false,
   catchLog:[], catchPile:[], seenSpecies:new Set(),
@@ -309,18 +308,18 @@ const Game = {
   moveKeys:{w:false,a:false,s:false,d:false},
   locked:false,
   dayTime:0.25,
-  rods:1,                // number of rods
+  rods:1,
   maxRods:7,
-  rodObjects:[],         // 3D rod pickups in world
-  pissParts:[],          // piss stream particles
-  shitParts:[],          // shit particles
+  rodObjects:[],
+  pissParts:[],
+  shitParts:[],
   fartParts:[],
-  poopPiles:[],          // 3D poop piles on ground
-  fightFish:null,        // fish being fought
-  fightStrength:0.5,     // 0-1
+  poopPiles:[],
+  fightFish:null,
+  fightStrength:0.5,
   fightPunches:0,
-  currentFishObj:null,   // fighting fish 3D mesh
-  flyingFishPool:[],     // fish that leap out at player
+  currentFishObj:null,
+  flyingFishPool:[],
   notifQueue:[],
   notifTimer:0,
   shitPileGroup:null,
@@ -480,10 +479,8 @@ makeIsland(25,-80,14,3.5,0x284e2a,true);
   const sm=new THREE.MeshLambertMaterial({color:0x5a3015});
   for(let z=-.5;z>=-3.5;z-=.6)[- 1.2,1.2].forEach(x=>{const po=new THREE.Mesh(new THREE.BoxGeometry(.05,.55,.05),sm);po.position.set(x,.42,z);g.add(po);});
   [-1.2,1.2].forEach(x=>{const r=new THREE.Mesh(new THREE.BoxGeometry(.05,.05,3.1),sm);r.position.set(x,.67,-2.);g.add(r);});
-  // Lantern
   const lp=new THREE.Mesh(new THREE.CylinderGeometry(.03,.03,1.2,6),sm);lp.position.set(-1.,.72,-.5);g.add(lp);
   const lb=new THREE.Mesh(new THREE.BoxGeometry(.18,.22,.18),new THREE.MeshBasicMaterial({color:0xffcc66}));lb.position.set(-1.,1.4,-.5);g.add(lb);
-  // Tackle box
   const tb=new THREE.Mesh(new THREE.BoxGeometry(.45,.22,.3),new THREE.MeshLambertMaterial({color:0x28508a}));tb.position.set(-.7,.27,-3.2);tb.castShadow=true;g.add(tb);
   scene.add(g);
 })();
@@ -508,13 +505,10 @@ function spawnRodPickups(){
     if(i>=ROD_TYPES.length) return;
     const type=ROD_TYPES[i];
     const g=new THREE.Group();
-    // Floating rod visual
     const rod=new THREE.Mesh(new THREE.CylinderGeometry(.02,.03,.9,6),new THREE.MeshLambertMaterial({color:type.color}));
     rod.rotation.z=Math.PI/6; g.add(rod);
-    // Glowing orb
     const orb=new THREE.Mesh(new THREE.SphereGeometry(.18,10,10),new THREE.MeshBasicMaterial({color:type.color,transparent:true,opacity:.7}));
     orb.position.y=.4; g.add(orb);
-    // Sparkle ring
     const ring=new THREE.Mesh(new THREE.TorusGeometry(.22,.03,6,16),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.5}));
     ring.position.y=.4; ring.rotation.x=Math.PI/2; g.add(ring);
     g.position.set(x,.6,z);
@@ -599,6 +593,7 @@ for(let i=0;i<18;i++){
   g.position.set(Math.cos(angle)*r,18+Math.random()*25,Math.sin(angle)*r);
   g.rotation.y=angle;
   scene.add(g);
+  // FIX: store altitude as 'alt' to match animate loop reference
   Game.birds.push({mesh:g,angle,r,alt:g.position.y,speed:.003+Math.random()*.004,phase:Math.random()*Math.PI*2});
 }
 
@@ -631,7 +626,6 @@ function stopPissing(){Game.isPissing=false;}
 function spawnPissParticle(){
   const m=new THREE.Mesh(new THREE.SphereGeometry(.04,4,4),
     new THREE.MeshBasicMaterial({color:0xddc000,transparent:true,opacity:.85}));
-  // Shoot forward-downward from camera
   const dir=new THREE.Vector3(0,-.3,-1).applyQuaternion(camera.quaternion).normalize();
   m.position.copy(camera.position).addScaledVector(dir,.3);
   scene.add(m);
@@ -689,16 +683,14 @@ function addFishToPile(fish){
   pilePositions.push(m);
 }
 
-// ─── FLYING FISH (random jank) ──────────────────────────────────────────────────
+// ─── FLYING FISH ──────────────────────────────────────────────────────────────
 function launchFlyingFish(){
   const fish=FISH_DB[Math.floor(Math.random()*8)];
   const geo=new THREE.ConeGeometry(.1,.4,5); geo.rotateZ(-Math.PI/2);
   const m=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({color:fish.color}));
-  // spawn from a random point on water near player
   const a=Math.random()*Math.PI*2,r=5+Math.random()*10;
   m.position.set(camera.position.x+Math.cos(a)*r,.1,camera.position.z+Math.sin(a)*r);
   scene.add(m);
-  // Arc toward player
   const dx=camera.position.x-m.position.x,dz=camera.position.z-m.position.z;
   const dist=Math.sqrt(dx*dx+dz*dz)||1;
   Game.flyingFishPool.push({mesh:m,fish,life:0,maxLife:1.5,
@@ -813,7 +805,6 @@ function movePlayer(dt){
   dir.normalize().applyEuler(new THREE.Euler(0,camera.rotation.y,0,'YXZ'));
   camera.position.x+=dir.x*spd; camera.position.z+=dir.z*spd;
   camera.position.y=1.7;
-  // Piss/shit fills while walking
   Game.pissLevel=Math.min(1,Game.pissLevel+dt*.006);
   Game.shitLevel=Math.min(1,Game.shitLevel+dt*.004);
   updateBodyMeters();
@@ -842,7 +833,6 @@ function doFart(){
   spawnFartCloud();
   const word=FART_SOUNDS[Math.floor(Math.random()*FART_SOUNDS.length)];
   showNotif('💨 '+word+' — the fish scattered','#88aa44');
-  // Fart scares nearby schools
   Game.fishSchools.forEach(s=>{s.speed*=1.5; setTimeout(()=>s.speed/=1.5,3000);});
 }
 
@@ -860,7 +850,6 @@ function checkRodPickups(){
       const mul=Math.pow(Game.rods,2);
       document.getElementById('rod-icons').textContent='🎣'.repeat(Game.rods);
       document.getElementById('rod-multiplier').textContent=`×${mul} fish per cast`;
-      // Show rod shop
       document.getElementById('shop-rod-emoji').textContent='🎣';
       document.getElementById('shop-rod-name').textContent=rod.type.name+'\n'+rod.type.bonus;
       document.getElementById('shop-rod-power').textContent=`Total Rods: ${Game.rods} → Fish ×${mul} per cast`;
@@ -951,7 +940,6 @@ function fightPunch(){
   document.getElementById('fight-bar').style.width=(Game.fightStrength*100)+'%';
   showNotif(['👊 POW!','👊 BOOF!','👊 WHAM!','👊 SPLAT!'][Math.floor(Math.random()*4)]+' You punched the fish!','#ff9040');
   if(Game.fightStrength<=0) winFight();
-  // Fish punches back sometimes
   if(Math.random()<.3){
     camera.rotation.z+=(Math.random()-.5)*.15;
     setTimeout(()=>camera.rotation.z=0,500);
@@ -972,13 +960,11 @@ function winFight(){
   reelIn();
 }
 
-// Auto fish fights back over time
 function updateFightAI(dt){
   if(Game.state!=='fighting') return;
   Game.fightStrength=Math.min(1,Game.fightStrength+dt*.08*(1+Math.random()));
   document.getElementById('fight-bar').style.width=(Game.fightStrength*100)+'%';
   if(Game.fightStrength>=1){
-    // Fish escaped!
     document.getElementById('fight-ui').style.display='none';
     showNotif('😱 THE FISH ESCAPED! It said: "'+Game.fightFish.taunt+'"','#ff5050');
     clearLine(); Game.state='idle';
@@ -993,7 +979,6 @@ function reelIn(){
 }
 
 function landFish(){
-  // EXPONENTIAL FISH: rods^2
   const fishCount=Math.pow(Game.rods,2);
   const catches=[];
   for(let i=0;i<fishCount;i++) catches.push({fish:rFish(),weight:parseFloat(rW(FISH_DB[Math.floor(Math.random()*FISH_DB.length)]))});
@@ -1063,11 +1048,10 @@ function drawMinimap(){
   mmx.clearRect(0,0,90,90);
   mmx.fillStyle='#0a1420';mmx.fillRect(0,0,90,90);
   const sc=90/180,ox=45,oz=45;
-  [[- 30,-20,8],[35,-18,5],[5,-55,12],[-50,-45,7],[55,-30,3.5],[60,-60,9],[-18,-70,4],[25,-80,14]].forEach(([cx,cz,r])=>{
+  [[-30,-20,8],[35,-18,5],[5,-55,12],[-50,-45,7],[55,-30,3.5],[60,-60,9],[-18,-70,4],[25,-80,14]].forEach(([cx,cz,r])=>{
     mmx.fillStyle='#2a5030';mmx.beginPath();mmx.arc(ox+cx*sc,oz+cz*sc,Math.max(2,r*sc),0,Math.PI*2);mmx.fill();
   });
   mmx.fillStyle='#1a4020';mmx.fillRect(0,oz+15*sc,90,12);
-  // Rod pickups
   Game.rodObjects.forEach(r=>{
     if(r.collected) return;
     mmx.fillStyle='#40d4ff';mmx.beginPath();mmx.arc(ox+r.pos.x*sc,oz+r.pos.z*sc,3,0,Math.PI*2);mmx.fill();
@@ -1078,7 +1062,6 @@ function drawMinimap(){
   const a=camera.rotation.y;
   mmx.beginPath();mmx.moveTo(px,pz);mmx.lineTo(px+Math.sin(a)*-8,pz+Math.cos(a)*-8);mmx.stroke();
   mmx.strokeStyle='rgba(201,168,76,0.4)';mmx.lineWidth=1;mmx.strokeRect(0,0,90,90);
-  // Legend
   mmx.fillStyle='rgba(64,212,255,0.8)';mmx.font='8px monospace';mmx.fillText('🎣 rods',2,88);
 }
 
@@ -1104,7 +1087,7 @@ function updateDay(dt){
 const clock=new THREE.Clock();
 let elapsed=0;
 function animate(){
-  requestAnimationFrame(animate);
+  requestAnimationFrame(animate);  // single rAF call — no duplicate at bottom
   const dt=Math.min(clock.getDelta(),.05);
   elapsed+=dt;
 
@@ -1117,6 +1100,7 @@ function animate(){
   if(Game.state==='fighting') updateFightAI(dt);
   checkRodPickups();
   randomJankEvent(elapsed);
+  drawMinimap();  // draw minimap every frame
 
   // Bobber
   if(bobberGroup&&Game.lineOut){
@@ -1155,7 +1139,6 @@ function animate(){
       showNotif('💛 Ahhhh. Pissed '+Math.round(Game.pissCount*0.3+0.5)+' liters into the lake.','#e8d020');
     }
   } else if(!Game.isPissing){
-    // Regen
     Game.pissLevel=Math.min(1,Game.pissLevel+dt*.012);
     updateBodyMeters();
   }
@@ -1182,7 +1165,6 @@ function animate(){
     const ff=Game.flyingFishPool[i];ff.life+=dt;ff.vel.y-=6*dt;
     ff.mesh.position.addScaledVector(ff.vel,dt);
     ff.mesh.rotation.z+=dt*4;
-    // Hit player?
     if(ff.mesh.position.distanceTo(camera.position)<1.5){
       camera.rotation.z+=(Math.random()-.5)*.25;setTimeout(()=>camera.rotation.z=0,700);
       showNotif('🐟💥 A FISH HIT YOU IN THE FACE!','#ff5050');
@@ -1197,7 +1179,7 @@ function animate(){
     if(r.collected) return;
     r.mesh.position.y=.6+Math.sin(elapsed*2+i)*.2;
     r.mesh.rotation.y+=dt*1.5;
-    r.mesh.children[1].material.opacity=.4+Math.sin(elapsed*3+i)*.3; // orb
+    r.mesh.children[1].material.opacity=.4+Math.sin(elapsed*3+i)*.3;
   });
 
   // Fish schools
@@ -1213,170 +1195,36 @@ function animate(){
     });
   });
 
-  // Birds
+  // Birds — FIX: use b.alt (not b.height which was undefined)
   Game.birds.forEach(b=>{
-   b.angle += b.speed;
-    b.mesh.position.x = Math.cos(b.angle) * b.radius;
-    b.mesh.position.z = Math.sin(b.angle) * b.radius;
-    b.mesh.position.y = b.height + Math.sin(performance.now() * 0.005) * 0.5;
-    b.mesh.rotation.y = -b.angle + Math.PI / 2;
+    b.angle+=b.speed;
+    b.mesh.position.x=Math.cos(b.angle)*b.r;
+    b.mesh.position.z=Math.sin(b.angle)*b.r;
+    b.mesh.position.y=b.alt+Math.sin(elapsed*1.2+b.phase)*.5;  // FIX: b.alt
+    b.mesh.rotation.y=-b.angle+Math.PI/2;
+    // Wing flap
+    b.mesh.children[0].rotation.z= Math.sin(elapsed*5+b.phase)*0.3+0.3;
+    b.mesh.children[1].rotation.z=-Math.sin(elapsed*5+b.phase)*0.3-0.3;
   });
 
-  // Render Scene
-  renderer.render(scene, camera);
-  requestAnimationFrame(animate);
+  renderer.render(scene,camera);
 }
 
-// 1. START THE ANIMATION LOOP
-requestAnimationFrame(animate);
-
-// 2. UNLOCK START MENU
-const lockOverlay = document.getElementById('lock-overlay');
-lockOverlay.addEventListener('click', () => {
-  lockOverlay.style.opacity = '0';
-  setTimeout(() => lockOverlay.style.display = 'none', 400);
-  Game.locked = true;
-  
-  // Lock mouse for true FPS feel
-  document.body.requestPointerLock();
-  Game.state = 'idle';
+// ─── START ─────────────────────────────────────────────────────────────────────
+// FIX: request pointer lock on `canvas` (not `document.body`) so that the
+// pointerlockchange handler sees pointerLockElement === canvas → Game.locked = true.
+const lockOverlay=document.getElementById('lock-overlay');
+lockOverlay.addEventListener('click',()=>{
+  canvas.requestPointerLock();  // was document.body.requestPointerLock() — FIXED
 });
 
-// 3. CORE GAME CONTROLS & BUGS FIXES
-document.addEventListener('keydown', (e) => {
-  if (!Game.locked) return;
-  const key = e.key.toLowerCase();
-  
-  // Movement
-  if (['w','a','s','d'].includes(key)) Game.moveKeys[key] = true;
+animate();  // single start — no second rAF call anywhere
 
-  // Bodily Functions
-  if (key === 'p') {
-      Game.pissLevel = Math.min(1, Game.pissLevel + 0.1);
-      document.getElementById('piss-fill').style.width = (Game.pissLevel * 100) + '%';
-      showNotif("Pissing... 💛");
-      Game.pissCount++;
-      document.getElementById('piss-count').innerText = Game.pissCount;
-  }
-  if (key === 'o') {
-      Game.shitLevel = Math.min(1, Game.shitLevel + 0.1);
-      document.getElementById('shit-fill').style.width = (Game.shitLevel * 100) + '%';
-      showNotif("Dropping a log... 💩");
-      Game.shitCount++;
-      document.getElementById('shit-count').innerText = Game.shitCount;
-  }
-  if (key === 'g') {
-      showNotif(FART_SOUNDS[Math.floor(Math.random() * FART_SOUNDS.length)]);
-  }
-
-  // Fishing Mechanics
-  if (key === ' ') {
-      if (Game.state === 'bite') {
-          Game.state = 'fighting';
-          document.getElementById('bite-indicator').style.display = 'none';
-          document.getElementById('fight-ui').style.display = 'flex';
-          Game.fightFish = rFish(); // Get random fish from DB
-          document.getElementById('fight-fish-name').innerText = Game.fightFish.name;
-          Game.fightStrength = 1.0;
-          document.getElementById('fight-bar').style.width = '100%';
-      } else if (document.getElementById('catch-display').style.display === 'flex') {
-          document.getElementById('catch-display').style.display = 'none';
-      }
-  }
-  
-  // Fighting the fish
-  if (key === 'r' && Game.state === 'fighting') {
-      Game.fightStrength -= 0.04;
-      updateFightBar();
-  }
-  if (key === 'f' && Game.state === 'fighting') {
-      Game.fightStrength -= 0.12;
-      Game.fightPunches++;
-      document.getElementById('punch-count').innerText = Game.fightPunches;
-      showNotif("PUNCHED THE FISH! 🥊");
-      updateFightBar();
-  }
+window.addEventListener('resize',()=>{
+  camera.aspect=innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
 });
-
-document.addEventListener('keyup', (e) => {
-  const key = e.key.toLowerCase();
-  if (['w','a','s','d'].includes(key)) Game.moveKeys[key] = false;
-});
-
-// 4. CASTING THE ROD
-document.addEventListener('mousedown', () => {
-  if (!Game.locked || Game.state !== 'idle') return;
-  Game.state = 'casting';
-  document.getElementById('cast-power-bar').style.display = 'flex';
-  
-  // Simple power bar animation
-  Game.powerTimer = setInterval(() => {
-      Game.power += 5 * Game.powerDir;
-      if (Game.power >= 100 || Game.power <= 0) Game.powerDir *= -1;
-      document.getElementById('power-fill').style.width = Game.power + '%';
-  }, 30);
-});
-
-document.addEventListener('mouseup', () => {
-  if (!Game.locked || Game.state !== 'casting') return;
-  
-  clearInterval(Game.powerTimer);
-  Game.state = 'fishing';
-  document.getElementById('cast-power-bar').style.display = 'none';
-  showNotif("Line cast! Waiting for bite...");
-  
-  // Trigger bite based on random chance
-  setTimeout(() => {
-      if (Game.state === 'fishing') {
-          Game.state = 'bite';
-          document.getElementById('bite-indicator').style.display = 'flex';
-      }
-  }, 2500 + Math.random() * 4000);
-});
-
-// 5. CATCH LOGIC
-function updateFightBar() {
-    document.getElementById('fight-bar').style.width = Math.max(0, Game.fightStrength * 100) + '%';
-    if (Game.fightStrength <= 0) {
-        Game.state = 'idle';
-        document.getElementById('fight-ui').style.display = 'none';
-        
-        const f = Game.fightFish;
-        const weight = parseFloat(rW(f));
-        Game.caughtCount++;
-        Game.totalWeight += weight;
-        
-        // Update HUD
-        document.getElementById('caught-count').innerText = Game.caughtCount;
-        document.getElementById('total-weight').innerText = Game.totalWeight.toFixed(1);
-        
-        // Show Catch Screen
-        document.getElementById('catch-emoji').innerText = f.emoji;
-        document.getElementById('catch-name').innerText = f.name;
-        document.getElementById('catch-weight').innerText = weight.toFixed(1) + ' lbs';
-        document.getElementById('catch-display').style.display = 'flex';
-    }
-}
-
-// 6. NOTIFICATION SYSTEM
-function showNotif(text) {
-    const el = document.createElement('div');
-    el.className = 'notif';
-    el.innerText = text;
-    document.getElementById('notif-area').appendChild(el);
-    setTimeout(() => {
-        el.style.opacity = '0';
-        setTimeout(() => el.remove(), 300);
-    }, 2500);
-}
-
-// Handle Window Resizing
-window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-});
-
 </script>
 </body>
 </html>

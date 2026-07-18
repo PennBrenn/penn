@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Open Sauce — Saturday July 19</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap');
+
+  :root {
+    --bg:       #f5f5f0;
+    --surface:  #ffffff;
+    --border:   #d4d4cc;
+    --text:     #111110;
+    --muted:    #666660;
+    --main:     #cc3a00;   /* hot orange — safety hazard tape */
+    --outdoor:  #006fa8;   /* blue — outdoor stage */
+    --sponsor:  #4a7a00;   /* dark lime — readable on light */
+    --time-w:   72px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    padding: 24px 16px 64px;
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  /* ── HEADER ── */
+  header {
+    border-bottom: 2px solid var(--main);
+    padding-bottom: 20px;
+    margin-bottom: 32px;
+  }
+
+  .eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  h1 {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--text);
+  }
+
+  h1 span {
+    color: var(--main);
+  }
+
+  .meta {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+
+  /* ── SECTION LABEL ── */
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 28px 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── TIMELINE ── */
+  .timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  /* connector line */
+  .event-row {
+    display: flex;
+    gap: 0;
+    position: relative;
+  }
+
+  .time-col {
+    width: var(--time-w);
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    padding-right: 16px;
+    padding-top: 18px;
+  }
+
+  .time-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .dur-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--border);
+    white-space: nowrap;
+    margin-top: 2px;
+  }
+
+  /* vertical spine */
+  .spine-col {
+    width: 28px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+  }
+
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-top: 22px;
+    flex-shrink: 0;
+    z-index: 1;
+  }
+
+  .dot.main-stage   { background: var(--main); box-shadow: 0 0 6px var(--main); }
+  .dot.outdoor      { background: var(--outdoor); box-shadow: 0 0 6px var(--outdoor); }
+  .dot.sponsor-stop { background: var(--sponsor); box-shadow: 0 0 6px var(--sponsor); }
+
+  .spine-line {
+    width: 2px;
+    flex: 1;
+    background: var(--border);
+    margin-top: 4px;
+  }
+
+  .event-row:last-child .spine-line { display: none; }
+
+  /* card */
+  .card-col {
+    flex: 1;
+    padding: 14px 0 24px 12px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* left accent stripe */
+  .card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+  }
+
+  .card.main-stage::before   { background: var(--main); }
+  .card.outdoor::before      { background: var(--outdoor); }
+  .card.sponsor-stop::before { background: var(--sponsor); }
+
+  .card-stage {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+  }
+
+  .card.main-stage   .card-stage { color: var(--main); }
+  .card.outdoor      .card-stage { color: var(--outdoor); }
+  .card.sponsor-stop .card-stage { color: var(--sponsor); }
+
+  .card-title {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+
+  .card-desc {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 10px;
+    line-height: 1.4;
+  }
+
+  /* creator chips */
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .chip {
+    font-size: 12px;
+    font-family: 'Space Mono', monospace;
+    background: #e8e8e2;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 7px;
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  .chip.mod {
+    border-color: var(--muted);
+    color: var(--muted);
+  }
+
+  /* sponsor card extras */
+  .sponsor-tip {
+    font-size: 12px;
+    color: var(--sponsor);
+    margin-top: 8px;
+    font-family: 'Space Mono', monospace;
+  }
+
+  /* gap / free time row */
+  .gap-row {
+    display: flex;
+    gap: 0;
+  }
+
+  .gap-time {
+    width: var(--time-w);
+    flex-shrink: 0;
+  }
+
+  .gap-spine {
+    width: 28px;
+    flex-shrink: 0;
+    display: flex;
+    justify-content: center;
+  }
+
+  .gap-line {
+    width: 2px;
+    background: var(--border);
+    flex: 1;
+    opacity: 0.4;
+  }
+
+  .gap-content {
+    flex: 1;
+    padding: 0 0 0 12px;
+    display: flex;
+    align-items: center;
+  }
+
+  .gap-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--border);
+    letter-spacing: 0.1em;
+    padding: 10px 0;
+  }
+
+  /* sponsor section */
+  .sponsor-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 4px;
+  }
+
+  .sponsor-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    border-top: 3px solid var(--sponsor);
+  }
+
+  .sponsor-name {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--sponsor);
+    margin-bottom: 4px;
+  }
+
+  .sponsor-what {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+
+  .sponsor-action {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--text);
+    margin-top: 7px;
+  }
+
+  /* footer */
+  footer {
+    margin-top: 40px;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  @media (max-width: 420px) {
+    :root { --time-w: 56px; }
+    .time-label { font-size: 10px; }
+    .card-title { font-size: 14px; }
+    .sponsor-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Open Sauce 2026 · San Mateo County Event Center</div>
+  <h1>Saturday, <span>July 18</span></h1>
+  <div class="meta">GA opens 10:00 AM · Doors close 6:00 PM · Parking $20, no re-entry</div>
+</header>
+
+<!-- ITINERARY -->
+<div class="section-label">Your Schedule</div>
+
+<div class="timeline">
+
+  <!-- 10:15 Welcome -->
+  <div class="event-row">
+    <div class="time-col">
+      <div class="time-label">10:15</div>
+      <div class="dur-label">30 min</div>
+    </div>
+    <div class="spine-col">
+      <div class="dot main-stage"></div>
+      <div class="spine-line"></div>
+    </div>
+    <div class="card-col">
+      <div class="card main-stage">
+        <div class="card-stage">🎪 Main Stage</div>
+        <div class="card-title">Welcome to Open Sauce!</div>
+        <div class="card-desc">Safety Third kicks off the fourth annual Open Sauce. A solid landing spot right after doors open.</div>
+        <div class="chips">
+          <span class="chip">Kevin</span>
+          <span class="chip">NileRed</span>
+          <span class="chip">Allen Pan</span>
+          <span class="chip">William Osman</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 10:20 Vroom Vroom (optional) -->
+  <div class="event-row">
+    <div class="time-col">
+      <div class="time-label">10:20</div>
+      <div class="dur-label">30 min</div>
+    </div>
+    <div class="spine-col">
+      <div class="dot outdoor"></div>
+      <div class="spine-line"></div>
+    </div>
+    <div class="card-col">
+      <div class="card outdoor" style="opacity:0.75; border-style:dashed;">
+        <div class="card-stage">🌤 Outdoor Stage · if time allows</div>
+        <div class="card-title">PANEL: Vroom Vroom</div>
+        <div class="card-desc">People who fix cars, break cars, and drive them very far. Runs same time as Welcome — catch the tail end or skip if Welcome runs long.</div>
+        <div class="chips">
+          <span class="chip mod">Louis Weisz (mod)</span>
+          <span class="chip">c90adventures</span>
+          <span class="chip">Aging Wheels</span>
+          <span class="chip">Tech Joyce</span>
+          <span class="chip">Zip Tie Tuning</span>
+          <span class="chip">Quiet Nerd</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 10:50 Making Content (optional) -->
+  <div class="event-row">
+    <div class="time-col">
+      <div class="time-label">10:50</div>
+      <div class="dur-label">30 min</div>
+    </div>
+    <div class="spine-col">
+      <div class="dot main-stage"></div>
+      <div class="spine-line"></div>
+    </div>
+    <div class="card-col">
+      <div class="card main-stage" style="opacity:0.75; border-style:dashed;">
+        <div class="card-stage">🎪 Main Stage · if time allows</div>
+        <div class="card-title">PANEL: Making Content About Making Projects</div>
+        <div class="card-desc">Storytelling, education, entertainment, and the algorithm — from people who do it all at once.</div>
+        <div class="chips">
+          <span class="chip mod">Stephen Hawes (mod)</span>
+          <span class="chip">Emily The Engineer</span>
+          <span class="chip">Joel Creates</span>
+          <span class="chip">Thought Emporium</span>
+          <span class="chip">Tom Stanton</span>
+          <span class="chip">Stuff Made Here</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- gap -->
+  <div class="gap-row">
+    <div class="gap-time"></div>
+    <div class="gap-spine"><div class="gap-line"></div></div>
+    <div class="gap-content">
+      <div class="gap-label">~ 1 hr · explore exhibits + sponsor booths</div>
+    </div>
+  </div>
+
+  <!-- 12:50 3D Printing Panel -->
+  <div class="event-row">
+    <div class="time-col">
+      <div class="time-label">12:50</div>
+      <div class="dur-label">30 min</div>
+    </div>
+    <div class="spine-col">
+      <div class="dot outdoor"></div>
+      <div class="spine-line"></div>
+    </div>
+    <div class="card-col">
+      <div class="card outdoor">
+        <div class="card-stage">🌤 Outdoor Stage</div>
+        <div class="card-title">PANEL: The State of 3D Printing</div>
+        <div class="card-desc">Where 3D printing actually is in 2026 — what changed, what's quietly happening, what's next.</div>
+        <div class="chips">
+          <span class="chip mod">Engineezy (mod)</span>
+          <span class="chip">Nate From the Internet</span>
+          <span class="chip">Tom Stanton</span>
+          <span class="chip">Ivan Miranda</span>
+          <span class="chip">Strelkomania</span>
+          <span class="chip">CNC Kitchen</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- gap -->
+  <div class="gap-row">
+    <div class="gap-time"></div>
+    <div class="gap-spine"><div class="gap-line"></div></div>
+    <div class="gap-content">
+      <div class="gap-label">~ 1.5 hrs · lunch + floor time</div>
+    </div>
+  </div>
+
+  <!-- 2:30 Electric Panel -->
+  <div class="event-row">
+    <div class="time-col">
+      <div class="time-label">2:30</div>
+      <div class="dur-label">30 min</div>
+    </div>
+    <div class="spine-col">
+      <div class="dot main-stage"></div>
+      <div class="spine-line"></div>
+    </div>
+    <div class="card-col">
+      <div class="card main-stage">
+        <div class="card-stage">🎪 Main Stage</div>
+        <div class="card-title">PANEL: This Panel is Electric.</div>
+        <div class="card-desc">Lasers, lightning, and high-voltage chaos. The most dangerous panel roster at the show.</div>
+        <div class="chips">
+          <span class="chip mod">Allen Pan (mod)</span>
+          <span class="chip">Drake Anthony (styropyro)</span>
+          <span class="chip">AlphaPhoenix</span>
+          <span class="chip">ElectroBOOM</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- gap -->
+  <div class="gap-row">
+    <div class="gap-time"></div>
+    <div class="gap-spine"><div class="gap-line"></div></div>
+    <div class="gap-content">
+      <div class="gap-label">~ 1 hr · floor + sponsor booth sweep</div>
+    </div>
+  </div>
+
+  <!-- 3:50 Carp Tank -->
+  <div class="event-row">
+    <div class="time-col">
+      <div class="time-label">3:50</div>
+      <div class="dur-label">45 min</div>
+    </div>
+    <div class="spine-col">
+      <div class="dot main-stage"></div>
+      <div class="spine-line"></div>
+    </div>
+    <div class="card-col">
+      <div class="card main-stage">
+        <div class="card-stage">🎪 Main Stage</div>
+        <div class="card-title">GAME: Carp Tank</div>
+        <div class="card-desc">Real exhibitors pitch to four ruthless investor carp. Will they get the money? (They won't.)</div>
+        <div class="chips">
+          <span class="chip mod">Internet Comment Etiquette (mod)</span>
+          <span class="chip">Alex Ernst</span>
+          <span class="chip">Tech Joyce</span>
+          <span class="chip">Ruth Amos</span>
+          <span class="chip">c90adventures</span>
+          <span class="chip">Integza</span>
+          <span class="chip">William Osman</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- gap -->
+  <div class="gap-row">
+    <div class="gap-time"></div>
+    <div class="gap-spine"><div class="gap-line"></div></div>
+    <div class="gap-content">
+      <div class="gap-label">5 min buffer</div>
+    </div>
+  </div>
+
+  <!-- 4:40 Dangerous People v The Law -->
+  <div class="event-row">
+    <div class="time-col">
+      <div class="time-label">4:40</div>
+      <div class="dur-label">35 min</div>
+    </div>
+    <div class="spine-col">
+      <div class="dot main-stage"></div>
+      <div class="spine-line"></div>
+    </div>
+    <div class="card-col">
+      <div class="card main-stage">
+        <div class="card-stage">🎪 Main Stage</div>
+        <div class="card-title">PANEL: Dangerous People v The Law</div>
+        <div class="card-desc">Live "legal counsel" on their most questionable project ideas. <em>Legally this is a joke.</em></div>
+        <div class="chips">
+          <span class="chip mod">Tyler Chou (mod)</span>
+          <span class="chip">Drake Anthony (styropyro)</span>
+          <span class="chip">Kevin</span>
+          <span class="chip">NileRed</span>
+          <span class="chip">Explosions&amp;Fire</span>
+          <span class="chip">Cody's Lab</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<!-- end timeline -->
+
+
+<!-- SPONSORS -->
+<div class="section-label" style="margin-top:40px;">Sponsor Booths · Swag & Discounts</div>
+
+<p style="font-size:12px; color:var(--muted); margin-bottom:14px; font-family:'Space Mono',monospace;">
+  💡 Codes are booth-only. Hit priority stops before 1 PM while traffic is light.
+</p>
+
+<!-- PRIORITY TIER -->
+<div class="section-label" style="margin-top:0; font-size:9px;">🔥 Priority — real value for your projects</div>
+<div class="sponsor-grid">
+
+  <div class="sponsor-card">
+    <div class="sponsor-name">DigiKey ⭐</div>
+    <div class="sponsor-what">Massive booth this year — XRP robots, edge AI demos, Meshtastic nodes, LED walls, PCB tile game. Actually interactive.</div>
+    <div class="sponsor-action">→ Stop by early. They run giveaways and hand out swag. Big booth = worth time.</div>
+  </div>
+
+  <div class="sponsor-card">
+    <div class="sponsor-name">OSH Cut ⭐</div>
+    <div class="sponsor-what">On-demand sheet metal laser cutting & bending. Next-day turnaround. Directly useful for enclosures.</div>
+    <div class="sponsor-action">→ Ask for a promo code — they distribute them at events like this.</div>
+  </div>
+
+  <div class="sponsor-card">
+    <div class="sponsor-name">PCBWay ⭐</div>
+    <div class="sponsor-what">PCB fab + assembly. Confirmed attending with "summer colors." Active first-order discounts online too.</div>
+    <div class="sponsor-action">→ Ask for show code. Also check pcbway.com for 1st-order deals ($5 off new accounts).</div>
+  </div>
+
+  <div class="sponsor-card">
+    <div class="sponsor-name">Prusa Research</div>
+    <div class="sponsor-what">The 3D printer brand. Likely showing hardware given the 3D printing panel happening today.</div>
+    <div class="sponsor-action">→ Ask about show specials / filament samples.</div>
+  </div>
+
+  <div class="sponsor-card">
+    <div class="sponsor-name">Arduino</div>
+    <div class="sponsor-what">New Arduino UNO Q (2GB RAM, 16GB eMMC, $59) will likely be on display at DigiKey or their own booth.</div>
+    <div class="sponsor-action">→ Stickers guaranteed. Ask about dev access / early programs.</div>
+  </div>
+
+  <div class="sponsor-card">
+    <div class="sponsor-name">Raspberry Pi</div>
+    <div class="sponsor-what">Confirmed sponsor. RPi 500+ and monitor in DigiKey booth. Own booth likely too.</div>
+    <div class="sponsor-action">→ Check for stickers / pins. Sometimes demo units on display.</div>
+  </div>
+
+  <div class="sponsor-card">
+    <div class="sponsor-name">Anthropic 👋</div>
+    <div class="sponsor-what">That's the company that makes me. Sponsored this year — first time at OpenSauce.</div>
+    <div class="sponsor-action">→ Worth a stop. May have Claude credits / swag. Ask what they're showing.</div>
+  </div>
+
+  <div class="sponsor-card">
+    <div class="sponsor-name">iFixit</div>
+    <div class="sponsor-what">Right-to-repair tools and teardowns. Their toolkit is genuinely useful for hardware work.</div>
+    <div class="sponsor-action">→ Stickers + possibly tool discounts. Ask at booth.</div>
+  </div>
+
+  <div class="sponsor-card">
+    <div class="sponsor-name">Framework</div>
+    <div class="sponsor-what">Modular repairable laptops. Dream hardware for someone who values repairability.</div>
+    <div class="sponsor-action">→ Ask about show discounts or demo unit pricing.</div>
+  </div>
+
+  <div class="sponsor-card">
+    <div class="sponsor-name">Cursor</div>
+    <div class="sponsor-what">AI coding editor. 50% off first month available via referral links online (not a booth-exclusive code).</div>
+    <div class="sponsor-action">→ Ask if they have a show-specific deal. Online: cursor.com referral links give 50% off month 1.</div>
+  </div>
+
+</div>
+
+<!-- SECONDARY TIER -->
+<div class="section-label" style="margin-top:20px; font-size:9px;">Also there — grab stickers / check it out</div>
+<div class="sponsor-grid">
+
+  <div class="sponsor-card" style="border-top-color: var(--border);">
+    <div class="sponsor-name" style="color:var(--text);">Kickstarter</div>
+    <div class="sponsor-what">Platform people. Stickers, maybe creator resources.</div>
+    <div class="sponsor-action">→ Quick stop.</div>
+  </div>
+
+  <div class="sponsor-card" style="border-top-color: var(--border);">
+    <div class="sponsor-name" style="color:var(--text);">Seeed Studio</div>
+    <div class="sponsor-what">Modules, XIAO boards, Grove ecosystem. Meshtastic nodes in DigiKey booth are Seeed.</div>
+    <div class="sponsor-action">→ Ask about show promos on XIAO / LoRa gear.</div>
+  </div>
+
+  <div class="sponsor-card" style="border-top-color: var(--border);">
+    <div class="sponsor-name" style="color:var(--text);">Elegoo</div>
+    <div class="sponsor-what">3D printers and Arduino-compatible boards. Budget-friendly maker gear.</div>
+    <div class="sponsor-action">→ Check for show deals / new product announces.</div>
+  </div>
+
+ <div class="sponsor-card" style="border-top-color: var(--border);">
+    <div class="sponsor-name" style="color:var(--text);">xTool</div>
+    <div class="sponsor-what">Desktop laser cutters. High likely they have a unit running live cuts.</div>
+    <div class="sponsor-action">→ If you've wanted a laser cutter — go ask about show pricing.</div>
+  </div>
+
+  <div class="sponsor-card" style="border-top-color: var(--border);">
+    <div class="sponsor-name" style="color:var(--text);">Fujifilm</div>
+    <div class="sponsor-what">Cameras + film. Unusual sponsor here — probably targeting creator/content side.</div>
+    <div class="sponsor-action">→ Instax freebies sometimes happen at these. Check it out.</div>
+  </div>
+
+  <div class="sponsor-card" style="border-top-color: var(--border);">
+    <div class="sponsor-name" style="color:var(--text);">DeVPN</div>
+    <div class="sponsor-what">Decentralized VPN. Privacy-focused product.</div>
+    <div class="sponsor-action">→ Ask about free tier / trial access.</div>
+  </div>
+
+  <div class="sponsor-card" style="border-top-color: var(--border);">
+    <div class="sponsor-name" style="color:var(--text);">Drover Labs</div>
+    <div class="sponsor-what">Maker tools / electronics. Not much public info yet.</div>
+    <div class="sponsor-action">→ See what they're showing.</div>
+  </div>
+
+  <div class="sponsor-card" style="border-top-color: var(--border);">
+    <div class="sponsor-name" style="color:var(--text);">Slingshot</div>
+    <div class="sponsor-what">Creator platform tools.</div>
+    <div class="sponsor-action">→ Free trial / early access common at events.</div>
+  </div>
+
+  <div class="sponsor-card" style="border-top-color: var(--border);">
+    <div class="sponsor-name" style="color:var(--text);">Fluke</div>
+    <div class="sponsor-what">Test & measurement gear (multimeters, clamp meters). Pro-grade tools.</div>
+    <div class="sponsor-action">→ Unlikely to give discounts but good to see what's new.</div>
+  </div>
+
+  <div class="sponsor-card" style="border-top-color: var(--border);">
+    <div class="sponsor-name" style="color:var(--text);">Formlabs</div>
+    <div class="sponsor-what">SLA/resin printers. High-res prints — relevant to fine enclosure work.</div>
+    <div class="sponsor-action">→ Ask about sample prints or material swatches.</div>
+  </div>
+
+  <div class="sponsor-card" style="border-top-color: var(--border);">
+    <div class="sponsor-name" style="color:var(--text);">Colorado PCB Assembly</div>
+    <div class="sponsor-what">PCB assembly house. Could be useful for future StudyPenn boards.</div>
+    <div class="sponsor-action">→ Grab a card, ask about quick-turn pricing.</div>
+  </div>
+
+  <div class="sponsor-card" style="border-top-color: var(--border);">
+    <div class="sponsor-name" style="color:var(--text);">GM / Wing / YouTube / Others</div>
+    <div class="sponsor-what">Brand sponsors. GM, Wing (drone delivery), YouTube — more marketing presence than maker goods.</div>
+    <div class="sponsor-action">→ Skip unless curious.</div>
+  </div>
+
+</div>
+
+
+<footer>
+  Open Sauce · Sat Jul 18 · San Mateo County Event Center · 1346 Saratoga Dr
+</footer>
+
+</body>
+</html>
